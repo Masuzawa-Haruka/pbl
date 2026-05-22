@@ -1,0 +1,6 @@
+みんなのアカウントを知る。
+リポジトリにアカウントを繋げる。→　この方法を調べてくる
+git init
+git remote add origin <リポジトリURL>
+git branch -M main
+git push -u origin main
