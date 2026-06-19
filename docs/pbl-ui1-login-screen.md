@@ -7,7 +7,7 @@
 以下のブランチを作成して作業してください。
 
 ```bash
-git switch -c feature/login-screen-ui
+git checkout -b feature/login-screen-ui
 ```
 
 ## 作業手順
@@ -15,15 +15,15 @@ git switch -c feature/login-screen-ui
 1. ブランチを切る
 
 ```bash
-git switch main
+git checkout main
 git pull --rebase origin main
-git switch -c feature/login-screen-ui
+git checkout -b feature/login-screen-ui
 ```
 
 2. 作業を始めるたびにpullする
 
 ```bash
-git switch feature/login-screen-ui
+git checkout feature/login-screen-ui
 git pull --rebase origin main
 ```
 

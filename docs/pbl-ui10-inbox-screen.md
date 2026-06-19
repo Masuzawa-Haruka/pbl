@@ -6,7 +6,7 @@
 ## 担当ブランチ
 
 ```bash
-git switch -c feature/inbox-screen-ui
+git checkout -b feature/inbox-screen-ui
 ```
 
 ## 作業手順
@@ -14,15 +14,15 @@ git switch -c feature/inbox-screen-ui
 1. ブランチを切る
 
 ```bash
-git switch main
+git checkout main
 git pull --rebase origin main
-git switch -c feature/inbox-screen-ui
+git checkout -b feature/inbox-screen-ui
 ```
 
 2. 作業を始めるたびにpullする
 
 ```bash
-git switch feature/inbox-screen-ui
+git checkout feature/inbox-screen-ui
 git pull --rebase origin main
 ```
 
