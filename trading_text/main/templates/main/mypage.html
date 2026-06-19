@@ -1,9 +1,16 @@
 {% extends 'main/base.html' %}
+{% load static %}
 
 {% block title %}マイページ | OU Textbook{% endblock %}
+{% block extra_style %}
+<link rel="stylesheet" href="{% static 'main/css/mypage.css' %}">
+{% endblock %}
 {% block header_title %}マイページ{% endblock %}
 
 {% block content %}
-<section class="main__placeholder" aria-label="マイページ">
+<section class="placeholder-page placeholder-page--mypage" aria-label="マイページ">
+  <p class="placeholder-page__label">Mock page</p>
+  <h1 class="placeholder-page__title">マイページ</h1>
+  <p class="placeholder-page__text">このページはマイページ画面の仮ページです。</p>
 </section>
 {% endblock %}

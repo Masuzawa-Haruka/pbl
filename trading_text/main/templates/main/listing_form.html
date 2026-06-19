@@ -1,9 +1,16 @@
 {% extends 'main/base.html' %}
+{% load static %}
 
 {% block title %}出品 | OU Textbook{% endblock %}
+{% block extra_style %}
+<link rel="stylesheet" href="{% static 'main/css/listing_form.css' %}">
+{% endblock %}
 {% block header_title %}教科書を出品する{% endblock %}
 
 {% block content %}
-<section class="main__placeholder" aria-label="出品画面">
+<section class="placeholder-page placeholder-page--listing" aria-label="出品画面">
+  <p class="placeholder-page__label">Mock page</p>
+  <h1 class="placeholder-page__title">教科書を出品する</h1>
+  <p class="placeholder-page__text">このページは出品フォーム画面の仮ページです。</p>
 </section>
 {% endblock %}

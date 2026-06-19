@@ -1,9 +1,16 @@
 {% extends 'main/base.html' %}
+{% load static %}
 
 {% block title %}受信箱 | OU Textbook{% endblock %}
+{% block extra_style %}
+<link rel="stylesheet" href="{% static 'main/css/inbox.css' %}">
+{% endblock %}
 {% block header_title %}受信箱{% endblock %}
 
 {% block content %}
-<section class="main__placeholder" aria-label="受信箱">
+<section class="placeholder-page placeholder-page--inbox" aria-label="受信箱">
+  <p class="placeholder-page__label">Mock page</p>
+  <h1 class="placeholder-page__title">受信箱</h1>
+  <p class="placeholder-page__text">このページは受信箱画面の仮ページです。</p>
 </section>
 {% endblock %}
