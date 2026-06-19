@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}OU Textbook{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'main/css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'main/css/components/footer.css' %}">
+    {% block extra_style %}{% endblock %}
+  </head>
+  <body>
+    {% block header %}
+    <header class="header">
+      <div class="header__title">
+        {% block header_title %}{% endblock %}
+      </div>
+    </header>
+    {% endblock %}
+
+    <main class="main">
+      {% block content %}{% endblock %}
+    </main>
+
+    {% block footer %}
+      {% include 'components/footer.html' %}
+    {% endblock %}
+
+    {% block extra_js %}{% endblock %}
+  </body>
+</html>
