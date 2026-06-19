@@ -6,6 +6,27 @@
 git switch -c feature/search-screen-ui
 ```
 
+## 作業手順
+
+1. ブランチを切る
+
+```bash
+git switch main
+git pull --rebase origin main
+git switch -c feature/search-screen-ui
+```
+
+2. 作業を始めるたびにpullする
+
+```bash
+git switch feature/search-screen-ui
+git pull --rebase origin main
+```
+
+3. HTML, CSSファイルを作成する
+4. できたらcommit, pushする
+5. GitHubでPRを作成する
+
 ## 参考画像
 
 ```txt

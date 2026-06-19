@@ -1,0 +1,109 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}探す | OU Textbook{% endblock %}
+
+{% block extra_style %}
+<link rel="stylesheet" href="{% static 'main/css/search.css' %}">
+{% endblock %}
+
+{% block header_title %}探す{% endblock %}
+
+{% block content %}
+<section class="search-page" aria-label="教科書検索">
+  <form class="search-bar" action="#" method="get">
+    <label class="search-bar__field">
+      <svg class="search-bar__icon" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="10.5" cy="10.5" r="6.5"></circle>
+        <path d="M15.5 15.5 21 21"></path>
+      </svg>
+      <input type="search" name="keyword" placeholder="書名・著者・キーワードで検索">
+    </label>
+    <button class="filter-button" type="button" aria-label="絞り込み">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 5h16l-6.5 7.4V19l-3 1v-7.6L4 5Z"></path>
+      </svg>
+    </button>
+  </form>
+
+  <div class="chip-group" aria-label="カテゴリ">
+    <button class="chip chip--active" type="button">すべて</button>
+    <button class="chip" type="button">教養・基礎</button>
+    <button class="chip" type="button">専門</button>
+    <button class="chip" type="button">理系</button>
+    <button class="chip" type="button">文系</button>
+  </div>
+
+  <div class="chip-group chip-group--campus" aria-label="キャンパス">
+    <button class="chip chip--campus" type="button">
+      <span class="chip__pin">○</span>豊中
+    </button>
+    <button class="chip chip--campus" type="button">
+      <span class="chip__pin">○</span>吹田
+    </button>
+    <button class="chip chip--campus" type="button">
+      <span class="chip__pin">○</span>箕面
+    </button>
+    <button class="chip chip--outline" type="button">すべてのキャンパス</button>
+  </div>
+
+  <button class="sort-button" type="button">
+    新着順
+    <span aria-hidden="true">⌄</span>
+  </button>
+
+  <div class="book-list">
+    <div class="book-item">
+      <div class="book-cover book-cover--blue">
+        <span>基礎からの<br>線形代数</span>
+      </div>
+      <div class="book-item__body">
+        <h2 class="book-item__title">基礎からの線形代数</h2>
+        <p class="book-item__author">著者：石村園子</p>
+        <p class="book-item__price">300円</p>
+        <p class="book-item__campus">豊中キャンパス</p>
+      </div>
+      <p class="book-item__likes" aria-label="いいね12件">♡ 12</p>
+    </div>
+
+    <div class="book-item">
+      <div class="book-cover book-cover--green">
+        <span>ミクロ<br>経済学</span>
+      </div>
+      <div class="book-item__body">
+        <h2 class="book-item__title">ミクロ経済学の基礎</h2>
+        <p class="book-item__author">著者：大山道広</p>
+        <p class="book-item__price">400円</p>
+        <p class="book-item__campus">吹田キャンパス</p>
+      </div>
+      <p class="book-item__likes" aria-label="いいね8件">♡ 8</p>
+    </div>
+
+    <div class="book-item">
+      <div class="book-cover book-cover--red">
+        <span>化学の<br>新研究</span>
+      </div>
+      <div class="book-item__body">
+        <h2 class="book-item__title">化学の新研究</h2>
+        <p class="book-item__author">著者：卯田正彦</p>
+        <p class="book-item__price">350円</p>
+        <p class="book-item__campus">豊中キャンパス</p>
+      </div>
+      <p class="book-item__likes" aria-label="いいね5件">♡ 5</p>
+    </div>
+
+    <div class="book-item">
+      <div class="book-cover book-cover--purple">
+        <span>物理学の<br>エッセンス</span>
+      </div>
+      <div class="book-item__body">
+        <h2 class="book-item__title">物理学のエッセンス</h2>
+        <p class="book-item__author">著者：浜島清利</p>
+        <p class="book-item__price">300円</p>
+        <p class="book-item__campus">箕面キャンパス</p>
+      </div>
+      <p class="book-item__likes" aria-label="いいね3件">♡ 3</p>
+    </div>
+  </div>
+</section>
+{% endblock %}
