@@ -1,0 +1,38 @@
+<footer class="app-footer" aria-label="Footer navigation">
+  <nav class="footer-nav">
+    <a class="footer-nav__item{% if request.resolver_match.url_name == 'search' %} footer-nav__item--active{% endif %}" href="{% url 'search' %}"{% if request.resolver_match.url_name == 'search' %} aria-current="page"{% endif %}>
+      <svg class="footer-nav__icon" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="10.5" cy="10.5" r="6.5"></circle>
+        <path d="M15.5 15.5L21 21"></path>
+      </svg>
+      <span>探す</span>
+    </a>
+
+    <a class="footer-nav__item{% if request.resolver_match.url_name == 'listing_form' %} footer-nav__item--active{% endif %}" href="{% url 'listing_form' %}"{% if request.resolver_match.url_name == 'listing_form' %} aria-current="page"{% endif %}>
+      <svg class="footer-nav__icon" viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="4" y="4" width="16" height="16" rx="3"></rect>
+        <path d="M12 8v8"></path>
+        <path d="M8 12h8"></path>
+      </svg>
+      <span>出品</span>
+    </a>
+
+    <a class="footer-nav__item{% if request.resolver_match.url_name == 'inbox' %} footer-nav__item--active{% endif %}" href="{% url 'inbox' %}"{% if request.resolver_match.url_name == 'inbox' %} aria-current="page"{% endif %}>
+      <svg class="footer-nav__icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M5 6.5h14a2 2 0 0 1 2 2v6.5a2 2 0 0 1-2 2H10l-4 3v-3H5a2 2 0 0 1-2-2V8.5a2 2 0 0 1 2-2Z"></path>
+        <path d="M8 12h.01"></path>
+        <path d="M12 12h.01"></path>
+        <path d="M16 12h.01"></path>
+      </svg>
+      <span>受信箱</span>
+    </a>
+
+    <a class="footer-nav__item{% if request.resolver_match.url_name == 'mypage' %} footer-nav__item--active{% endif %}" href="{% url 'mypage' %}"{% if request.resolver_match.url_name == 'mypage' %} aria-current="page"{% endif %}>
+      <svg class="footer-nav__icon" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="12" cy="8" r="4"></circle>
+        <path d="M4.5 21a7.5 7.5 0 0 1 15 0"></path>
+      </svg>
+      <span>マイページ</span>
+    </a>
+  </nav>
+</footer>
