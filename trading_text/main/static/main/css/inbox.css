@@ -1,37 +1,182 @@
-.placeholder-page {
-  margin: 24px 20px;
-  padding: 28px 22px;
-  border: 1px solid #dce2ec;
-  border-radius: 16px;
-  background: #ffffff;
-  text-align: center;
+/* Header specific styles if needed */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  height: 56px;
+  background-color: #fff;
+  border-bottom: 1px solid #e5e7eb;
 }
 
-.placeholder-page__label {
-  margin: 0 0 8px;
-  color: #0034b8;
-  font-size: 12px;
-  font-weight: 800;
-  letter-spacing: 0;
+.header__btn {
+  background: none;
+  border: none;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #374151;
 }
 
-.placeholder-page__title {
-  margin: 0;
-  color: #070d2f;
-  font-size: 22px;
-  font-weight: 800;
-  line-height: 1.35;
+.header__title {
+  font-size: 16px;
+  font-weight: bold;
+  color: #111827;
 }
 
-.placeholder-page__text {
-  margin: 12px 0 0;
-  color: #596173;
+/* Inbox container */
+.inbox {
+  background-color: #fff;
+  /* Add padding-bottom to avoid footer overlap (footer height + some margin) */
+  padding-bottom: 80px; 
+}
+
+/* Tabs */
+.inbox__tabs {
+  display: flex;
+  border-bottom: 1px solid #e5e7eb;
+  background-color: #fff;
+}
+
+.inbox__tab {
+  flex: 1;
+  background: none;
+  border: none;
+  padding: 12px 0;
   font-size: 14px;
-  font-weight: 600;
-  line-height: 1.7;
+  color: #6b7280;
+  cursor: pointer;
+  position: relative;
 }
 
-.placeholder-page--inbox {
-  border-color: #b9c9f4;
-  background: #f7f9ff;
+.inbox__tab--active {
+  color: #2563eb;
+  font-weight: bold;
+}
+
+.inbox__tab--active::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: #2563eb;
+}
+
+/* List */
+.inbox__list {
+  display: flex;
+  flex-direction: column;
+}
+
+.inbox-item {
+  display: flex;
+  padding: 16px;
+  border-bottom: 1px solid #f3f4f6;
+  text-decoration: none;
+  color: inherit;
+  background-color: #fff;
+}
+
+.inbox-item:active {
+  background-color: #f9fafb;
+}
+
+.inbox-item__avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 18px;
+  font-weight: bold;
+  flex-shrink: 0;
+  margin-right: 12px;
+}
+
+/* Avatar background colors */
+.bg-blue { background-color: #3b82f6; }
+.bg-orange { background-color: #f97316; }
+.bg-gray { background-color: #6b7280; }
+.bg-green { background-color: #10b981; }
+.bg-pink { background-color: #ec4899; }
+
+.inbox-item__content {
+  flex: 1;
+  min-width: 0; /* Important for text truncation */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.inbox-item__header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.inbox-item__name {
+  font-weight: bold;
+  font-size: 14px;
+  color: #111827;
+  margin-right: 8px;
+}
+
+.inbox-item__tag {
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: bold;
+}
+
+.inbox-item__tag--trading {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+.inbox-item__tag--notice {
+  background-color: #dbeafe;
+  color: #2563eb;
+}
+
+.inbox-item__book {
+  font-size: 13px;
+  color: #374151;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.inbox-item__preview {
+  font-size: 13px;
+  color: #9ca3af;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.inbox-item__meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+.inbox-item__time {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.inbox-item__arrow {
+  color: #d1d5db;
+  margin-top: auto;
+  margin-bottom: auto;
 }
