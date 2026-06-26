@@ -36,6 +36,7 @@ class Book(models.Model):
     condition = models.CharField(max_length=20, choices=CONDITION_CHOICES, default="good")
     likes_count = models.PositiveIntegerField(default=0)
     cover_theme = models.CharField(max_length=20, choices=COVER_CHOICES, default="blue")
+    description = models.TextField(blank=True, null=True, verbose_name="説明文")
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
