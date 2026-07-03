@@ -1,0 +1,45 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}{{ book.title }} | OU Textbook{% endblock %}
+{% block extra_style %}
+<link rel="stylesheet" href="{% static 'main/css/detail.css' %}">
+{% endblock %}
+{% block header_title %}教科書詳細{% endblock %}
+
+{% block content %}
+<section class="detail-page" aria-label="教科書詳細">
+  <div class="detail-cover book-cover book-cover--{{ book.cover_theme }}">
+    <span>{{ book.title }}</span>
+  </div>
+  <h1>{{ book.title }}</h1>
+  <p class="detail-page__author">著者：{{ book.author }}</p>
+  <p class="detail-page__price">{{ book.price }}円</p>
+  <dl class="detail-meta">
+    <div><dt>カテゴリ</dt><dd>{{ book.get_category_display }}</dd></div>
+    <div><dt>状態</dt><dd>{{ book.get_condition_display }}</dd></div>
+    <div><dt>キャンパス</dt><dd>{{ book.get_campus_display }}</dd></div>
+    <div><dt>受付状態</dt><dd>{{ book.get_status_display }}</dd></div>
+  </dl>
+  <p class="detail-page__description">{{ book.description|default:"説明はまだありません。"|linebreaksbr }}</p>
+
+  <div class="detail-actions">
+    <form action="{% url 'toggle_favorite' book.id %}" method="post">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ request.get_full_path }}">
+      <button class="secondary-button" type="submit">{% if is_favorite %}お気に入り解除{% else %}お気に入り{% endif %}</button>
+    </form>
+
+    {% if active_transaction %}
+      <a class="primary-button" href="{% url 'transaction_detail' active_transaction.id %}">取引を見る</a>
+    {% elif book.status == "available" and request.user.is_authenticated and book.owner != request.user %}
+      <form action="{% url 'start_transaction' book.id %}" method="post">
+        {% csrf_token %}
+        <button class="primary-button" type="submit">取引を開始</button>
+      </form>
+    {% elif not request.user.is_authenticated %}
+      <a class="primary-button" href="{% url 'login' %}">ログインして取引</a>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

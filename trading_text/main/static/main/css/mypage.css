@@ -1,37 +1,80 @@
-.placeholder-page {
-  margin: 24px 20px;
-  padding: 28px 22px;
+.mypage {
+  padding: 12px 20px 24px;
+}
+
+.profile-block {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: 16px;
+  align-items: center;
+}
+
+.profile-block__avatar {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  color: #ffffff;
+  background: #0034b8;
+  font-size: 28px;
+  font-weight: 900;
+}
+
+.profile-block h1 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.profile-block p {
+  margin: 4px 0 0;
+  color: #667085;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 22px;
+}
+
+.stats-grid div {
+  padding: 14px 8px;
   border: 1px solid #dce2ec;
-  border-radius: 16px;
-  background: #ffffff;
+  border-radius: 8px;
   text-align: center;
 }
 
-.placeholder-page__label {
-  margin: 0 0 8px;
-  color: #0034b8;
+.stats-grid strong {
+  display: block;
+  font-size: 22px;
+}
+
+.stats-grid span {
+  color: #667085;
   font-size: 12px;
   font-weight: 800;
-  letter-spacing: 0;
 }
 
-.placeholder-page__title {
-  margin: 0;
-  color: #070d2f;
-  font-size: 22px;
-  font-weight: 800;
-  line-height: 1.35;
+.menu-list,
+.compact-list {
+  margin-top: 20px;
+  border-top: 1px solid #e5e9f1;
 }
 
-.placeholder-page__text {
-  margin: 12px 0 0;
-  color: #596173;
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.7;
+.menu-list a,
+.compact-list a {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 15px 0;
+  border-bottom: 1px solid #e5e9f1;
+  text-decoration: none;
 }
 
-.placeholder-page--mypage {
-  border-color: #cfe8d6;
-  background: #f7fff9;
+.mypage h2 {
+  margin: 26px 0 0;
+  font-size: 18px;
 }

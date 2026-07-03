@@ -1,0 +1,59 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}取引 | OU Textbook{% endblock %}
+{% block extra_style %}
+<link rel="stylesheet" href="{% static 'main/css/transaction.css' %}">
+{% endblock %}
+{% block header_title %}取引{% endblock %}
+
+{% block content %}
+<section class="transaction-page" aria-label="取引">
+  <div class="transaction-summary">
+    <h1>{{ transaction.book.title }}</h1>
+    <p>{{ transaction.get_status_display }}</p>
+    {% if transaction.scheduled_at %}
+      <p>{{ transaction.scheduled_at|date:"Y/m/d H:i" }} / {{ transaction.meeting_place }}</p>
+    {% endif %}
+  </div>
+
+  <form class="schedule-form" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="schedule">
+    <label><span>日時</span>{{ schedule_form.scheduled_at }}</label>
+    <label><span>場所</span>{{ schedule_form.meeting_place }}</label>
+    <button class="secondary-button" type="submit">日時・場所を確定</button>
+  </form>
+
+  <div class="chat-list">
+    {% for message in messages %}
+      <div class="chat-message{% if message.sender == request.user %} chat-message--me{% endif %}">
+        <p>{{ message.body|linebreaksbr }}</p>
+        <span>{{ message.created_at|date:"m/d H:i" }}</span>
+      </div>
+    {% empty %}
+      <p class="empty-state">メッセージはまだありません。</p>
+    {% endfor %}
+  </div>
+
+  <form class="message-form" method="post">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="message">
+    {{ message_form.body }}
+    <button class="primary-button" type="submit">送信</button>
+  </form>
+
+  <div class="transaction-actions">
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="complete">
+      <button class="primary-button" type="submit">完了する</button>
+    </form>
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="cancel">
+      <button class="secondary-button" type="submit">キャンセル</button>
+    </form>
+  </div>
+</section>
+{% endblock %}

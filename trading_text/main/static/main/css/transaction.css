@@ -1,0 +1,110 @@
+.transaction-page {
+  padding: 12px 20px 24px;
+}
+
+.transaction-summary {
+  padding: 16px;
+  border: 1px solid #dce2ec;
+  border-radius: 8px;
+}
+
+.transaction-summary h1 {
+  margin: 0;
+  font-size: 19px;
+}
+
+.transaction-summary p {
+  margin: 8px 0 0;
+  color: #475467;
+  font-weight: 700;
+}
+
+.schedule-form {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.schedule-form label {
+  display: grid;
+  gap: 8px;
+  color: #0034b8;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.schedule-form input,
+.message-form textarea {
+  width: 100%;
+  min-height: 46px;
+  padding: 12px 14px;
+  border: 1px solid #dce2ec;
+  border-radius: 10px;
+  color: #070d2f;
+  background: #ffffff;
+  font: inherit;
+}
+
+.chat-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.chat-message {
+  justify-self: start;
+  max-width: 84%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #f2f4f7;
+}
+
+.chat-message--me {
+  justify-self: end;
+  color: #ffffff;
+  background: #0034b8;
+}
+
+.chat-message p {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.chat-message span {
+  display: block;
+  margin-top: 4px;
+  font-size: 11px;
+  opacity: .75;
+}
+
+.message-form,
+.transaction-actions {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.message-form button,
+.transaction-actions button {
+  width: 100%;
+}
+
+.primary-button,
+.secondary-button {
+  min-height: 48px;
+  border-radius: 12px;
+  font: inherit;
+  font-weight: 900;
+}
+
+.primary-button {
+  border: 1px solid #f3ca22;
+  color: #070d2f;
+  background: #f3ca22;
+}
+
+.secondary-button {
+  border: 1px solid #dce2ec;
+  color: #070d2f;
+  background: #ffffff;
+}

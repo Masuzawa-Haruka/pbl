@@ -1,0 +1,35 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}ログイン | OU Textbook{% endblock %}
+{% block extra_style %}
+<link rel="stylesheet" href="{% static 'main/css/auth.css' %}">
+{% endblock %}
+{% block header %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block content %}
+<section class="auth-page" aria-label="ログイン">
+  <h1>OU Textbook</h1>
+  <p class="auth-page__lead">大阪大学生専用<br>参考書リユースアプリ</p>
+  <p class="auth-page__note">大阪大学メール（@osaka-u.ac.jp）のみ利用できます。</p>
+
+  <form class="auth-form" method="post">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    <label>
+      <span>大阪大学メール</span>
+      {{ form.email }}
+      {{ form.email.errors }}
+    </label>
+    <label>
+      <span>パスワード</span>
+      {{ form.password }}
+      {{ form.password.errors }}
+    </label>
+    <button class="primary-button" type="submit">ログイン</button>
+  </form>
+
+  <a class="auth-link" href="{% url 'signup' %}">アカウントを作成</a>
+</section>
+{% endblock %}
