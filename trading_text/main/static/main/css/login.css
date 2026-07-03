@@ -6,12 +6,19 @@
   --bg-hover: #f7fafc;
 }
 
+.main {
+  padding-bottom: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
 .login-page {
   display: flex;
   justify-content: center;
   align-items: center;
   width: 100%;
-  min-height: calc(100vh - 130px);
+  flex-grow: 1;
   padding: 40px 24px;
 }
 
@@ -22,7 +29,7 @@
 
 .login-logo {
   font-size: 32px;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--ou-blue);
   margin: 0 0 16px 0;
   letter-spacing: -0.5px;
@@ -34,7 +41,7 @@
 
 .login-subtitle {
   font-size: 18px;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--ou-navy);
   margin: 4px 0;
   line-height: 1.4;
@@ -42,22 +49,20 @@
 
 .login-target-container {
   margin-bottom: 32px;
-  background-color: #f8fafc;
-  padding: 12px 16px;
-  border-radius: 8px;
+  padding: 0;
 }
 
 .login-target {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
-  color: var(--text-gray);
-  margin: 4px 0;
+  color: var(--ou-navy);
+  margin: 6px 0;
   line-height: 1.5;
 }
 
 .login-heading {
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--ou-navy);
   margin: 0 0 16px 0;
   text-align: left;
