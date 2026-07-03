@@ -82,6 +82,9 @@
 }
 
 .chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-height: 38px;
   padding: 0 15px;
   border: 1px solid #d8deea;
@@ -91,6 +94,7 @@
   font: inherit;
   font-size: 14px;
   font-weight: 700;
+  text-decoration: none;
 }
 
 .chip--active {
@@ -123,12 +127,21 @@
   border-color: #0034b8;
 }
 
+.chip--active-outline {
+  color: #0034b8;
+  border-color: #0034b8;
+  background: #f5f8ff;
+}
+
+.sort-form {
+  margin: 14px 0 0;
+}
+
 .sort-button {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   height: 38px;
-  margin-top: 14px;
   padding: 0 14px;
   border: 1px solid #d8deea;
   border-radius: 10px;
@@ -137,6 +150,16 @@
   font: inherit;
   font-size: 14px;
   font-weight: 700;
+}
+
+.sort-button select {
+  border: 0;
+  outline: 0;
+  color: inherit;
+  background: transparent;
+  font: inherit;
+  font-weight: inherit;
+  appearance: none;
 }
 
 .book-list {
@@ -170,6 +193,7 @@
   font-weight: 800;
   line-height: 1.25;
   text-align: center;
+  word-break: keep-all;
 }
 
 .book-cover--blue {
@@ -238,6 +262,14 @@
   font-size: 14px;
   font-weight: 600;
   white-space: nowrap;
+}
+
+.book-list__empty {
+  margin: 28px 0;
+  color: #596173;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
 }
 
 @media (max-width: 360px) {
