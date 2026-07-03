@@ -77,6 +77,11 @@ def inbox(request):
 def mypage(request):
     return render(request, 'main/mypage.html')
 
+
 def book_detail(request, book_id):
     book = get_object_or_404(Book, id=book_id)
     return render(request, 'main/book_detail.html', {'book': book})
+
+
+def login(request):
+    return render(request, 'main/login.html')
