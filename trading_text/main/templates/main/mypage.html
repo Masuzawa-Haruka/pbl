@@ -8,50 +8,9 @@
 {% block header_title %}マイページ{% endblock %}
 
 {% block content %}
-<section class="mypage" aria-label="マイページ">
-  <div class="profile-block">
-    <div class="profile-block__avatar">{{ profile.display_name|first }}</div>
-    <div>
-      <h1>{{ profile.display_name }}</h1>
-      <p>大阪大学 学生</p>
-      <p>{{ profile.department|default:"所属未設定" }}{% if profile.year %} {{ profile.year }}年{% endif %}</p>
-    </div>
-  </div>
-
-  <div class="stats-grid">
-    <div><strong>{{ listing_count }}</strong><span>出品数</span></div>
-    <div><strong>{{ completed_count }}</strong><span>取引完了数</span></div>
-    <div><strong>{{ profile.trust_score }}</strong><span>信用スコア</span></div>
-  </div>
-
-  <div class="menu-list">
-    <a href="{% url 'listing_form' %}">出品する<span>›</span></a>
-    <a href="{% url 'inbox' %}">メッセージ<span>›</span></a>
-    <a href="{% url 'logout' %}">ログアウト<span>›</span></a>
-  </div>
-
-  <h2>出品中の商品</h2>
-  <div class="compact-list">
-    {% for book in user_books %}
-      <a href="{% url 'book_detail' book.id %}">
-        <strong>{{ book.title }}</strong>
-        <span>{{ book.get_status_display }}</span>
-      </a>
-    {% empty %}
-      <p class="empty-state">出品中の商品はありません。</p>
-    {% endfor %}
-  </div>
-
-  <h2>お気に入り</h2>
-  <div class="compact-list">
-    {% for favorite in favorites %}
-      <a href="{% url 'book_detail' favorite.book.id %}">
-        <strong>{{ favorite.book.title }}</strong>
-        <span>{{ favorite.book.price }}円</span>
-      </a>
-    {% empty %}
-      <p class="empty-state">お気に入りはまだありません。</p>
-    {% endfor %}
-  </div>
+<section class="placeholder-page placeholder-page--mypage" aria-label="マイページ">
+  <p class="placeholder-page__label">Mock page</p>
+  <h1 class="placeholder-page__title">マイページ</h1>
+  <p class="placeholder-page__text">このページはマイページ画面の仮ページです。</p>
 </section>
 {% endblock %}

@@ -8,34 +8,9 @@
 {% block header_title %}受信箱{% endblock %}
 
 {% block content %}
-<section class="inbox-page" aria-label="受信箱">
-  <div class="inbox-tabs">
-    <span class="inbox-tabs__item inbox-tabs__item--active">すべて</span>
-    <span class="inbox-tabs__item">取引中</span>
-    <span class="inbox-tabs__item">お知らせ</span>
-  </div>
-
-  <div class="thread-list">
-    {% for transaction in transactions %}
-      <a class="thread-item" href="{% url 'transaction_detail' transaction.id %}">
-        <div class="thread-item__avatar">{{ transaction.other_display|first }}</div>
-        <div class="thread-item__body">
-          <div class="thread-item__top">
-            <strong>{{ transaction.other_display }}</strong>
-            <span>{{ transaction.get_status_display }}</span>
-          </div>
-          <p class="thread-item__title">{{ transaction.book.title }}</p>
-          <p class="thread-item__preview">
-            {% with last_message=transaction.messages.last %}
-              {% if last_message %}{{ last_message.body|truncatechars:42 }}{% else %}取引が開始されました。{% endif %}
-            {% endwith %}
-          </p>
-        </div>
-        <span class="thread-item__arrow">›</span>
-      </a>
-    {% empty %}
-      <p class="empty-state">取引メッセージはまだありません。</p>
-    {% endfor %}
-  </div>
+<section class="placeholder-page placeholder-page--inbox" aria-label="受信箱">
+  <p class="placeholder-page__label">Mock page</p>
+  <h1 class="placeholder-page__title">受信箱</h1>
+  <p class="placeholder-page__text">このページは受信箱画面の仮ページです。</p>
 </section>
 {% endblock %}

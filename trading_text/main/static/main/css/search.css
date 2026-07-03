@@ -255,31 +255,9 @@
   vertical-align: 1px;
 }
 
-.favorite-inline {
+.book-item__likes {
   align-self: end;
   margin: 0 0 12px;
-}
-
-.favorite-inline button {
-  border: 0;
-  color: #070d2f;
-  background: transparent;
-  font: inherit;
-  font-size: 13px;
-  font-weight: 800;
-  cursor: pointer;
-}
-
-.book-item__title a,
-.book-cover {
-  text-decoration: none;
-}
-
-.book-item__title a {
-  color: inherit;
-}
-
-.book-item__likes {
   color: #646b7e;
   font-size: 14px;
   font-weight: 600;

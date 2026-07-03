@@ -74,22 +74,16 @@
   <div class="book-list">
     {% for book in books %}
       <div class="book-item">
-        <a class="book-cover book-cover--{{ book.cover_theme }}" href="{% url 'book_detail' book.id %}">
+        <div class="book-cover book-cover--{{ book.cover_theme }}">
           <span>{{ book.title|linebreaksbr }}</span>
-        </a>
+        </div>
         <div class="book-item__body">
-          <h2 class="book-item__title"><a href="{% url 'book_detail' book.id %}">{{ book.title }}</a></h2>
+          <h2 class="book-item__title">{{ book.title }}</h2>
           <p class="book-item__author">著者：{{ book.author }}</p>
           <p class="book-item__price">{{ book.price }}円</p>
           <p class="book-item__campus">{{ book.get_campus_display }}</p>
         </div>
-        <form class="favorite-inline" action="{% url 'toggle_favorite' book.id %}" method="post">
-          {% csrf_token %}
-          <input type="hidden" name="next" value="{{ request.get_full_path }}">
-          <button type="submit" aria-label="お気に入り">
-            {% if book.id in favorite_book_ids %}♥{% else %}♡{% endif %} {{ book.likes_count }}
-          </button>
-        </form>
+        <p class="book-item__likes" aria-label="いいね{{ book.likes_count }}件">♡ {{ book.likes_count }}</p>
       </div>
     {% empty %}
       <p class="book-list__empty">条件に合う教科書が見つかりませんでした。</p>

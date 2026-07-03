@@ -1,59 +1,37 @@
-.listing-page {
-  padding: 12px 24px 24px;
-}
-
-.listing-form {
-  display: grid;
-  gap: 16px;
-}
-
-.listing-form label {
-  display: grid;
-  gap: 8px;
-  color: #0034b8;
-  font-size: 14px;
-  font-weight: 800;
-}
-
-.listing-form input,
-.listing-form select,
-.listing-form textarea {
-  width: 100%;
-  min-height: 48px;
-  padding: 12px 14px;
+.placeholder-page {
+  margin: 24px 20px;
+  padding: 28px 22px;
   border: 1px solid #dce2ec;
-  border-radius: 10px;
-  color: #070d2f;
+  border-radius: 16px;
   background: #ffffff;
-  font: inherit;
-  font-size: 15px;
+  text-align: center;
 }
 
-.listing-form textarea {
-  min-height: 120px;
+.placeholder-page__label {
+  margin: 0 0 8px;
+  color: #0034b8;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0;
 }
 
-.price-row {
-  display: grid;
-  grid-template-columns: 1fr 56px;
-  gap: 8px;
-}
-
-.price-row strong {
-  display: grid;
-  place-items: center;
-  border: 1px solid #dce2ec;
-  border-radius: 10px;
+.placeholder-page__title {
+  margin: 0;
   color: #070d2f;
-  background: #f8fafc;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.35;
 }
 
-.primary-button {
-  min-height: 52px;
-  border: 1px solid #f3ca22;
-  border-radius: 12px;
-  color: #070d2f;
-  background: #f3ca22;
-  font: inherit;
-  font-weight: 900;
+.placeholder-page__text {
+  margin: 12px 0 0;
+  color: #596173;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.7;
+}
+
+.placeholder-page--listing {
+  border-color: #f3ca22;
+  background: #fffdf2;
 }
