@@ -59,3 +59,6 @@ def inbox(request):
 
 def mypage(request):
     return render(request, 'main/mypage.html')
+
+def login(request):
+    return render(request, 'main/login.html')
