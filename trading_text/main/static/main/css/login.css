@@ -29,7 +29,7 @@
 
 .login-logo {
   font-size: 32px;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--ou-blue);
   margin: 0 0 16px 0;
   letter-spacing: -0.5px;
@@ -41,7 +41,7 @@
 
 .login-subtitle {
   font-size: 18px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--ou-navy);
   margin: 4px 0;
   line-height: 1.4;
@@ -54,7 +54,7 @@
 
 .login-target {
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 700;
   color: var(--ou-navy);
   margin: 6px 0;
   line-height: 1.5;
@@ -62,7 +62,7 @@
 
 .login-heading {
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--ou-navy);
   margin: 0 0 16px 0;
   text-align: left;
@@ -115,13 +115,14 @@
 
 .login-button__subtext {
   font-size: 11px;
-  font-weight: 500;
+  font-weight: 700;
   color: var(--text-gray);
   margin-top: 2px;
 }
 
 .login-warning {
   font-size: 11px;
+  font-weight: 700;
   color: var(--text-gray);
   margin: 12px 0 0 0;
   text-align: center;
@@ -139,6 +140,7 @@
 
 .login-signup-guide__text {
   font-size: 13px;
+  font-weight: 700;
   color: var(--text-gray);
   margin: 0 0 8px 0;
 }
