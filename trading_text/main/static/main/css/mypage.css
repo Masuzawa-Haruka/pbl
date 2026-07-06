@@ -7,6 +7,10 @@
   text-align: center;
 }
 
+.placeholder-page--mypage {
+  background: #ffffff;
+}
+
 .placeholder-page__label {
   margin: 0 0 8px;
   color: #0034b8;
@@ -23,6 +27,103 @@
   line-height: 1.35;
 }
 
+/* プロフィール欄 */
+.placeholder-page__profile {
+    display: flex;
+    align-items: center;   /* アイコンと文章を縦方向中央に揃える */
+    gap: 12px;             /* アイコンと文章の間隔 */
+    margin-bottom: 20px;
+}
+
+/* プロフィールアイコンの表示 */
+.placeholder-page__profile_icon {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: #a5cdf5;
+  position: relative;
+}
+
+.placeholder-page__profile_icon::before {
+    content: "";
+    position: absolute;
+    top: 35%;
+    left: 50%;
+    width: 27px;
+    height: 27px;
+    background: #324981;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.placeholder-page__profile_icon::after {
+    content: "";
+    position: absolute;
+    top: 77%;
+    left: 50%;
+    width: 45px;
+    height: 30px;
+    background: #324981;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* プロフィール文 */
+.placeholder-page__profile_text {
+    display: flex;
+    flex-direction: column; /* 文章を縦に並べる */
+    text-align: left;  /*左揃え */
+    font-size: 14px;
+    font-weight: 600;
+    color: #101b62;
+}
+
+/*プロフィール編集ボタン*/
+.placeholder-page__profileedit {
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: bold;
+  color: #6091d3;/*文字色*/
+  background: #FFF;
+  border: solid 3px #6091d3;/*線*/
+  border-radius: 10px;/*角の丸み*/
+}
+
+/*現在の情報*/
+.placeholder-page__current_information {
+  display: flex;
+  margin-bottom: 15px;
+}
+
+.placeholder-page__current_information_text {
+  flex: 1;
+  border: 1px solid #d9dfeb;
+  border-radius: 10px;
+  padding: 15px;
+  white-space: nowrap;
+}
+
+/*スターレーティング*/
+.star-rating{
+    display:flex;
+    gap:6px;
+}
+
+.star{
+    width:13px;
+    height:13px;
+}
+
+.star-outline{
+    fill:none;
+    stroke:#f5b301;
+    stroke-width:1.5;
+}
+
+.star-fill{
+    fill:#f5b301;
+}
+
 .placeholder-page__text {
   margin: 12px 0 0;
   color: #596173;
@@ -31,7 +132,190 @@
   line-height: 1.7;
 }
 
-.placeholder-page--mypage {
-  border-color: #cfe8d6;
-  background: #f7fff9;
+.placeholder-page__saling {
+  color: #070d2f;
+  border: 1px solid #d9dfeb;
+  background: #ffffff;
+}
+
+.placeholder-page_menue {
+  border: 1px solid #d9dfeb;
+  border-radius: 20px;
+  margin-bottom: 15px;
+  overflow: hidden;
+}
+
+.placeholder-page__section{
+  display: flex;
+  align-items: center;      /* 縦方向中央揃え */
+  padding: 16px;
+  background: #ffffff;
+  width: 100%;              /* 横幅いっぱいに広げる */
+  box-sizing: border-box;   /* paddingやborderが横幅からはみ出るのを防ぐ */
+  border-bottom: 1px solid #d9dfeb;
+}
+
+.placeholder-page__section:last-child {
+  border-bottom: none;
+}
+
+.placeholder-page__section_text {
+  margin-left: 30px;        /* アイコンとの間隔 */
+  font-size: 16px;
+  font-weight: 600;
+  color: #101b62;
+}
+
+/*お気に入りのアイコン*/
+/* ハートの土台（サイズを決定） */
+.placeholder-page__favorite-heart {
+  position: relative;
+  width: 16px;              /* ハート全体の横幅 */
+  height: 14px;             /* ハート全体の高さ */
+  display: inline-block;
+}
+
+/* 左側の半円＋斜めパーツ */
+.placeholder-page__favorite-heart::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 8px;                /* 右半分に配置して回転させる */
+  width: 8px;               /* 全体の幅の半分 */
+  height: 13px;
+  background: #070d2f;
+  border-radius: 8px 8px 0 0;
+  transform: rotate(-45deg);
+  transform-origin: 0 100%; /* 左下を基準に回転 */
+}
+
+/* 右側の半円＋斜めパーツ */
+.placeholder-page__favorite-heart::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;                  /* 左半分に配置して回転させる */
+  width: 8px;               /* 全体の幅の半分 */
+  height: 13px;
+  background: #070d2f;
+  border-radius: 8px 8px 0 0;
+  transform: rotate(45deg);
+  transform-origin: 100% 100%; /* 右下を基準に回転 */
+}
+
+.placeholder-page__arrow {
+    margin-left: auto;        /* 矢印を一番右へ */
+    font-size: 24px;
+    color: #8c94a8;
+}
+
+.placeholder-page__section_right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/*お知らせの通知バッジ*/
+.placeholder-page_notice_badge {
+  position: relative;
+  width: 25px;             
+  height: 25px;            
+  display: inline-block;
+  margin-left: auto;
+  border-radius: 50%;
+  background:#f31e1e
+}
+
+.placeholder-page_notice_badge::after {
+  content: "1";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  color: #fff;
+  transform: translate(-50%, -50%);
+}
+
+.placeholder-page_display_sale {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 15px;
+}
+.placeholder-page_display_sale_left {
+  text-align: left;
+  font-size: 16px;
+  font-weight: 600;
+  color: #101b62;
+}
+
+.placeholder-page_display_sale_right {
+  text-align: right;
+  font-size: 16px;
+  font-weight: 600;
+  color: #101b62;
+}
+
+.placeholder-page_display_sale_book_wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch; /* 高さを揃える */
+  gap: 10px; /* カード間の固定余白 */
+}
+
+.placeholder-page_display_sale_book {
+    display: flex;
+    flex: 1;
+    width: 100%;
+    gap: 5px;
+    box-sizing: border-box;
+    text-align: left;
+}
+
+.placeholder-page_display_sale_book_section {
+  border: 1px solid #d9dfeb;
+  min-width: 0;
+  border-radius: 10px;
+  padding: 4px;
+  display: flex;
+  box-sizing: border-box;
+}
+
+.placeholder-page_display_sale_book_text {
+  flex: 1;
+  min-width: 0;
+  box-sizing:border-box;
+}
+
+.placeholder-page_display_sale_book_title {
+  font-size: 9px;
+  font-weight: 600;
+  color: #101b62;
+}
+
+.placeholder-page_display_sale_book_price {
+  font-size: 9px;
+  font-weight: 600;
+  color: rgb(205, 23, 23);
+}
+
+.placeholder-page_display_sale_book_favorite_section {
+  align-items: center;      /* 縦方向中央揃え */
+  display: flex;
+}
+
+.placeholder-page_display_sale_book_favorite{
+  margin-left: 5px;        /* アイコンとの間隔 */
+  font-size: 8px;
+  font-weight: 600;
+  color: #101b62;
+}
+
+.placeholder-page_display_sale_book_label {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  color: #02830d;
+  background: #baf0c3;
 }
