@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.db.models import Q
 from .models import Book
 
@@ -50,6 +50,23 @@ def search(request):
 
 
 def listing_form(request):
+
+    if request.method == 'POST':
+        book = Book(
+
+            title=request.POST.get('title'),
+            author=request.POST.get('author'),
+            price=request.POST.get('price'),
+            category=request.POST.get('category'),
+            campus=request.POST.get('campus'),
+            condition=request.POST.get('condition'),     
+            
+        )
+        book.save()
+
+        return render(request, 'main/listing_form.html', {'success': True})
+        
+
     return render(request, 'main/listing_form.html')
 
 
@@ -59,3 +76,12 @@ def inbox(request):
 
 def mypage(request):
     return render(request, 'main/mypage.html')
+
+
+def book_detail(request, book_id):
+    book = get_object_or_404(Book, id=book_id)
+    return render(request, 'main/book_detail.html', {'book': book})
+
+
+def login(request):
+    return render(request, 'main/login.html')
