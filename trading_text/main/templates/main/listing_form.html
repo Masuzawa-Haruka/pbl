@@ -1,16 +1,192 @@
 {% extends 'main/base.html' %}
 {% load static %}
 
-{% block title %}出品 | OU Textbook{% endblock %}
+{% block title %}教科書を出品する | OU Textbook{% endblock %}
+
 {% block extra_style %}
 <link rel="stylesheet" href="{% static 'main/css/listing_form.css' %}">
 {% endblock %}
-{% block header_title %}教科書を出品する{% endblock %}
+
+{% block header %}
+<header class="header">
+  <div class="header-container">
+    <h1 class="header-title">教科書を出品する</h1>
+  </div>
+</header>
+{% endblock %}
+
+
 
 {% block content %}
-<section class="placeholder-page placeholder-page--listing" aria-label="出品画面">
-  <p class="placeholder-page__label">Mock page</p>
-  <h1 class="placeholder-page__title">教科書を出品する</h1>
-  <p class="placeholder-page__text">このページは出品フォーム画面の仮ページです。</p>
-</section>
+<div class="listing-form-container">
+  <form action="#" method="post" enctype="multipart/form-data" class="listing-form">
+    {% csrf_token %}
+
+    <div class="form-group">
+      <label for="id_title" class="form-label">書名</label>
+      <input type="text" id="id_title" name="title" class="form-control" placeholder="基礎からの線形代数" required>
+    </div>
+
+    <div class="form-group">
+      <label for="id_author" class="form-label">著者</label>
+      <input type="text" id="id_author" name="author" class="form-control" placeholder="石村園子" required>
+    </div>
+
+    <div class="form-group">
+      <label for="id_condition" class="form-label">状態</label>
+      <div class="select-wrapper select-wrapper--condition" id="custom_condition_select">
+        <!-- 表示用のエリア（ヘッダー） -->
+        <div class="custom-select-trigger">
+          <span class="custom-select-title" id="id_condition_title">新品・未使用</span>
+          <p class="condition-description" id="id_condition_desc">新品で購入・使用していない</p>
+        </div>
+
+        <!-- 展開されるドロップダウンリスト -->
+        <div class="custom-select-options">
+          <div class="custom-select-option" data-value="good">
+            <span class="option-title">新品・未使用</span>
+            <span class="option-desc">新品で購入・使用していない</span>
+          </div>
+          <div class="custom-select-option" data-value="normal">
+            <span class="option-title">ほぼ未使用</span>
+            <span class="option-desc">数回使用、折り目や書き込みなし</span>
+          </div>
+          <div class="custom-select-option" data-value="used">
+            <span class="option-title">目立った汚れなし</span>
+            <span class="option-desc">使用感はあるが、全体的に綺麗な状態</span>
+          </div>
+          <div class="custom-select-option" data-value="writing">
+            <span class="option-title">書き込みあり</span>
+            <span class="option-desc">マーカーや鉛筆での書き込みがある</span>
+          </div>
+          <div class="custom-select-option" data-value="stain">
+            <span class="option-title">汚れあり</span>
+            <span class="option-desc">カバーの傷み、ページにシミや折れなどがある</span>
+          </div>
+          <div class="custom-select-option" data-value="bad">
+            <span class="option-title">状態が悪い</span>
+            <span class="option-desc">破れや大きな汚れがある</span>
+          </div>
+        </div>
+
+        <!-- 本物の非表示セレクトボックス（フォーム送信のため） -->
+        <select id="id_condition" name="condition" style="display: none;" required>
+          <option value="good" selected>新品・未使用</option>
+          <option value="normal">ほぼ未使用</option>
+          <option value="used">目立った汚れなし</option>
+          <option value="writing">書き込みあり</option>
+          <option value="stain">汚れあり</option>
+          <option value="bad">状態が悪い</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="id_campus" class="form-label">キャンパス</label>
+      <div class="select-wrapper">
+        <select id="id_campus" name="campus" class="form-select" required>
+          <option value="toyonaka" selected>豊中キャンパス</option>
+          <option value="suita">吹田キャンパス</option>
+          <option value="minoh">箕面キャンパス</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="id_description" class="form-label">説明（任意）</label>
+      <div class="textarea-wrapper">
+        <textarea id="id_description" name="description" class="form-control form-textarea"
+          placeholder="書き込みはほとんどありません。" maxlength="200"></textarea>
+        <span class="char-count">14/200</span>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">写真（最大5枚）</label>
+      <div class="photo-upload-grid">
+        <!-- サムネイル 1 (表紙) -->
+        <div class="photo-thumbnail">
+          <div class="photo-thumbnail__image photo-thumbnail__image--cover">
+            <svg viewBox="0 0 80 106" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="80" height="106" rx="4" fill="#26314D" />
+              <rect y="12" width="80" height="32" fill="#F4F2EE" />
+              <text x="40" y="24" fill="#070D2F" font-size="6" font-weight="bold" text-anchor="middle">基礎からの</text>
+              <text x="40" y="32" fill="#070D2F" font-size="8" font-weight="bold" text-anchor="middle">線形代数</text>
+              <text x="40" y="80" fill="#FFFFFF" font-size="6" text-anchor="middle">石村 園子 著</text>
+            </svg>
+          </div>
+          <button type="button" class="photo-thumbnail__delete" aria-label="写真を削除">
+            <svg width="8" height="8" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M1 1L7 7M7 1L1 7" stroke="white" stroke-width="1.5" stroke-linecap="round" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- サムネイル 2 (目次) -->
+        <div class="photo-thumbnail">
+          <div class="photo-thumbnail__image photo-thumbnail__image--page">
+            <svg viewBox="0 0 80 106" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="80" height="106" rx="4" fill="#FCFCFC" stroke="#E5E9F1" stroke-width="1" />
+              <rect x="8" y="10" width="20" height="4" fill="#8B94A7" rx="1" />
+              <line x1="8" y1="22" x2="40" y2="22" stroke="#D9DFEB" stroke-width="2" stroke-dasharray="2 1" />
+              <line x1="72" y1="22" x2="72" y2="22" stroke="#8B94A7" stroke-width="2" />
+              <line x1="8" y1="30" x2="50" y2="30" stroke="#D9DFEB" stroke-width="2" />
+              <line x1="72" y1="30" x2="72" y2="30" stroke="#8B94A7" stroke-width="2" />
+              <line x1="8" y1="38" x2="45" y2="38" stroke="#D9DFEB" stroke-width="2" />
+              <line x1="72" y1="38" x2="72" y2="38" stroke="#8B94A7" stroke-width="2" />
+              <line x1="8" y1="46" x2="35" y2="46" stroke="#D9DFEB" stroke-width="2" />
+              <line x1="72" y1="46" x2="72" y2="46" stroke="#8B94A7" stroke-width="2" />
+              <line x1="8" y1="54" x2="55" y2="54" stroke="#D9DFEB" stroke-width="2" />
+              <line x1="72" y1="54" x2="72" y2="54" stroke="#8B94A7" stroke-width="2" />
+              <line x1="40" y1="0" x2="40" y2="106" stroke="#F1F3F7" stroke-width="1" />
+            </svg>
+          </div>
+          <button type="button" class="photo-thumbnail__delete" aria-label="写真を削除">
+            <svg width="8" height="8" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M1 1L7 7M7 1L1 7" stroke="white" stroke-width="1.5" stroke-linecap="round" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- サムネイル 3 (本文) -->
+        <div class="photo-thumbnail">
+          <div class="photo-thumbnail__image photo-thumbnail__image--content">
+            <svg viewBox="0 0 80 106" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect width="80" height="106" rx="4" fill="#FCFCFC" stroke="#E5E9F1" stroke-width="1" />
+              <path d="M15 35H30M20 20V40" stroke="#8B94A7" stroke-width="1" />
+              <path d="M18 38C22 30 25 22 29 25" stroke="#0034B8" stroke-width="1.5" stroke-linecap="round" />
+              <rect x="8" y="8" width="24" height="2" fill="#D9DFEB" rx="0.5" />
+              <rect x="48" y="8" width="24" height="2" fill="#D9DFEB" rx="0.5" />
+              <rect x="48" y="14" width="20" height="2" fill="#D9DFEB" rx="0.5" />
+              <rect x="48" y="20" width="24" height="2" fill="#D9DFEB" rx="0.5" />
+              <text x="48" y="34" fill="#070D2F" font-size="5" font-family="monospace">y = ax + b</text>
+              <rect x="8" y="48" width="64" height="2" fill="#D9DFEB" rx="0.5" />
+              <rect x="8" y="54" width="50" height="2" fill="#D9DFEB" rx="0.5" />
+              <line x1="40" y1="0" x2="40" y2="106" stroke="#F1F3F7" stroke-width="1" />
+            </svg>
+          </div>
+          <button type="button" class="photo-thumbnail__delete" aria-label="写真を削除">
+            <svg width="8" height="8" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M1 1L7 7M7 1L1 7" stroke="white" stroke-width="1.5" stroke-linecap="round" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- 追加ボタン -->
+        <button type="button" class="photo-add-button" aria-label="写真を追加">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 5V19M5 12H19" stroke="#0034B8" stroke-width="2.5" stroke-linecap="round" />
+          </svg>
+        </button>
+      </div>
+      <input type="file" id="id_photo_input" accept="image/*" multiple style="display: none;">
+    </div>
+
+    <button type="submit" class="submit-button">出品する</button>
+  </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'main/js/listing_form.js' %}"></script>
 {% endblock %}
