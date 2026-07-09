@@ -1,0 +1,67 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}{{ book.title }} | OU Textbook{% endblock %}
+{% block extra_style %}
+<link rel="stylesheet" href="{% static 'main/css/search.css' %}">
+<link rel="stylesheet" href="{% static 'main/css/listing_form.css' %}">
+{% endblock %}
+{% block header_title %}教科書詳細{% endblock %}
+
+{% block content %}
+<section class="detail-page" aria-label="教科書詳細">
+  <div class="detail-book">
+    {% if book.image %}
+      <img class="book-cover book-cover--detail book-cover--image" src="{{ book.image.url }}" alt="{{ book.title }}">
+    {% else %}
+      <div class="book-cover book-cover--detail book-cover--{{ book.cover_theme }}">
+        <span>{{ book.title|linebreaksbr }}</span>
+      </div>
+    {% endif %}
+
+    <div class="detail-book__body">
+      <p class="detail-book__status">{{ book.get_status_display }}</p>
+      <h1 class="detail-book__title">{{ book.title }}</h1>
+      <p class="book-item__author">著者：{{ book.author }}</p>
+      <p class="book-item__price">{{ book.price }}円</p>
+      <p class="book-item__campus">{{ book.get_campus_display }}</p>
+      <p class="book-item__author">状態：{{ book.get_condition_display }}</p>
+      <p class="book-item__author">出品者：{{ book.seller.profile.display_name|default:book.seller.email }}</p>
+    </div>
+  </div>
+
+  {% if book.description %}
+    <p class="detail-description">{{ book.description|linebreaksbr }}</p>
+  {% endif %}
+
+  <div class="detail-actions">
+    {% if user.is_authenticated %}
+      <form action="{% url 'toggle_like' book.id %}" method="post">
+        {% csrf_token %}
+        <button class="chip chip--outline detail-like{% if is_favorited %} detail-like--active{% endif %}" type="submit">
+          {% if is_favorited %}♥{% else %}♡{% endif %}いいね{{ book.likes_count }}
+        </button>
+      </form>
+    {% else %}
+      <a class="chip chip--outline" href="{% url 'login' %}?next={% url 'book_detail' book.id %}">♡いいね{{ book.likes_count }}</a>
+    {% endif %}
+
+    {% if user == book.seller %}
+      <a class="chip" href="{% url 'edit_book' book.id %}">編集</a>
+    {% endif %}
+  </div>
+
+  {% if user.is_authenticated and user != book.seller %}
+    <form class="listing-form detail-consult" action="{% url 'start_consultation' book.id %}" method="post">
+      {% csrf_token %}
+      <label class="form-group">
+        <span class="form-label">購入相談する</span>
+        <textarea class="form-control form-textarea" name="content" required placeholder="購入希望です。受け渡し場所を相談したいです。"></textarea>
+      </label>
+      <button class="submit-button" type="submit">購入相談する</button>
+    </form>
+  {% elif not user.is_authenticated %}
+    <a class="submit-button detail-login-link" href="{% url 'login' %}?next={% url 'book_detail' book.id %}">ログインして購入相談する</a>
+  {% endif %}
+</section>
+{% endblock %}

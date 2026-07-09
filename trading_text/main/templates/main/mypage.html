@@ -7,384 +7,102 @@
 {% endblock %}
 {% block header_title %}マイページ{% endblock %}
 
-
 {% block content %}
-
-<svg style="display: none;" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-        <!-- 元の星 -->
-        <symbol id="star" viewBox="0 0 32 32">
-            <path d="M31.547 12a.848.848 0 00-.677-.577l-9.427-1.376-4.224-8.532a.847.847 0 00-1.516 0l-4.218 8.534-9.427 1.355a.847.847 0 00-.467 1.467l6.823 6.664-1.612 9.375a.847.847 0 001.23.893l8.428-4.434 8.432 4.432a.847.847 0 001.229-.894l-1.615-9.373 6.822-6.665a.845.845 0 00.214-.869z"/>
-        </symbol>
-
-        <!-- 左から80%だけ表示される星 -->
-        <symbol id="star-80" viewBox="0 0 32 32">
-            <!-- 星全体を塗る -->
-            <path d="M31.547 12a.848.848 0 00-.677-.577l-9.427-1.376-4.224-8.532a.847.847 0 00-1.516 0l-4.218 8.534-9.427 1.355a.847.847 0 00-.467 1.467l6.823 6.664-1.612 9.375a.847.847 0 001.23.893l8.428-4.434 8.432 4.432a.847.847 0 001.229-.894l-1.615-9.373 6.822-6.665a.845.845 0 00.214-.869z"
-                  fill="#f5b301"/>
-
-            <!-- 右側20%を背景色で隠す（32px の 20% = 6.4px） -->
-            <rect x="25.6" y="0" width="6.4" height="32" fill="#ffffff"/>
-        </symbol>
-    </defs>
-</svg>
-
-<!-- 出品アイコン -->
-<svg style="display: none;" xmlns="http://www.w3.org/2000/svg">
-    <symbol id="sale_icon" viewBox="0 0 32 32">
-        <path d="M 5 11 L 14 16 L 14 27 L 5 22 Z" fill="#fff" stroke="#101b62" strok-width="1" stroke-linecap="round" stoke-linejoin="round"/>
-        <path d="M 14 27 L 28 22 L 28 11 L 14 16 Z" fill="#fff" stroke="#101b62" stroke-width="1" stroke-linecap="round" stoke-linejoin="round"/>
-        <path d="M 5 11 L 19 6 L 28 11 L 14 16 Z" fill="#fff" stroke="#101b62" stroke-width="1" stroke-linecap="round" stoke-linejoin="round"/>
-        <path d="M 12 9 L 21 14 Z" stroke="#101b62" stroke-width="1" stroke-linecap="round" stoke-linejoin="round"/>
-        <path d="M 21 14L 21 18 Z" stroke="#101b62" stroke-width="1" stroke-linecap="round" stoke-linejoin="round"/>
-    </symbol>
-</svg>
-
-<!-- お気に入りのアイコン -->
-<svg style="display: none;" xmlns="http://www.w3.org/2000/svg">
-  <symbol id="favorite_icon" viewBox="0 0 32 32">
-    <path
-      d="M16 28
-         L14.5 26.6
-         C8.5 21.2 4 17.1 4 11.5
-         C4 7.9 6.9 5 10.5 5
-         C12.8 5 15 6.1 16 7.9
-         C17 6.1 19.2 5 21.5 5
-         C25.1 5 28 7.9 28 11.5
-         C28 17.1 23.5 21.2 17.5 26.6
-         Z"
-      fill="#fff"
-      stroke="#101b62"
-      stroke-width="1"
-      stroke-linecap="round"
-      stroke-linejoin="round"/>
-  </symbol>
-</svg>
-
-<!-- 取引履歴アイコン -->
-<svg style="display: none;" xmlns="http://www.w3.org/2000/svg">
-    <symbol id="history_icon" viewBox="0 0 32 32">
-
-        <!-- 時計 -->
-        <circle
-            cx="16"
-            cy="16"
-            r="12"
-            fill="#fff"
-            stroke="#101b62"
-            stroke-width="1"/>
-
-        <!-- 中心 -->
-        <circle
-            cx="16"
-            cy="16"
-            r="1.5"
-            fill="#101b62"/>
-
-        <!-- 長針 -->
-        <line
-            x1="16"
-            y1="16"
-            x2="16"
-            y2="8"
-            stroke="#101b62"
-            stroke-width="1"
-            stroke-linecap="round"/>
-
-        <!-- 短針 -->
-        <line
-            x1="16"
-            y1="16"
-            x2="20"
-            y2="20"
-            stroke="#101b62"
-            stroke-width="1"
-            stroke-linecap="round"/>
-
-    </symbol>
-</svg>
-
-<!-- メッセージアイコン -->
-<svg style="display: none;" xmlns="http://www.w3.org/2000/svg">
-    <symbol id="message_icon" viewBox="0 0 32 32">
-        <ellipse cx="16" cy="12" rx="14" ry="11" fill="#fff" stroke="#101b62" stroke-width="1"/>
-        <circle cx="9" cy="12" r="1" fill="#101b62" />
-        <circle cx="16" cy="12" r="1" fill="#101b62" />
-        <circle cx="23" cy="12" r="1" fill="#101b62" />
-        <path d="M 6 20 L 3 27 L 11 23 Z" fill="#fff" stroke="#101b62" stroke-width="1"/>
-    </symbol> 
-</svg> 
-
-<!-- 評価アイコン -->
-<svg style="display: none;" xmlns="http://www.w3.org/2000/svg">
-    <symbol id="review-icon" viewBox="0 0 32 32">
-            <path d="M31.547 12a.848.848 0 00-.677-.577l-9.427-1.376-4.224-8.532a.847.847 0 00-1.516 0l-4.218 8.534-9.427 1.355a.847.847 0 00-.467 1.467l6.823 6.664-1.612 9.375a.847.847 0 001.23.893l8.428-4.434 8.432 4.432a.847.847 0 001.229-.894l-1.615-9.373 6.822-6.665a.845.845 0 00.214-.869z"
-            fill="#fff" stroke="#101b62" stroke-width="1"/>
-    </symbol>
-</svg>
-
-<!-- お知らせアイコン -->
-<svg style="display: none;" xmlns="http://www.w3.org/2000/svg">
-    <symbol id="notice-icon" viewBox="0 0 32 32">
-        <circle cx="16" cy="5" r="1" fill="#fff" stroke="#101b62" stroke-width="1" />
-        <path d="M 16 6 C 11 6 8 10 8 17 V 22 L 5 26 H 27 L 24 22 V 17 C 24 10 21 6 16 6" fill="#fff" stroke="#101b62" stroke-width="1"/>
-        <circle cx="16" cy="28" r="2" fill="#fff" stroke="#101b62" stroke-width="1" />
-    </symbol>
-</svg>
-
-<!-- ヘルプアイコン -->
-<svg style="display: none;" xmlns="http://www.w3.org/2000/svg">
-    <symbol id="help-icon" viewBox="0 0 32 32">
-        <circle cx="16" cy="16" r="14" fill="#fff" stroke="#101b62" stroke-width="1" />
-        <text
-            x="16"
-            y="23.5"
-            text-anchor="middle"
-            font-size="18"
-            font-weight="bold"
-            fill="#101b62">
-            ?
-        </text>
-    </symbol>
-</svg>
-
-<!-- 利用規約アイコン -->
-<svg style="display: none;" xmlns="http://www.w3.org/2000/svg">
-    <symbol id="terms-icon" viewBox="0 0 32 32">
-        <path d="M 8 4 H 20 L 24 8 V 28 H 8 Z M20 4 V 8 H 24" fill="#fff" stroke="#101b62" stroke-width="1" />
-        <path d="M 12 16 L 20 16 M 12 20 L 20 20" stroke="#101b62" stroke-width="1" />
-    </symbol>
-</svg>
-
-<!-- ログアウトアイコン -->
-<svg style="display: none;" xmlns="http://www.w3.org/2000/svg">
-    <symbol id="logout_icon" viewBox="0 0 32 32">
-        <path d="M 12 4 L 4 4 L 4 28 L 12 28" fill="#fff" stroke="#101b62" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" />
-        <line x1="8" y1="16" x2="22" y2="16" stroke="#101b62" />
-        <path d="M 18 12 L 22 16 Z" stroke="#101b62" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" />
-        <path d="M 18 20 L 22 16 Z" stroke="#101b62" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" /> 
-    </symbol>
-</svg>
-
-<!-- サンプル教科書 -->
-<svg style="display: none;" xmlns="http://www.w3.org/2000/svg">
-    <symbol id="book_icon_1" viewBox="0 0 24 24">
-        <rect x="4" y="4" width="12" height="16" fill="#dcdcdc"/>
-    </symbol>
-</svg>
-
 <section class="placeholder-page placeholder-page--mypage" aria-label="マイページ">
-
   <div class="placeholder-page__profile">
-    <div class="placeholder-page__profile_icon"> </div>
-
+    <div class="placeholder-page__profile_icon" aria-hidden="true"></div>
     <div class="placeholder-page__profile_text">
-        <span>大阪 太郎</span>
-        <span>大阪大学 学生</span>
-        <span>工学部 電子情報工学科 2年</span>
+      <span>{{ profile.display_name }}</span>
+      <span>{{ profile.university }} 学生</span>
+      <span>{{ profile.faculty }} {{ profile.school_year }}</span>
     </div>
-
-    <div class="placeholder-page__profileedit">
-        <span>編集</span>
-    </div>
+    <a class="placeholder-page__profileedit" href="{% url 'edit_profile' %}">編集</a>
   </div>
 
   <div class="placeholder-page__current_information">
     <div class="placeholder-page__current_information_text">
-        <p>出品数</p>
-        <h2>3点</h2>
+      <p>出品数</p>
+      <strong>{{ selling_books|length }}点</strong>
     </div>
-
     <div class="placeholder-page__current_information_text">
-        <p>取引完了数</p>
-        <h2>2点</h2>
+      <p>取引完了数</p>
+      <strong>{{ trading_books|length }}点</strong>
     </div>
-
     <div class="placeholder-page__current_information_text">
-        <p>評価</p>
-        <h2>4.8/5.0</h2>
-
-        <div class="star-rating">
-
-            <!-- ★ -->
-            <svg class="star">
-                <use href="#star" class="star-outline"></use>
-                <use href="#star" class="star-fill"></use>
-            </svg>
-
-            <!-- ★ -->
-            <svg class="star">
-                <use href="#star" class="star-outline"></use>
-                <use href="#star" class="star-fill"></use>
-            </svg>
-
-            <!-- ★ -->
-            <svg class="star">
-                <use href="#star" class="star-outline"></use>
-                <use href="#star" class="star-fill"></use>
-            </svg>
-
-            <!-- ★ -->
-            <svg class="star">
-                <use href="#star" class="star-outline"></use>
-                <use href="#star" class="star-fill"></use>
-            </svg>
-            
-<svg class="star" width="13" height="13">
-    <use href="#star" class="star-outline"></use>
-    <use href="#star-80" class="star-fill"></use>
-</svg>
-        </div>
-    </div>
-  </div>
-
-  <div class="placeholder-page_menue">  
-    <div class="placeholder-page__section">
-        <svg width="32" height="32">
-            <use href="#sale_icon"></use>
-        </svg>
-        <span class="placeholder-page__section_text">出荷した商品</span>
-        <span class="placeholder-page__arrow">></span>
-    </div>
-
-    <div class="placeholder-page__section">
-        <svg width="32" height="32">
-        <use href="#favorite_icon"></use>
-        </svg>
-        <span class="placeholder-page__section_text">お気に入り</span>
-        <span class="placeholder-page__arrow">></span>
-    </div>
-
-    <div class="placeholder-page__section">
-        <svg width="32" height="32">
-            <use href="#message_icon"></use>
-        </svg>
-        <span class="placeholder-page__section_text">メッセージ</span>
-        <span class="placeholder-page__arrow">></span>
-    </div>
-
-    <div class="placeholder-page__section">
-        <svg width="32" height="32">
-            <use href="#history_icon"></use>
-        </svg>
-        <span class="placeholder-page__section_text">取引履歴</span>
-        <span class="placeholder-page__arrow">></span>
-    </div>
-
-    <div class="placeholder-page__section">
-        <svg width="28" height="28">
-            <use href="#review-icon"></use>
-        </svg> 
-        <span class="placeholder-page__section_text">評価一覧</span>
-        <span class="placeholder-page__arrow">></span>
-    </div>
-
-    <div class="placeholder-page__section">
-        <svg width="32" height="32">
-            <use href="#notice-icon"></use>
-        </svg>    
-        <span class="placeholder-page__section_text">お知らせ</span>
-        <div class="placeholder-page__section_right">
-            <span class="placeholder-page_notice_badge"></span>
-            <span class="placeholder-page__arrow">></span>
-        </div>
-    </div>
-
-    <div class="placeholder-page__section">
-        <svg width="32" height="32">
-            <use href="#help-icon"></use>
-        </svg>
-        <span class="placeholder-page__section_text">ヘルプ・お問い合わせ</span>
-        <span class="placeholder-page__arrow">></span>
-    </div>
-
-    <div class="placeholder-page__section">
-        <svg width="32" height="32">
-            <use href="#terms-icon"></use>
-        </svg>
-        <span class="placeholder-page__section_text">利用規約</span>
-        <span class="placeholder-page__arrow">></span>
-    </div>
-
-    <div class="placeholder-page__section">
-        <svg width="32" height="32">
-            <use href="#logout_icon"></use>
-        </svg>
-        <span class="placeholder-page__section_text">ログアウト</span>
-        <span class="placeholder-page__arrow">></span>
+      <p>評価</p>
+      <strong>{{ profile.credit_score }}点</strong>
+      <span class="mypage-stars">{{ profile.credit_rank }}</span>
     </div>
   </div>
 
   <div class="placeholder-page_display_sale">
-    <span class="placeholder-page_display_sale_left">出品中の商品</span>
-    <span class="placeholder-page_display_sale_right">すべて見る ></span>
+    <p class="placeholder-page_display_sale_left">出品一覧</p>
+    <a class="placeholder-page_display_sale_right" href="{% url 'listing_form' %}">＋出品</a>
+  </div>
+  <div class="mypage-book-list">
+    {% for book in selling_books %}
+      <a class="mypage-book" href="{% url 'book_detail' book.id %}">
+        <span>{{ book.title }}</span>
+        <strong>{{ book.price }}円</strong>
+        <em>{{ book.get_status_display }}</em>
+      </a>
+    {% empty %}
+      <p class="placeholder-page__text">まだ出品はありません。</p>
+    {% endfor %}
   </div>
 
-  <div class="placeholder-page_display_sale_book_wrapper">
+  <div class="placeholder-page_menue">
+    <a class="placeholder-page__section" href="{% url 'mypage' %}#favorites">
+      <span class="placeholder-page__favorite-heart" aria-hidden="true"></span>
+      <span class="placeholder-page__section_text">お気に入り</span>
+      <span class="placeholder-page__section_right">{{ favorite_books|length }}件</span>
+    </a>
+    <a class="placeholder-page__section" href="{% url 'mypage' %}#trades">
+      <span>↔</span>
+      <span class="placeholder-page__section_text">取引中/売却済み</span>
+      <span class="placeholder-page__section_right">{{ trading_books|length }}件</span>
+    </a>
+    <a class="placeholder-page__section" href="{% url 'help_contact' %}">
+      <span>?</span>
+      <span class="placeholder-page__section_text">ヘルプお問い合わせ</span>
+      <span class="placeholder-page__arrow">›</span>
+    </a>
+    <a class="placeholder-page__section" href="{% url 'terms' %}">
+      <span>□</span>
+      <span class="placeholder-page__section_text">利用規約</span>
+      <span class="placeholder-page__arrow">›</span>
+    </a>
+    <a class="placeholder-page__section" href="{% url 'logout' %}">
+      <span>→</span>
+      <span class="placeholder-page__section_text">ログアウト</span>
+      <span class="placeholder-page__arrow">›</span>
+    </a>
+  </div>
 
-    <div class="placeholder-page_display_sale_book">
-        <div class="placeholder-page_display_sale_book_section">
-            <svg width="48" height="48">
-                <use href="#book_icon_1"></use>
-            </svg>
-            <div class="placeholder-page_display_sale_book_text">
-                <p class="placeholder-page_display_sale_book_title">基礎からの線形代数</p>
-                <p class="placeholder-page_display_sale_book_price">1,000円</p>
+  <div id="favorites" class="mypage-section">
+    <h2>お気に入り</h2>
+    {% for book in favorite_books %}
+      <a class="mypage-book" href="{% url 'book_detail' book.id %}">
+        <span>{{ book.title }}</span>
+        <strong>{{ book.price }}円</strong>
+        <em>♡いいね{{ book.likes_count }}</em>
+      </a>
+    {% empty %}
+      <p class="placeholder-page__text">お気に入りはまだありません。</p>
+    {% endfor %}
+  </div>
 
-                <div class="placeholder-page_display_sale_book_favorite_section">
-                    <svg width="16" height="16">
-                    <use href="#favorite_icon"></use>
-                    </svg>
-                    <span class="placeholder-page_display_sale_book_favorite">3</span>
-                </div>
-
-                <p class="placeholder-page_display_sale_book_label">出品中</p>
-            </div>
-        </div>
-    </div>
-
-    <div class="placeholder-page_display_sale_book">
-        <div class="placeholder-page_display_sale_book_section">
-            <svg width="48" height="48">
-                <use href="#book_icon_1"></use>
-            </svg>
-            <div class="placeholder-page_display_sale_book_text">
-                <p class="placeholder-page_display_sale_book_title">ミクロ経済学の基礎</p>
-                <p class="placeholder-page_display_sale_book_price">800円</p>
-
-                <div class="placeholder-page_display_sale_book_favorite_section">
-                    <svg width="16" height="16">
-                    <use href="#favorite_icon"></use>
-                    </svg>
-                    <span class="placeholder-page_display_sale_book_favorite">2</span>
-                </div>
-
-                <p class="placeholder-page_display_sale_book_label">出品中</p>
-            </div>
-        </div>
-    </div>
-
-    <div class="placeholder-page_display_sale_book">
-        <div class="placeholder-page_display_sale_book_section">
-            <svg width="48" height="48">
-                <use href="#book_icon_1"></use>
-            </svg>
-            <div class="placeholder-page_display_sale_book_text">
-                <p class="placeholder-page_display_sale_book_title">化学の新研究</p>
-                <p class="placeholder-page_display_sale_book_price">700円</p>
-
-                <div class="placeholder-page_display_sale_book_favorite_section">
-                    <svg width="16" height="16">
-                    <use href="#favorite_icon"></use>
-                    </svg>
-                    <span class="placeholder-page_display_sale_book_favorite">1</span>
-                </div>
-
-                <p class="placeholder-page_display_sale_book_label">出品中</p>
-            </div>
-        </div>
-    </div>
-
+  <div id="trades" class="mypage-section">
+    <h2>取引中/売却済み</h2>
+    {% for book in trading_books %}
+      <a class="mypage-book" href="{% url 'chat' book.id %}">
+        <span>{{ book.title }}</span>
+        <strong>{{ book.get_status_display }}</strong>
+        <em>{{ book.price }}円</em>
+      </a>
+    {% empty %}
+      <p class="placeholder-page__text">取引中の教科書はありません。</p>
+    {% endfor %}
   </div>
 </section>
 {% endblock %}

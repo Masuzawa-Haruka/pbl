@@ -1,0 +1,50 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}出品編集 | OU Textbook{% endblock %}
+{% block extra_style %}
+<link rel="stylesheet" href="{% static 'main/css/listing_form.css' %}">
+{% endblock %}
+{% block header_title %}出品編集{% endblock %}
+
+{% block content %}
+<section class="listing-form-container" aria-label="出品編集">
+  <form class="listing-form" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    <label class="form-group">
+      <span class="form-label">書名</span>
+      <input class="form-control" type="text" name="title" value="{{ form.title.value|default:'' }}" required>
+      {{ form.title.errors }}
+    </label>
+    <label class="form-group">
+      <span class="form-label">著者</span>
+      <input class="form-control" type="text" name="author" value="{{ form.author.value|default:'' }}" required>
+      {{ form.author.errors }}
+    </label>
+    <label class="form-group">
+      <span class="form-label">価格</span>
+      <input class="form-control" type="number" name="price" value="{{ form.price.value|default:'' }}" min="0" required>
+      {{ form.price.errors }}
+    </label>
+    <label class="form-group">
+      <span class="form-label">販売状況</span>
+      {{ form.status }}
+      {{ form.status.errors }}
+    </label>
+    <label class="form-group">
+      <span class="form-label">写真</span>
+      {% if book.image %}
+        <p class="condition-description">現在の画像：{{ book.image.name }}</p>
+      {% endif %}
+      <input class="form-control" type="file" name="image" accept="image/*">
+      {{ form.image.errors }}
+    </label>
+    {{ form.category.as_hidden }}
+    {{ form.campus.as_hidden }}
+    {{ form.condition.as_hidden }}
+    {{ form.description.as_hidden }}
+    <button class="submit-button" type="submit">更新する</button>
+  </form>
+</section>
+{% endblock %}

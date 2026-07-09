@@ -94,6 +94,47 @@
   transform: translateY(0);
 }
 
+.login-button--submit {
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.login-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  color: var(--ou-navy);
+  font-size: 13px;
+  font-weight: 700;
+  text-align: left;
+}
+
+.login-field input {
+  width: 100%;
+  height: 46px;
+  padding: 0 14px;
+  border: 1px solid var(--ou-border);
+  border-radius: 12px;
+  color: var(--ou-navy);
+  font: inherit;
+  background: #ffffff;
+}
+
+.errorlist {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  color: #c51f1f;
+  font-size: 12px;
+  font-weight: 700;
+}
+
 .login-button__icon {
   display: flex;
   align-items: center;

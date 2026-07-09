@@ -1,0 +1,41 @@
+{% extends 'main/login.html' %}
+
+{% block title %}新規登録 | OU Textbook{% endblock %}
+
+{% block content %}
+<section class="login-page">
+  <div class="login-card">
+    <h1 class="login-logo">OU Textbook</h1>
+    <div class="login-subtitle-container">
+      <p class="login-subtitle">Supabase Auth メール認証</p>
+      <p class="login-subtitle">新規登録</p>
+    </div>
+
+    <form class="login-form" method="post">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+      <label class="login-field">
+        <span>メールアドレス</span>
+        <input type="email" name="email" value="{{ form.email.value|default:'' }}" placeholder="name@ecs.osaka-u.ac.jp" required>
+        {{ form.email.errors }}
+      </label>
+      <label class="login-field">
+        <span>パスワード</span>
+        <input type="password" name="password1" required>
+        {{ form.password1.errors }}
+      </label>
+      <label class="login-field">
+        <span>パスワード確認</span>
+        <input type="password" name="password2" required>
+        {{ form.password2.errors }}
+      </label>
+      <button class="login-button login-button--submit" type="submit">
+        <span class="login-button__text">認証メールを送信</span>
+      </button>
+    </form>
+
+    <hr class="login-divider">
+    <a class="login-signup-guide__link" href="{% url 'login' %}">ログインに戻る</a>
+  </div>
+</section>
+{% endblock %}
