@@ -1,0 +1,173 @@
+/* header 上書き用 */
+.detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background-color: #fff;
+}
+
+.back-btn {
+  background: none;
+  border: none;
+  color: #000;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* メインコンテンツエリア */
+.book-image-container {
+  background-color: #f8f8f8;
+  padding: 40px 0 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.book-image-placeholder {
+  width: 200px;
+  height: 280px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 28px 18px;
+  color: #111827;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.35;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  border: 1px solid #ddd;
+}
+
+.book-image-placeholder--blue {
+  background: linear-gradient(#f4f2ee 0 44%, #26314d 44% 100%);
+}
+
+.book-image-placeholder--green {
+  background: linear-gradient(90deg, #2b6f47 0 18%, #d7e7dd 18% 100%);
+}
+
+.book-image-placeholder--red {
+  background: linear-gradient(#3f91bf 0 34%, #c63b23 34% 100%);
+}
+
+.book-image-placeholder--purple {
+  background: linear-gradient(#f7f7f7 0 45%, #d7d1ef 45% 100%);
+}
+
+
+.dot.active {
+  background-color: #0033a0; /* OUブルー */
+}
+
+/* 本の情報 */
+.book-info {
+  padding: 24px 20px;
+  background-color: #fff;
+  padding-bottom: 120px; /* 下部ボタンのスペース確保 */
+}
+
+.book-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111;
+  margin: 0 0 12px 0;
+  line-height: 1.4;
+}
+
+.book-author {
+  font-size: 15px;
+  color: #333;
+  margin: 0 0 20px 0;
+}
+
+/* タグ */
+.tags {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background-color: #f2f2f2;
+  border: 1px solid #e0e0e0;
+  border-radius: 20px;
+  padding: 6px 12px;
+  font-size: 13px;
+  color: #333;
+}
+
+/* 価格 */
+.book-price {
+  margin-bottom: 20px;
+}
+
+.price-number {
+  font-size: 32px;
+  font-weight: 700;
+  color: #e60012; /* 赤 */
+}
+
+.price-unit {
+  font-size: 16px;
+  font-weight: 700;
+  color: #e60012;
+  margin-left: 2px;
+}
+
+/* 説明文 */
+.book-description {
+  font-size: 14px;
+  color: #333;
+  line-height: 1.6;
+  margin-bottom: 32px;
+}
+
+/* いいね */
+.likes-container {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 6px;
+  color: #555;
+  font-size: 14px;
+}
+
+.heart-icon {
+  color: #333;
+}
+
+/* 下部固定ボタン */
+.bottom-action-bar {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 430px; /* base.cssに準拠 */
+  background-color: #fff;
+  padding: 16px 20px 32px;
+  border-top: 1px solid #eee;
+}
+
+.contact-btn {
+  display: block;
+  width: 100%;
+  background-color: #0033a0;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
+  border: none;
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  text-align: center;
+  text-decoration: none;
+}

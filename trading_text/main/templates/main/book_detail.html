@@ -1,0 +1,72 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}{{ book.title }} | OU Textbook{% endblock %}
+
+{% block extra_style %}
+<link rel="stylesheet" href="{% static 'main/css/book_detail.css' %}">
+{% endblock %}
+
+{% block header %}
+<header class="detail-header">
+    <a href="{% url 'search' %}" class="back-btn">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" />
+        </svg>
+    </a>
+</header>
+{% endblock %}
+
+{% block content %}
+<div class="book-image-container">
+    <div class="book-image-placeholder book-image-placeholder--{{ book.cover_theme }}">
+        <span>{{ book.title|linebreaksbr }}</span>
+    </div>
+</div>
+
+<div class="book-info">
+    <h1 class="book-title">{{ book.title }}</h1>
+    <p class="book-author">著者：{{ book.author }}</p>
+
+    <div class="tags">
+        <span class="tag">状態 {{ book.get_condition_display }}</span>
+        <span class="tag">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                    d="M21 10C21 17 12 23 12 23C12 23 3 17 3 10C3 7.61305 3.94821 5.32387 5.63604 3.63604C7.32387 1.94821 9.61305 1 12 1C14.3869 1 16.6761 1.94821 18.364 3.63604C20.0518 5.32387 21 7.61305 21 10Z"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                <path
+                    d="M12 13C13.6569 13 15 11.6569 15 10C15 8.34315 13.6569 7 12 7C10.3431 7 9 8.34315 9 10C9 11.6569 10.3431 13 12 13Z"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            {{ book.get_campus_display }}
+        </span>
+    </div>
+
+    <div class="book-price">
+        <span class="price-number">{{ book.price }}</span><span class="price-unit">円</span>
+    </div>
+
+    <div class="book-description">
+        {% if book.description %}
+        {{ book.description|linebreaksbr }}
+        {% endif %}
+    </div>
+
+    <div class="likes-container">
+        <svg class="heart-icon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+            xmlns="http://www.w3.org/2000/svg">
+            <path
+                d="M20.8401 4.60999C20.3294 4.099 19.7229 3.69364 19.0555 3.41708C18.388 3.14052 17.6726 3 16.9401 3C16.2076 3 15.4922 3.14052 14.8248 3.41708C14.1573 3.69364 13.5508 4.099 13.0401 4.60999L12.0001 5.64999L10.9601 4.60999C9.92883 3.5788 8.53033 2.99951 7.07205 2.99951C5.61378 2.99951 4.21528 3.5788 3.18405 4.60999C2.15283 5.64121 1.57354 7.03971 1.57354 8.49799C1.57354 9.95627 2.15283 11.3548 3.18405 12.386L4.22405 13.426L12.0001 21.202L19.7761 13.426L20.8161 12.386C21.327 11.8753 21.7324 11.2688 22.0089 10.6013C22.2855 9.93386 22.426 9.21846 22.426 8.49799C22.426 7.77752 22.2855 7.06212 22.0089 6.39466C21.7324 5.7272 21.327 5.1207 20.8401 4.60999Z"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        <span>いいね {{ book.likes_count|default:"0" }}</span>
+    </div>
+</div>
+
+<!-- 下部のフッターのアクション -->
+<div class="bottom-action-bar">
+    <a class="contact-btn" href="{% url 'inbox' %}">相手に連絡する</a>
+</div>
+{% endblock %}

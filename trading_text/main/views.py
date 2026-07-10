@@ -50,7 +50,6 @@ def search(request):
 
 
 def listing_form(request):
-
     if request.method == 'POST':
         book = Book(
 
@@ -65,7 +64,6 @@ def listing_form(request):
         book.save()
 
         return render(request, 'main/listing_form.html', {'success': True})
-        
 
     return render(request, 'main/listing_form.html')
 
