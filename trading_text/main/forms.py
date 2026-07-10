@@ -37,6 +37,29 @@ class EcsLoginForm(forms.Form):
         return email
 
 
+def validate_uploaded_image(uploaded_file):
+    if not uploaded_file:
+        return uploaded_file
+
+    max_size = 5 * 1024 * 1024
+    if uploaded_file.size > max_size:
+        raise forms.ValidationError("画像サイズは5MB以下にしてください。")
+
+    position = uploaded_file.tell()
+    header = uploaded_file.read(16)
+    uploaded_file.seek(position)
+    image_signatures = (
+        b"\xff\xd8\xff",
+        b"\x89PNG\r\n\x1a\n",
+        b"GIF87a",
+        b"GIF89a",
+        b"RIFF",
+    )
+    if not header.startswith(image_signatures):
+        raise forms.ValidationError("画像ファイル（jpg/png/gif/webp）を選択してください。")
+    return uploaded_file
+
+
 class BookForm(forms.ModelForm):
     class Meta:
         model = Book
@@ -49,11 +72,18 @@ class BookForm(forms.ModelForm):
             "condition",
             "description",
             "image",
-            "status",
         )
         widgets = {
             "description": forms.Textarea(attrs={"rows": 4}),
         }
+
+    def clean_image(self):
+        return validate_uploaded_image(self.cleaned_data.get("image"))
+
+
+class BookEditForm(BookForm):
+    class Meta(BookForm.Meta):
+        fields = BookForm.Meta.fields + ("status",)
 
 
 class ProfileForm(forms.ModelForm):

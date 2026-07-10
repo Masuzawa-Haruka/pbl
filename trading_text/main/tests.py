@@ -8,6 +8,7 @@ from django.urls import reverse
 from .forms import EcsUserCreationForm
 from .models import Book, Favorite, Message, UserProfile
 from .services import apply_cancellation, submit_evaluation
+from .views import sync_supabase_user
 
 
 class AuthFormTests(TestCase):
@@ -68,7 +69,13 @@ class AuthFormTests(TestCase):
         )
 
         self.assertRedirects(response, reverse("search"))
-        self.assertTrue(User.objects.filter(username="student@ecs.osaka-u.ac.jp").exists())
+        user = User.objects.get(username="student@ecs.osaka-u.ac.jp")
+        self.assertEqual(user.profile.supabase_user_id, "supabase-user-id")
+
+    def test_sync_supabase_user_persists_supabase_user_id(self):
+        user = sync_supabase_user("sync@ecs.osaka-u.ac.jp", "supabase-id-123")
+
+        self.assertEqual(user.profile.supabase_user_id, "supabase-id-123")
 
 
 class TradeFlowTests(TestCase):
@@ -85,8 +92,14 @@ class TradeFlowTests(TestCase):
         )
         self.buyer.set_password("password12345")
         self.buyer.save()
+        self.other_buyer = User.objects.create_user(
+            username="other@ecs.osaka-u.ac.jp",
+            email="other@ecs.osaka-u.ac.jp",
+            password="password12345",
+        )
         UserProfile.objects.get_or_create(user=self.seller, defaults={"display_name": "大阪 太郎"})
         UserProfile.objects.get_or_create(user=self.buyer, defaults={"display_name": "大阪 花子"})
+        UserProfile.objects.get_or_create(user=self.other_buyer, defaults={"display_name": "大阪 次郎"})
         self.book = Book.objects.create(
             seller=self.seller,
             title="基礎からの線形代数",
@@ -110,13 +123,14 @@ class TradeFlowTests(TestCase):
                 "campus": "suita",
                 "condition": "good",
                 "description": "授業で使いました。",
-                "status": "available",
+                "status": "sold",
             },
         )
 
         created_book = Book.objects.get(title="ミクロ経済学の基礎", seller=self.buyer)
         self.assertRedirects(response, reverse("book_detail", args=[created_book.id]))
         self.assertEqual(created_book.seller, self.buyer)
+        self.assertEqual(created_book.status, "available")
 
     def test_like_toggles_favorite_and_likes_count(self):
         self.client.login(username="buyer@ecs.osaka-u.ac.jp", password="password12345")
@@ -145,22 +159,75 @@ class TradeFlowTests(TestCase):
         self.assertEqual(self.book.buyer, self.buyer)
         self.assertTrue(Message.objects.filter(book=self.book, sender=self.buyer, receiver=self.seller).exists())
 
+    def test_second_buyer_cannot_consult_existing_thread(self):
+        self.book.buyer = self.buyer
+        self.book.status = "in_progress"
+        self.book.save(update_fields=["buyer", "status"])
+        self.client.login(username="other@ecs.osaka-u.ac.jp", password="password12345")
+
+        response = self.client.post(
+            reverse("start_consultation", args=[self.book.id]),
+            {"content": "購入したいです。"},
+        )
+
+        self.assertRedirects(response, reverse("book_detail", args=[self.book.id]))
+        self.assertFalse(Message.objects.filter(book=self.book, sender=self.other_buyer).exists())
+
+    def test_sold_book_cannot_be_consulted(self):
+        self.book.status = "sold"
+        self.book.save(update_fields=["status"])
+        self.client.login(username="buyer@ecs.osaka-u.ac.jp", password="password12345")
+
+        response = self.client.post(
+            reverse("start_consultation", args=[self.book.id]),
+            {"content": "購入したいです。"},
+        )
+
+        self.assertRedirects(response, reverse("book_detail", args=[self.book.id]))
+        self.assertFalse(Message.objects.filter(book=self.book, sender=self.buyer).exists())
+
+    def test_unauthorized_user_cannot_post_chat_message(self):
+        self.book.buyer = self.buyer
+        self.book.status = "in_progress"
+        self.book.save(update_fields=["buyer", "status"])
+        self.client.login(username="other@ecs.osaka-u.ac.jp", password="password12345")
+
+        response = self.client.post(reverse("chat", args=[self.book.id]), {"content": "割り込みます。"})
+
+        self.assertRedirects(response, reverse("inbox"))
+        self.assertFalse(Message.objects.filter(book=self.book, sender=self.other_buyer).exists())
+
     def test_evaluation_applies_after_both_sides_submit(self):
         self.book.buyer = self.buyer
         self.book.status = "in_progress"
         self.book.save(update_fields=["buyer", "status"])
 
-        submit_evaluation(self.book, self.buyer, self.seller, "good")
+        evaluation, created = submit_evaluation(self.book, self.buyer, self.seller, "good")
+        self.assertTrue(created)
         self.seller.profile.refresh_from_db()
         self.assertEqual(self.seller.profile.credit_score, 100)
 
-        submit_evaluation(self.book, self.seller, self.buyer, "bad")
+        evaluation, created = submit_evaluation(self.book, self.seller, self.buyer, "bad")
+        self.assertTrue(created)
         self.seller.profile.refresh_from_db()
         self.buyer.profile.refresh_from_db()
         self.book.refresh_from_db()
         self.assertEqual(self.seller.profile.credit_score, 110)
         self.assertEqual(self.buyer.profile.credit_score, 90)
         self.assertEqual(self.book.status, "sold")
+
+    def test_duplicate_evaluation_does_not_apply_score_twice(self):
+        self.book.buyer = self.buyer
+        self.book.status = "in_progress"
+        self.book.save(update_fields=["buyer", "status"])
+
+        submit_evaluation(self.book, self.buyer, self.seller, "good")
+        submit_evaluation(self.book, self.seller, self.buyer, "good")
+        evaluation, created = submit_evaluation(self.book, self.buyer, self.seller, "good")
+
+        self.assertFalse(created)
+        self.seller.profile.refresh_from_db()
+        self.assertEqual(self.seller.profile.credit_score, 110)
 
     def test_invalid_evaluation_type_is_rejected(self):
         with self.assertRaises(ValueError):

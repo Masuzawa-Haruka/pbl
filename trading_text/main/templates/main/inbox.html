@@ -14,7 +14,13 @@
     <a class="inbox-thread" href="{% url 'chat' thread.book.id %}">
       <div>
         <p class="inbox-thread__title">{{ thread.book.title }}</p>
-        <p class="inbox-thread__meta">{{ thread.sender.email }} → {{ thread.receiver.email }}</p>
+        <p class="inbox-thread__meta">
+          {% if thread.sender == user %}
+            {{ thread.receiver.profile.display_name|default:"取引相手" }}
+          {% else %}
+            {{ thread.sender.profile.display_name|default:"取引相手" }}
+          {% endif %}
+        </p>
         <p class="inbox-thread__message">{{ thread.content }}</p>
       </div>
       <span class="placeholder-page__arrow">›</span>

@@ -4,11 +4,13 @@ from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from django.db import IntegrityError, transaction
+from django.db.models import F
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
-from .forms import BookForm, EcsLoginForm, EcsUserCreationForm, MessageForm, ProfileForm
+from .forms import BookEditForm, BookForm, EcsLoginForm, EcsUserCreationForm, MessageForm, ProfileForm
 from .models import Book, Favorite, Message, UserProfile
 from .services import submit_evaluation
 from .supabase_auth import SupabaseAuthError, is_configured as supabase_is_configured
@@ -32,7 +34,10 @@ def sync_supabase_user(email, supabase_user_id=None):
         updates.append("is_active")
     if updates:
         user.save(update_fields=updates)
-    UserProfile.objects.get_or_create(user=user)
+    profile, _ = UserProfile.objects.get_or_create(user=user)
+    if supabase_user_id and profile.supabase_user_id != supabase_user_id:
+        profile.supabase_user_id = supabase_user_id
+        profile.save(update_fields=["supabase_user_id"])
     return user
 
 
@@ -151,6 +156,8 @@ def listing_form(request):
         if form.is_valid():
             book = form.save(commit=False)
             book.seller = request.user
+            book.status = "available"
+            book.buyer = None
             book.save()
             messages.success(request, "出品しました。")
             return redirect("book_detail", book_id=book.id)
@@ -189,23 +196,35 @@ def book_detail(request, book_id):
 @login_required
 def toggle_like(request, book_id):
     book = get_object_or_404(Book, id=book_id)
-    favorite, created = Favorite.objects.get_or_create(user=request.user, book=book)
-    if created:
-        book.likes_count += 1
-        messages.success(request, "お気に入りに追加しました。")
-    else:
-        favorite.delete()
-        book.likes_count = max(book.likes_count - 1, 0)
-        messages.success(request, "お気に入りを解除しました。")
-    book.save(update_fields=["likes_count"])
+    with transaction.atomic():
+        try:
+            favorite, created = Favorite.objects.get_or_create(user=request.user, book=book)
+        except IntegrityError:
+            created = False
+            favorite = Favorite.objects.get(user=request.user, book=book)
+
+        if created:
+            Book.objects.filter(id=book.id).update(likes_count=F("likes_count") + 1)
+            messages.success(request, "お気に入りに追加しました。")
+        else:
+            deleted_count, _ = favorite.delete()
+            if deleted_count:
+                Book.objects.filter(id=book.id, likes_count__gt=0).update(likes_count=F("likes_count") - 1)
+            messages.success(request, "お気に入りを解除しました。")
     return redirect("book_detail", book_id=book.id)
 
 
 @login_required
 def start_consultation(request, book_id):
-    book = get_object_or_404(Book.objects.select_related("seller"), id=book_id)
+    book = get_object_or_404(Book.objects.select_related("seller", "buyer"), id=book_id)
     if book.seller == request.user:
         messages.error(request, "自分の出品には購入相談できません。")
+        return redirect("book_detail", book_id=book.id)
+    if book.status == "sold":
+        messages.error(request, "売却済みの出品には購入相談できません。")
+        return redirect("book_detail", book_id=book.id)
+    if book.buyer_id is not None and book.buyer != request.user:
+        messages.error(request, "この出品は既に別の購入希望者と取引中です。")
         return redirect("book_detail", book_id=book.id)
 
     if request.method == "POST":
@@ -237,7 +256,8 @@ def inbox(request):
     )
     threads = {}
     for message in messages_qs:
-        threads.setdefault(message.book_id, message)
+        other_user = message.receiver if message.sender == request.user else message.sender
+        threads.setdefault((message.book_id, other_user.id), message)
     return render(request, "main/inbox.html", {"threads": threads.values()})
 
 
@@ -289,8 +309,11 @@ def evaluate_trade(request, book_id):
     if request.method == "POST":
         evaluation_type = request.POST.get("evaluation_type")
         try:
-            submit_evaluation(book, request.user, target, evaluation_type)
-            messages.success(request, "評価を送信しました。双方の評価が揃うと信用スコアに反映されます。")
+            _evaluation, created = submit_evaluation(book, request.user, target, evaluation_type)
+            if created:
+                messages.success(request, "評価を送信しました。双方の評価が揃うと信用スコアに反映されます。")
+            else:
+                messages.info(request, "この取引は既に評価済みです。")
         except ValueError as error:
             messages.error(request, str(error))
     return redirect("chat", book_id=book.id)
@@ -336,13 +359,13 @@ def edit_profile(request):
 def edit_book(request, book_id):
     book = get_object_or_404(Book, id=book_id, seller=request.user)
     if request.method == "POST":
-        form = BookForm(request.POST, request.FILES, instance=book)
+        form = BookEditForm(request.POST, request.FILES, instance=book)
         if form.is_valid():
             form.save()
             messages.success(request, "出品情報を更新しました。")
             return redirect("book_detail", book_id=book.id)
     else:
-        form = BookForm(instance=book)
+        form = BookEditForm(instance=book)
     return render(request, "main/edit_book.html", {"form": form, "book": book})
 
 

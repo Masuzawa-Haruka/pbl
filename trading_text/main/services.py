@@ -1,4 +1,5 @@
 from django.db import transaction
+from django.db.models import F
 
 from .models import CancellationLog, Evaluation, UserProfile
 
@@ -21,6 +22,7 @@ def submit_evaluation(book, evaluator, target, evaluation_type):
     if evaluator == target:
         raise ValueError("自分自身は評価できません")
 
+    book = book.__class__.objects.select_for_update().get(id=book.id)
     evaluation, created = Evaluation.objects.get_or_create(
         book=book,
         evaluator=evaluator,
@@ -31,10 +33,10 @@ def submit_evaluation(book, evaluator, target, evaluation_type):
         },
     )
     if not created:
-        return evaluation
+        return evaluation, False
 
     _apply_evaluations_if_both_submitted(book)
-    return evaluation
+    return evaluation, True
 
 
 @transaction.atomic
@@ -51,8 +53,7 @@ def apply_cancellation(book, reporter, target, kind):
         score_change=score_change,
     )
     profile, _ = UserProfile.objects.get_or_create(user=target)
-    profile.credit_score += score_change
-    profile.save(update_fields=["credit_score"])
+    UserProfile.objects.filter(id=profile.id).update(credit_score=F("credit_score") + score_change)
     return log
 
 
@@ -60,27 +61,30 @@ def _apply_evaluations_if_both_submitted(book):
     if book.seller_id is None or book.buyer_id is None:
         return
 
-    seller_to_buyer = Evaluation.objects.filter(
+    pending_evaluations = Evaluation.objects.select_for_update().filter(
+        book=book,
+        is_applied=False,
+    )
+    seller_to_buyer = pending_evaluations.filter(
         book=book,
         evaluator=book.seller,
         target=book.buyer,
-        is_applied=False,
     ).first()
-    buyer_to_seller = Evaluation.objects.filter(
+    buyer_to_seller = pending_evaluations.filter(
         book=book,
         evaluator=book.buyer,
         target=book.seller,
-        is_applied=False,
     ).first()
     if not seller_to_buyer or not buyer_to_seller:
         return
 
     for evaluation in [seller_to_buyer, buyer_to_seller]:
         profile, _ = UserProfile.objects.get_or_create(user=evaluation.target)
-        profile.credit_score += evaluation.score_change
-        profile.save(update_fields=["credit_score"])
-        evaluation.is_applied = True
-        evaluation.save(update_fields=["is_applied"])
+        updated = Evaluation.objects.filter(id=evaluation.id, is_applied=False).update(is_applied=True)
+        if updated:
+            UserProfile.objects.filter(id=profile.id).update(
+                credit_score=F("credit_score") + evaluation.score_change
+            )
 
     book.status = "sold"
     book.save(update_fields=["status"])

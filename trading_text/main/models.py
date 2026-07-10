@@ -11,6 +11,7 @@ class UserProfile(models.Model):
     school_year = models.CharField(max_length=20, default="2年")
     rating = models.DecimalField(max_digits=2, decimal_places=1, default=4.8)
     credit_score = models.IntegerField(default=100)
+    supabase_user_id = models.CharField(max_length=80, blank=True, default="")
 
     def __str__(self):
         return self.display_name
@@ -88,6 +89,10 @@ class Book(models.Model):
 
     def __str__(self):
         return self.title
+
+    def refresh_likes_count(self):
+        self.likes_count = self.favorites.count()
+        self.save(update_fields=["likes_count"])
 
 
 class Favorite(models.Model):
