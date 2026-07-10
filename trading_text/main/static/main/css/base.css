@@ -42,3 +42,18 @@ body {
 a {
   color: inherit;
 }
+
+.flash-messages {
+  padding: 0 20px;
+}
+
+.flash-message {
+  margin: 8px 0;
+  padding: 10px 12px;
+  border: 1px solid #d9dfeb;
+  border-radius: 10px;
+  background: #f5f8ff;
+  color: #070d2f;
+  font-size: 13px;
+  font-weight: 700;
+}

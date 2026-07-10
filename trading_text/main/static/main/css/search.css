@@ -198,6 +198,12 @@
   word-break: keep-all;
 }
 
+.book-cover--image {
+  object-fit: cover;
+  padding-top: 0;
+  background: #f5f8ff;
+}
+
 .book-cover--blue {
   background: linear-gradient(#f4f2ee 0 44%, #26314d 44% 100%);
 }
@@ -257,6 +263,17 @@
   vertical-align: 1px;
 }
 
+.book-item__status {
+  display: inline-flex;
+  margin: 6px 0 0;
+  padding: 3px 8px;
+  border-radius: 999px;
+  color: #02830d;
+  background: #d9f7df;
+  font-size: 11px;
+  font-weight: 800;
+}
+
 .book-item__likes {
   align-self: end;
   margin: 0 0 12px;
@@ -272,6 +289,82 @@
   font-size: 14px;
   font-weight: 700;
   text-align: center;
+}
+
+.detail-page {
+  padding: 12px 20px 28px;
+}
+
+.detail-book {
+  display: grid;
+  grid-template-columns: 112px 1fr;
+  gap: 18px;
+  align-items: start;
+}
+
+.book-cover--detail {
+  width: 108px;
+  height: 142px;
+}
+
+.detail-book__title {
+  margin: 4px 0 8px;
+  color: #070d2f;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.detail-book__status {
+  display: inline-flex;
+  margin: 0;
+  padding: 4px 9px;
+  border-radius: 999px;
+  color: #02830d;
+  background: #d9f7df;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.detail-description {
+  margin: 18px 0 0;
+  padding: 14px;
+  border: 1px solid #d9dfeb;
+  border-radius: 12px;
+  color: #34394a;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.7;
+}
+
+.detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.detail-actions form {
+  margin: 0;
+}
+
+.detail-like {
+  cursor: pointer;
+}
+
+.detail-like--active {
+  color: #ffffff;
+  border-color: #0034b8;
+  background: #0034b8;
+}
+
+.detail-consult {
+  margin-top: 18px;
+}
+
+.detail-login-link {
+  margin-top: 18px;
+  text-decoration: none;
 }
 
 @media (max-width: 360px) {

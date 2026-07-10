@@ -1,0 +1,42 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}取引メッセージ | OU Textbook{% endblock %}
+{% block extra_style %}
+<link rel="stylesheet" href="{% static 'main/css/inbox.css' %}">
+<link rel="stylesheet" href="{% static 'main/css/listing_form.css' %}">
+{% endblock %}
+{% block header_title %}取引メッセージ{% endblock %}
+
+{% block content %}
+<section class="chat-page" aria-label="取引メッセージ">
+  <div class="chat-book">
+    <p class="inbox-thread__title">{{ book.title }}</p>
+    <p class="inbox-thread__meta">相手：{{ partner.profile.display_name|default:partner.email }}</p>
+  </div>
+
+  <div class="chat-messages">
+    {% for message in messages %}
+      <div class="chat-message{% if message.sender == user %} chat-message--me{% endif %}">
+        <p class="chat-message__sender">{{ message.sender.profile.display_name|default:message.sender.email }}</p>
+        <p class="chat-message__content">{{ message.content|linebreaksbr }}</p>
+      </div>
+    {% endfor %}
+  </div>
+
+  <form class="listing-form chat-form" method="post">
+    {% csrf_token %}
+    <label class="form-group">
+      <span class="form-label">メッセージを送信</span>
+      <textarea class="form-control form-textarea" name="content" required placeholder="メッセージを入力"></textarea>
+    </label>
+    <button class="submit-button" type="submit">送信</button>
+  </form>
+
+  <form class="detail-actions" action="{% url 'evaluate_trade' book.id %}" method="post">
+    {% csrf_token %}
+    <button class="chip chip--active" type="submit" name="evaluation_type" value="good">good +10</button>
+    <button class="chip chip--outline" type="submit" name="evaluation_type" value="bad">bad -10</button>
+  </form>
+</section>
+{% endblock %}

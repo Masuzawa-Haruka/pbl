@@ -8,7 +8,6 @@
 {% endblock %}
 
 {% block header %}{% endblock %}
-
 {% block footer %}{% endblock %}
 
 {% block content %}
@@ -19,34 +18,48 @@
       <p class="login-subtitle">大阪大学生専用</p>
       <p class="login-subtitle">参考書リユースアプリ</p>
     </div>
-    
+
     <div class="login-target-container">
-      <p class="login-target">大阪大学の学生（学部生・院生）のみ</p>
+      <p class="login-target">Supabase Authでメール認証済みの学生のみ</p>
       <p class="login-target">ご利用いただけます</p>
     </div>
-    
-    <h2 class="login-heading">ログイン方法を選択</h2>
-    
-    <a class="login-button" href="#">
-      <span class="login-button__icon">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-          <polyline points="22,6 12,13 2,6"></polyline>
-        </svg>
-      </span>
-      <span class="login-button__text">
-        大阪大学メールでログイン
-        <span class="login-button__subtext">(~@osaka-u.ac.jp)</span>
-      </span>
-    </a>
-    
+
+    <h2 class="login-heading">大阪大学メールでログイン</h2>
+
+    <form class="login-form" method="post">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+      <label class="login-field">
+        <span>メールアドレス</span>
+        <input type="email" name="email" value="{{ form.email.value|default:'' }}" placeholder="name@ecs.osaka-u.ac.jp" required>
+        {{ form.email.errors }}
+      </label>
+      <label class="login-field">
+        <span>パスワード</span>
+        <input type="password" name="password" required>
+        {{ form.password.errors }}
+      </label>
+      <button class="login-button login-button--submit" type="submit">
+        <span class="login-button__icon">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+            <polyline points="22,6 12,13 2,6"></polyline>
+          </svg>
+        </span>
+        <span class="login-button__text">
+          ログイン
+          <span class="login-button__subtext">@ecs.osaka-u.ac.jp のみ</span>
+        </span>
+      </button>
+    </form>
+
     <p class="login-warning">※ 学生情報は認証のみに使用されます</p>
-    
+
     <hr class="login-divider">
-    
+
     <div class="login-signup-guide">
       <p class="login-signup-guide__text">アカウントをお持ちでない方はこちら</p>
-      <a class="login-signup-guide__link" href="#">新規登録（大阪大学生のみ）</a>
+      <a class="login-signup-guide__link" href="{% url 'signup' %}">新規登録（大阪大学生のみ）</a>
     </div>
   </div>
 </section>

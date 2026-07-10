@@ -1,0 +1,15 @@
+{% extends 'main/login.html' %}
+
+{% block title %}認証エラー | OU Textbook{% endblock %}
+
+{% block content %}
+<section class="login-page">
+  <div class="login-card">
+    <h1 class="login-logo">OU Textbook</h1>
+    <p class="login-subtitle">認証リンクが無効です。</p>
+    <p class="login-target">リンクの期限切れ、または既に使用済みの可能性があります。</p>
+    <hr class="login-divider">
+    <a class="login-signup-guide__link" href="{% url 'signup' %}">新規登録をやり直す</a>
+  </div>
+</section>
+{% endblock %}

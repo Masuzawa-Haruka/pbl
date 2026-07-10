@@ -1,0 +1,56 @@
+import json
+from urllib.error import HTTPError, URLError
+from urllib.request import Request, urlopen
+
+from django.conf import settings
+
+
+class SupabaseAuthError(Exception):
+    pass
+
+
+def is_configured():
+    return bool(settings.SUPABASE_URL and settings.SUPABASE_ANON_KEY)
+
+
+def _request(path, payload):
+    if not is_configured():
+        raise SupabaseAuthError("Supabase Auth の環境変数が未設定です。")
+
+    body = json.dumps(payload).encode("utf-8")
+    request = Request(
+        f"{settings.SUPABASE_URL}/auth/v1/{path}",
+        data=body,
+        headers={
+            "apikey": settings.SUPABASE_ANON_KEY,
+            "Authorization": f"Bearer {settings.SUPABASE_ANON_KEY}",
+            "Content-Type": "application/json",
+        },
+        method="POST",
+    )
+    try:
+        with urlopen(request, timeout=10) as response:
+            return json.loads(response.read().decode("utf-8"))
+    except HTTPError as error:
+        try:
+            detail = json.loads(error.read().decode("utf-8"))
+        except json.JSONDecodeError:
+            detail = {}
+        message = detail.get("msg") or detail.get("message") or "Supabase Auth で認証に失敗しました。"
+        raise SupabaseAuthError(message) from error
+    except URLError as error:
+        raise SupabaseAuthError("Supabase Auth に接続できませんでした。") from error
+
+
+def sign_up(email, password, redirect_to=None):
+    payload = {
+        "email": email,
+        "password": password,
+    }
+    if redirect_to:
+        payload["options"] = {"email_redirect_to": redirect_to}
+    return _request("signup", payload)
+
+
+def sign_in_with_password(email, password):
+    return _request("token?grant_type=password", {"email": email, "password": password})

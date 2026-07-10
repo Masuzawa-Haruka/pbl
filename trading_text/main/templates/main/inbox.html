@@ -2,119 +2,33 @@
 {% load static %}
 
 {% block title %}受信箱 | OU Textbook{% endblock %}
-
 {% block extra_style %}
 <link rel="stylesheet" href="{% static 'main/css/inbox.css' %}">
+<link rel="stylesheet" href="{% static 'main/css/search.css' %}">
 {% endblock %}
-
-{% block header %}
-<header class="header">
-  <button class="header__btn" type="button" aria-label="メニュー">
-    <svg viewBox="0 0 24 24" aria-hidden="true" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-  </button>
-  <div class="header__title">受信箱</div>
-  <button class="header__btn" type="button" aria-label="その他の操作">
-    <svg viewBox="0 0 24 24" aria-hidden="true" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
-  </button>
-</header>
-{% endblock %}
+{% block header_title %}受信箱{% endblock %}
 
 {% block content %}
-<div class="inbox">
-  <div class="inbox__tabs">
-    <button class="inbox__tab inbox__tab--active" type="button">すべて</button>
-    <button class="inbox__tab" type="button">取引中</button>
-    <button class="inbox__tab" type="button">お知らせ</button>
-  </div>
-
-  <div class="inbox__list">
-    <a href="#" class="inbox-item">
-      <div class="inbox-item__avatar bg-blue">
-        <span>山</span>
+<section class="placeholder-page placeholder-page--inbox" aria-label="受信箱">
+  {% for thread in threads %}
+    <a class="inbox-thread" href="{% url 'chat' thread.book.id %}">
+      <div>
+        <p class="inbox-thread__title">{{ thread.book.title }}</p>
+        <p class="inbox-thread__meta">
+          {% if thread.sender == user %}
+            {{ thread.receiver.profile.display_name|default:"取引相手" }}
+          {% else %}
+            {{ thread.sender.profile.display_name|default:"取引相手" }}
+          {% endif %}
+        </p>
+        <p class="inbox-thread__message">{{ thread.content }}</p>
       </div>
-      <div class="inbox-item__content">
-        <div class="inbox-item__header">
-          <span class="inbox-item__name">山田 花子</span>
-          <span class="inbox-item__tag inbox-item__tag--trading">取引中</span>
-        </div>
-        <div class="inbox-item__book">基礎からの線形代数 第2版</div>
-        <div class="inbox-item__preview">こんにちは！購入希望です。まだ購入可能でしょうか？</div>
-      </div>
-      <div class="inbox-item__meta">
-        <span class="inbox-item__time">10:30</span>
-        <svg class="inbox-item__arrow" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-      </div>
+      <span class="placeholder-page__arrow">›</span>
     </a>
-
-    <a href="#" class="inbox-item">
-      <div class="inbox-item__avatar bg-orange">
-        <span>佐</span>
-      </div>
-      <div class="inbox-item__content">
-        <div class="inbox-item__header">
-          <span class="inbox-item__name">佐藤 健太</span>
-          <span class="inbox-item__tag inbox-item__tag--trading">取引中</span>
-        </div>
-        <div class="inbox-item__book">ミクロ経済学の基礎</div>
-        <div class="inbox-item__preview">ありがとうございます！では、明日の午後に...</div>
-      </div>
-      <div class="inbox-item__meta">
-        <span class="inbox-item__time">昨日</span>
-        <svg class="inbox-item__arrow" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-      </div>
-    </a>
-
-    <a href="#" class="inbox-item">
-      <div class="inbox-item__avatar bg-gray">
-        <span>OU</span>
-      </div>
-      <div class="inbox-item__content">
-        <div class="inbox-item__header">
-          <span class="inbox-item__name">OU Textbook運営</span>
-          <span class="inbox-item__tag inbox-item__tag--notice">お知らせ</span>
-        </div>
-        <div class="inbox-item__book">サービスメンテナンスのお知らせ</div>
-        <div class="inbox-item__preview">いつもOU Textbookをご利用いただき...</div>
-      </div>
-      <div class="inbox-item__meta">
-        <span class="inbox-item__time">2日前</span>
-        <svg class="inbox-item__arrow" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-      </div>
-    </a>
-
-    <a href="#" class="inbox-item">
-      <div class="inbox-item__avatar bg-green">
-        <span>田</span>
-      </div>
-      <div class="inbox-item__content">
-        <div class="inbox-item__header">
-          <span class="inbox-item__name">田中 一郎</span>
-        </div>
-        <div class="inbox-item__book">化学の新研究</div>
-        <div class="inbox-item__preview">コメントありがとうございます。もう少し...</div>
-      </div>
-      <div class="inbox-item__meta">
-        <span class="inbox-item__time">3日前</span>
-        <svg class="inbox-item__arrow" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-      </div>
-    </a>
-
-    <a href="#" class="inbox-item">
-      <div class="inbox-item__avatar bg-pink">
-        <span>鈴</span>
-      </div>
-      <div class="inbox-item__content">
-        <div class="inbox-item__header">
-          <span class="inbox-item__name">鈴木 美咲</span>
-        </div>
-        <div class="inbox-item__book">基礎からの微積分</div>
-        <div class="inbox-item__preview">購入を検討しています。状態について教えて...</div>
-      </div>
-      <div class="inbox-item__meta">
-        <span class="inbox-item__time">5日前</span>
-        <svg class="inbox-item__arrow" viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
-      </div>
-    </a>
-  </div>
-</div>
+  {% empty %}
+    <p class="placeholder-page__label">Message</p>
+    <h1 class="placeholder-page__title">受信箱</h1>
+    <p class="placeholder-page__text">まだ購入相談メッセージはありません。</p>
+  {% endfor %}
+</section>
 {% endblock %}

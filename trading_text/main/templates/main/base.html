@@ -19,6 +19,13 @@
     {% endblock %}
 
     <main class="main">
+      {% if messages %}
+        <div class="flash-messages" aria-live="polite">
+          {% for message in messages %}
+            <p class="flash-message flash-message--{{ message.tags }}">{{ message }}</p>
+          {% endfor %}
+        </div>
+      {% endif %}
       {% block content %}{% endblock %}
     </main>
 

@@ -1,0 +1,33 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}プロフィール編集 | OU Textbook{% endblock %}
+{% block extra_style %}
+<link rel="stylesheet" href="{% static 'main/css/listing_form.css' %}">
+{% endblock %}
+{% block header_title %}プロフィール編集{% endblock %}
+
+{% block content %}
+<section class="listing-form-container" aria-label="プロフィール編集">
+  <form class="listing-form" method="post">
+    {% csrf_token %}
+    <label class="form-group">
+      <span class="form-label">名前</span>
+      <input class="form-control" type="text" name="display_name" value="{{ form.display_name.value|default:'' }}" required>
+    </label>
+    <label class="form-group">
+      <span class="form-label">大学</span>
+      <input class="form-control" type="text" name="university" value="{{ form.university.value|default:'' }}" required>
+    </label>
+    <label class="form-group">
+      <span class="form-label">学部・学科</span>
+      <input class="form-control" type="text" name="faculty" value="{{ form.faculty.value|default:'' }}" required>
+    </label>
+    <label class="form-group">
+      <span class="form-label">学年</span>
+      <input class="form-control" type="text" name="school_year" value="{{ form.school_year.value|default:'' }}" required>
+    </label>
+    <button class="submit-button" type="submit">保存</button>
+  </form>
+</section>
+{% endblock %}

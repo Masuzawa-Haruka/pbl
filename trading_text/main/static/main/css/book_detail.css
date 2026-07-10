@@ -1,9 +1,11 @@
-/* header 上書き用 */
 .detail-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 20px;
+  max-width: 430px;
+  min-height: 44px;
+  margin: 0 auto;
+  padding: 12px 20px 4px;
   background-color: #fff;
 }
 
@@ -18,29 +20,43 @@
   justify-content: center;
 }
 
-/* メインコンテンツエリア */
+.book-detail-page {
+  padding-bottom: 168px;
+}
+
 .book-image-container {
-  background-color: #f8f8f8;
-  padding: 40px 0 20px;
+  min-height: 316px;
+  background-color: #f7f7f7;
+  padding: 38px 0 26px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
+}
+
+.book-image-placeholder,
+.book-image-photo {
+  width: 198px;
+  height: 278px;
+  box-shadow: 0 8px 16px rgba(7, 13, 47, 0.16);
+  border: 1px solid #d8d8d8;
 }
 
 .book-image-placeholder {
-  width: 200px;
-  height: 280px;
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding: 28px 18px;
-  color: #111827;
-  font-size: 18px;
+  padding: 30px 18px;
+  color: #101827;
+  font-size: 19px;
   font-weight: 800;
   line-height: 1.35;
   text-align: center;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  border: 1px solid #ddd;
+}
+
+.book-image-photo {
+  object-fit: cover;
+  background: #ffffff;
 }
 
 .book-image-placeholder--blue {
@@ -59,37 +75,58 @@
   background: linear-gradient(#f7f7f7 0 45%, #d7d1ef 45% 100%);
 }
 
-
-.dot.active {
-  background-color: #0033a0; /* OUブルー */
+.book-info {
+  padding: 26px 22px 0;
+  background-color: #fff;
 }
 
-/* 本の情報 */
-.book-info {
-  padding: 24px 20px;
-  background-color: #fff;
-  padding-bottom: 120px; /* 下部ボタンのスペース確保 */
+.book-status-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.status-label {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  color: #02830d;
+  background: #d9f7df;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.edit-link {
+  color: #0034b8;
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
 }
 
 .book-title {
-  font-size: 20px;
-  font-weight: 700;
+  font-size: 22px;
+  font-weight: 800;
   color: #111;
-  margin: 0 0 12px 0;
+  margin: 0 0 14px;
   line-height: 1.4;
 }
 
 .book-author {
-  font-size: 15px;
+  font-size: 16px;
   color: #333;
-  margin: 0 0 20px 0;
+  margin: 0 0 24px;
+  font-weight: 700;
 }
 
-/* タグ */
 .tags {
   display: flex;
+  flex-wrap: wrap;
   gap: 12px;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
 }
 
 .tag {
@@ -100,29 +137,28 @@
   border: 1px solid #e0e0e0;
   border-radius: 20px;
   padding: 6px 12px;
-  font-size: 13px;
+  font-size: 14px;
   color: #333;
+  font-weight: 700;
 }
 
-/* 価格 */
 .book-price {
-  margin-bottom: 20px;
+  margin-bottom: 26px;
 }
 
 .price-number {
-  font-size: 32px;
-  font-weight: 700;
-  color: #e60012; /* 赤 */
+  font-size: 36px;
+  font-weight: 900;
+  color: #e60012;
 }
 
 .price-unit {
-  font-size: 16px;
-  font-weight: 700;
+  font-size: 18px;
+  font-weight: 900;
   color: #e60012;
   margin-left: 2px;
 }
 
-/* 説明文 */
 .book-description {
   font-size: 14px;
   color: #333;
@@ -130,37 +166,62 @@
   margin-bottom: 32px;
 }
 
-/* いいね */
 .likes-container {
   display: flex;
   justify-content: flex-end;
   align-items: center;
+  min-height: 68px;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.likes-container form {
+  margin: 0;
+}
+
+.like-button {
+  display: inline-flex;
+  align-items: center;
   gap: 6px;
+  border: 0;
+  padding: 0;
   color: #555;
-  font-size: 14px;
+  background: transparent;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.like-button--active {
+  color: #0034b8;
 }
 
 .heart-icon {
-  color: #333;
+  color: currentColor;
 }
 
-/* 下部固定ボタン */
 .bottom-action-bar {
   position: fixed;
-  bottom: 0;
+  bottom: 70px;
   left: 50%;
   transform: translateX(-50%);
   width: 100%;
-  max-width: 430px; /* base.cssに準拠 */
+  max-width: 430px;
   background-color: #fff;
-  padding: 16px 20px 32px;
-  border-top: 1px solid #eee;
+  padding: 14px 20px 12px;
+  border-top: 1px solid #eeeeee;
+  z-index: 90;
+}
+
+.bottom-action-bar form {
+  margin: 0;
 }
 
 .contact-btn {
   display: block;
   width: 100%;
-  background-color: #0033a0;
+  background-color: #0034b8;
   color: #fff;
   font-size: 16px;
   font-weight: 700;
@@ -170,4 +231,30 @@
   cursor: pointer;
   text-align: center;
   text-decoration: none;
+}
+
+.contact-btn--secondary {
+  color: #0034b8;
+  border: 1px solid #0034b8;
+  background: #ffffff;
+}
+
+@media (max-width: 360px) {
+  .book-image-container {
+    min-height: 292px;
+  }
+
+  .book-image-placeholder,
+  .book-image-photo {
+    width: 178px;
+    height: 252px;
+  }
+
+  .book-title {
+    font-size: 20px;
+  }
+
+  .price-number {
+    font-size: 32px;
+  }
 }
