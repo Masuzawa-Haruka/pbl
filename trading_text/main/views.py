@@ -77,7 +77,9 @@ def get_search_context(request):
 
 
 def index(request):
-    return render(request, "main/search.html", get_search_context(request))
+    if request.user.is_authenticated:
+        return redirect("search")
+    return redirect("login")
 
 
 def search(request):

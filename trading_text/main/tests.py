@@ -12,6 +12,23 @@ from .views import sync_supabase_user
 
 
 class AuthFormTests(TestCase):
+    def test_root_redirects_to_login_when_anonymous(self):
+        response = self.client.get(reverse("index"))
+
+        self.assertRedirects(response, reverse("login"))
+
+    def test_root_redirects_to_search_when_authenticated(self):
+        user = User.objects.create_user(
+            username="root@ecs.osaka-u.ac.jp",
+            email="root@ecs.osaka-u.ac.jp",
+            password="password12345",
+        )
+        self.client.login(username=user.username, password="password12345")
+
+        response = self.client.get(reverse("index"))
+
+        self.assertRedirects(response, reverse("search"))
+
     def test_signup_requires_ecs_email(self):
         form = EcsUserCreationForm(
             data={
