@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: ou-textbook
+    runtime: python
+    rootDir: trading_text
+    buildCommand: ./build.sh
+    startCommand: python -m gunicorn trading_text.wsgi:application
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.14.3
+      - key: DEBUG
+        value: "False"
+      - key: SECRET_KEY
+        generateValue: true
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        sync: false
+      - key: DATABASE_URL
+        sync: false

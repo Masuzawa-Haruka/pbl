@@ -90,3 +90,88 @@ python manage.py runserver
 ## メモ
 
 `manage.py` は `trading_text` フォルダの中にあるため、サーバー起動前に `cd trading_text` してください。
+
+## Renderへのデプロイ
+
+このリポジトリではDjangoプロジェクトが `trading_text/` の中にあるため、RenderのRoot Directoryは `trading_text` にします。
+
+### 1. GitHubへpush
+
+```bash
+cd /Users/haruk/prog/pbl
+git add .
+git commit -m "Prepare Render deployment"
+git push origin main
+```
+
+### 2. RenderでWeb Serviceを作成
+
+Render Dashboardで次の順番に進みます。
+
+```txt
+New
+Web Service
+GitHubリポジトリを選択
+```
+
+設定値は次にします。
+
+```txt
+Language: Python 3
+Branch: main
+Root Directory: trading_text
+Build Command: ./build.sh
+Start Command: python -m gunicorn trading_text.wsgi:application
+```
+
+`render.yaml` を使う場合は、RenderのBlueprintからこのリポジトリを選んでも同じ構成で作成できます。
+
+### 3. RenderのEnvironment Variablesを設定
+
+最低限、次を設定します。
+
+```txt
+DEBUG=False
+SECRET_KEY=RenderのGenerateで作成
+SUPABASE_URL=SupabaseのProject URL
+SUPABASE_ANON_KEY=Supabaseのanon public key
+```
+
+本番でデータを消したくない場合は、次も設定します。
+
+```txt
+DATABASE_URL=Supabase PostgresまたはRender Postgresの接続URL
+```
+
+Supabase Postgresを使う場合は、接続URLの末尾に `?sslmode=require` を付けます。
+
+`DATABASE_URL` を設定しない場合、Render上ではSQLiteで動きます。ただしRenderのファイルシステムは永続DB向きではないため、再デプロイや再起動でデータが消える可能性があります。発表用に画面だけ見せる程度ならSQLiteでも確認できますが、継続利用するならPostgreSQLを使ってください。
+
+### 4. Supabase AuthのURL設定
+
+RenderのデプロイURLが発行されたら、Supabase Dashboardで次を設定します。
+
+```txt
+Authentication
+URL Configuration
+Site URL: https://作成したRender名.onrender.com/login/
+Redirect URLs: https://作成したRender名.onrender.com/login/
+```
+
+ローカルでも使う場合は、Redirect URLsにこれも残します。
+
+```txt
+http://127.0.0.1:8000/login/
+```
+
+### 5. デプロイ確認
+
+RenderのDeploy Logsで次が成功していることを確認します。
+
+```txt
+python manage.py collectstatic --no-input
+python manage.py migrate
+python -m gunicorn trading_text.wsgi:application
+```
+
+公開URLを開いてログイン画面が表示されればOKです。
