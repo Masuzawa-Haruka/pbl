@@ -10,7 +10,7 @@ from django.urls import reverse
 
 from .forms import BookEditForm, BookForm, EcsLoginForm, EcsUserCreationForm, MessageForm, ProfileForm
 from .models import Book, Favorite, Message, UserProfile
-from .services import submit_evaluation
+from .services import apply_cancellation, submit_evaluation
 from .supabase_auth import SupabaseAuthError, is_configured as supabase_is_configured
 from .supabase_auth import sign_in_with_password, sign_up
 
@@ -317,6 +317,29 @@ def evaluate_trade(request, book_id):
         except ValueError as error:
             messages.error(request, str(error))
     return redirect("chat", book_id=book.id)
+
+
+@login_required
+def cancel_trade(request, book_id):
+    book = get_object_or_404(Book.objects.select_related("seller", "buyer"), id=book_id)
+    if request.user not in [book.seller, book.buyer] or book.buyer is None:
+        messages.error(request, "この取引はキャンセルできません。")
+        return redirect("inbox")
+    if request.method != "POST":
+        return redirect("chat", book_id=book.id)
+
+    kind = request.POST.get("kind")
+    target = request.user if kind == "cancel" else (book.buyer if request.user == book.seller else book.seller)
+    try:
+        _log, created = apply_cancellation(book, request.user, target, kind)
+    except ValueError as error:
+        messages.error(request, str(error))
+    else:
+        if created:
+            messages.success(request, "取引を解除し、出品を再開しました。")
+        else:
+            messages.info(request, "この内容はすでに報告済みです。")
+    return redirect("book_detail", book_id=book.id)
 
 
 @login_required

@@ -12,9 +12,9 @@
   <div class="placeholder-page__profile">
     <div class="placeholder-page__profile_icon" aria-hidden="true"></div>
     <div class="placeholder-page__profile_text">
-      <span>{{ profile.display_name }}</span>
-      <span>{{ profile.university }} 学生</span>
-      <span>{{ profile.faculty }} {{ profile.school_year }}</span>
+      <span>{{ profile.display_name|default:user.email }}</span>
+      {% if profile.university %}<span>{{ profile.university }} 学生</span>{% endif %}
+      {% if profile.faculty or profile.school_year %}<span>{{ profile.faculty }} {{ profile.school_year }}</span>{% endif %}
     </div>
     <a class="placeholder-page__profileedit" href="{% url 'edit_profile' %}">編集</a>
   </div>

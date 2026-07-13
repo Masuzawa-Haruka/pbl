@@ -249,6 +249,31 @@
   line-height: 1.55;
 }
 
+.trade-actions {
+  margin-top: 22px;
+  padding: 16px;
+  border-top: 1px solid #d9dfeb;
+}
+
+.trade-actions h2 {
+  margin: 0 0 8px;
+  color: #070d2f;
+  font-size: 15px;
+}
+
+.trade-actions p {
+  margin: 0 0 10px;
+  color: #596173;
+  font-size: 13px;
+}
+
+.trade-actions .detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 18px;
+}
+
 .chat-message__sender {
   color: #0034b8;
 }
