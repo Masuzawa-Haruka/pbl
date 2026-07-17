@@ -32,7 +32,7 @@
 
   <div class="book-info">
     <div class="book-status-row">
-      <span class="status-label">{{ book.get_status_display }}</span>
+      <span class="status-label status-label--{{ book.status }}">{{ book.get_status_display }}</span>
       {% if user == book.seller %}
         <a class="edit-link" href="{% url 'edit_book' book.id %}">編集</a>
       {% endif %}
@@ -97,7 +97,6 @@
   {% if user.is_authenticated and user != book.seller %}
     <form action="{% url 'start_consultation' book.id %}" method="post">
       {% csrf_token %}
-      <input type="hidden" name="content" value="購入希望です。受け渡し場所を相談したいです。">
       <button class="contact-btn" type="submit">購入相談する</button>
     </form>
   {% elif not user.is_authenticated %}

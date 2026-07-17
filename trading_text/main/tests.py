@@ -1,15 +1,17 @@
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from django.contrib.auth.models import User
+from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import TestCase, override_settings
+from django.test import SimpleTestCase, TestCase, override_settings
 from django.urls import reverse
 
 from .forms import EcsUserCreationForm
 from .models import Book, Favorite, Message, UserProfile
 from .services import apply_cancellation, submit_evaluation
+from .storage import SupabaseStorage
 from .views import sync_supabase_user
 
 
@@ -184,7 +186,7 @@ class TradeFlowTests(TestCase):
         self.assertEqual(self.book.likes_count, 0)
         self.assertFalse(Favorite.objects.filter(user=self.buyer, book=self.book).exists())
 
-    def test_consultation_creates_message_and_marks_book_in_progress(self):
+    def test_consultation_opens_chat_without_sending_message(self):
         self.client.login(username="buyer@ecs.osaka-u.ac.jp", password="password12345")
 
         response = self.client.post(
@@ -194,23 +196,25 @@ class TradeFlowTests(TestCase):
 
         self.book.refresh_from_db()
         self.assertRedirects(response, reverse("chat", args=[self.book.id]))
-        self.assertEqual(self.book.status, "in_progress")
-        self.assertEqual(self.book.buyer, self.buyer)
-        self.assertTrue(Message.objects.filter(book=self.book, sender=self.buyer, receiver=self.seller).exists())
+        self.assertEqual(self.book.status, "available")
+        self.assertIsNone(self.book.buyer)
+        self.assertFalse(Message.objects.filter(book=self.book).exists())
 
-    def test_second_buyer_cannot_consult_existing_thread(self):
+    def test_second_buyer_can_send_a_separate_consultation(self):
         self.book.buyer = self.buyer
         self.book.status = "in_progress"
         self.book.save(update_fields=["buyer", "status"])
         self.client.login(username="other@ecs.osaka-u.ac.jp", password="password12345")
 
-        response = self.client.post(
-            reverse("start_consultation", args=[self.book.id]),
-            {"content": "購入したいです。"},
-        )
+        response = self.client.post(reverse("start_consultation", args=[self.book.id]))
+        self.assertRedirects(response, reverse("chat", args=[self.book.id]))
 
-        self.assertRedirects(response, reverse("book_detail", args=[self.book.id]))
-        self.assertFalse(Message.objects.filter(book=self.book, sender=self.other_buyer).exists())
+        response = self.client.post(reverse("chat", args=[self.book.id]), {"content": "横取り相談です。"})
+
+        self.assertRedirects(response, reverse("chat", args=[self.book.id]))
+        self.book.refresh_from_db()
+        self.assertEqual(self.book.buyer, self.buyer)
+        self.assertTrue(Message.objects.filter(book=self.book, sender=self.other_buyer).exists())
 
     def test_sold_book_cannot_be_consulted(self):
         self.book.status = "sold"
@@ -225,16 +229,24 @@ class TradeFlowTests(TestCase):
         self.assertRedirects(response, reverse("book_detail", args=[self.book.id]))
         self.assertFalse(Message.objects.filter(book=self.book, sender=self.buyer).exists())
 
-    def test_unauthorized_user_cannot_post_chat_message(self):
+    def test_parallel_buyer_only_sees_their_own_thread(self):
         self.book.buyer = self.buyer
         self.book.status = "in_progress"
         self.book.save(update_fields=["buyer", "status"])
+        Message.objects.create(
+            book=self.book,
+            sender=self.buyer,
+            receiver=self.seller,
+            content="最初の購入者の相談です。",
+        )
         self.client.login(username="other@ecs.osaka-u.ac.jp", password="password12345")
 
         response = self.client.post(reverse("chat", args=[self.book.id]), {"content": "割り込みます。"})
 
-        self.assertRedirects(response, reverse("inbox"))
-        self.assertFalse(Message.objects.filter(book=self.book, sender=self.other_buyer).exists())
+        self.assertRedirects(response, reverse("chat", args=[self.book.id]))
+        response = self.client.get(reverse("chat", args=[self.book.id]))
+        self.assertContains(response, "割り込みます。")
+        self.assertNotContains(response, "最初の購入者の相談です。")
 
     def test_evaluation_applies_after_both_sides_submit(self):
         self.book.buyer = self.buyer
@@ -349,3 +361,28 @@ class MediaDeliveryTests(TestCase):
 
                 self.assertEqual(response.status_code, 200)
                 self.assertEqual(b"".join(response.streaming_content), b"\x89PNG\r\n\x1a\nimage-content")
+
+
+@override_settings(
+    SUPABASE_URL="https://project.supabase.co",
+    SUPABASE_STORAGE_BUCKET="book-images",
+    SUPABASE_STORAGE_KEY="server-secret",
+)
+class SupabaseStorageTests(SimpleTestCase):
+    @patch("main.storage.urlopen")
+    def test_saves_to_storage_and_returns_public_url(self, mock_urlopen):
+        mock_urlopen.return_value = MagicMock(__enter__=MagicMock(), __exit__=MagicMock())
+        storage = SupabaseStorage()
+
+        saved_name = storage._save("book_images/表紙.png", ContentFile(b"image"))
+
+        request = mock_urlopen.call_args.args[0]
+        self.assertEqual(saved_name, "book_images/表紙.png")
+        self.assertEqual(
+            request.full_url,
+            "https://project.supabase.co/storage/v1/object/book-images/book_images/%E8%A1%A8%E7%B4%99.png",
+        )
+        self.assertEqual(
+            storage.url(saved_name),
+            "https://project.supabase.co/storage/v1/object/public/book-images/book_images/%E8%A1%A8%E7%B4%99.png",
+        )

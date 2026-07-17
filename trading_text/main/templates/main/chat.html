@@ -12,20 +12,23 @@
 <section class="chat-page" aria-label="取引メッセージ">
   <div class="chat-book">
     <p class="inbox-thread__title">{{ book.title }}</p>
-    <p class="inbox-thread__meta">相手：{{ partner.profile.display_name|default:partner.email }}</p>
+    <p class="inbox-thread__meta">相手：{{ partner.profile.display_name|default:"取引相手" }}</p>
   </div>
 
   <div class="chat-messages">
-    {% for message in messages %}
+    {% for message in chat_messages %}
       <div class="chat-message{% if message.sender == user %} chat-message--me{% endif %}">
-        <p class="chat-message__sender">{{ message.sender.profile.display_name|default:message.sender.email }}</p>
+        <p class="chat-message__sender">{{ message.sender.profile.display_name|default:"取引相手" }}</p>
         <p class="chat-message__content">{{ message.content|linebreaksbr }}</p>
       </div>
+    {% empty %}
+      <p class="inbox-thread__meta">まだメッセージはありません。</p>
     {% endfor %}
   </div>
 
   <form class="listing-form chat-form" method="post">
     {% csrf_token %}
+    {% if is_seller %}<input type="hidden" name="partner" value="{{ partner.id }}">{% endif %}
     <label class="form-group">
       <span class="form-label">メッセージを送信</span>
       <textarea class="form-control form-textarea" name="content" required placeholder="メッセージを入力"></textarea>
@@ -33,7 +36,7 @@
     <button class="submit-button" type="submit">送信</button>
   </form>
 
-  {% if book.status == 'in_progress' %}
+  {% if can_manage_trade %}
     <section class="trade-actions" aria-label="取引を完了または解除する">
       <h2>取引完了後の評価</h2>
       <form class="detail-actions" action="{% url 'evaluate_trade' book.id %}" method="post">

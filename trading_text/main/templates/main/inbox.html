@@ -11,17 +11,11 @@
 {% block content %}
 <section class="placeholder-page placeholder-page--inbox" aria-label="受信箱">
   {% for thread in threads %}
-    <a class="inbox-thread" href="{% url 'chat' thread.book.id %}">
+    <a class="inbox-thread" href="{{ thread.chat_url }}">
       <div>
         <p class="inbox-thread__title">{{ thread.book.title }}</p>
-        <p class="inbox-thread__meta">
-          {% if thread.sender == user %}
-            {{ thread.receiver.profile.display_name|default:"取引相手" }}
-          {% else %}
-            {{ thread.sender.profile.display_name|default:"取引相手" }}
-          {% endif %}
-        </p>
-        <p class="inbox-thread__message">{{ thread.content }}</p>
+        <p class="inbox-thread__meta">{{ thread.other_user.profile.display_name|default:"取引相手" }}</p>
+        <p class="inbox-thread__message">{{ thread.message.content }}</p>
       </div>
       <span class="placeholder-page__arrow">›</span>
     </a>

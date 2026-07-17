@@ -142,11 +142,24 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
+SUPABASE_URL = os.environ.get('SUPABASE_URL', '').rstrip('/')
+SUPABASE_ANON_KEY = os.environ.get('SUPABASE_ANON_KEY', '')
+SUPABASE_STORAGE_BUCKET = os.environ.get('SUPABASE_STORAGE_BUCKET', '')
+SUPABASE_STORAGE_KEY = (
+    os.environ.get('SUPABASE_SECRET_KEY', '')
+    or os.environ.get('SUPABASE_SERVICE_ROLE_KEY', '')
+)
+
 STORAGES = {
     'default': {
         'BACKEND': 'django.core.files.storage.FileSystemStorage',
     },
 }
+
+if SUPABASE_URL and SUPABASE_STORAGE_BUCKET and SUPABASE_STORAGE_KEY:
+    STORAGES['default'] = {
+        'BACKEND': 'main.storage.SupabaseStorage',
+    }
 
 if not DEBUG:
     STORAGES['staticfiles'] = {
@@ -175,6 +188,3 @@ DEFAULT_FROM_EMAIL = os.environ.get(
     'DEFAULT_FROM_EMAIL',
     f'OU Textbook <{EMAIL_HOST_USER}>' if EMAIL_HOST_USER else 'OU Textbook <noreply@example.com>',
 )
-
-SUPABASE_URL = os.environ.get('SUPABASE_URL', '').rstrip('/')
-SUPABASE_ANON_KEY = os.environ.get('SUPABASE_ANON_KEY', '')

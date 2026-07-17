@@ -160,9 +160,13 @@ def listing_form(request):
             book.seller = request.user
             book.status = "available"
             book.buyer = None
-            book.save()
-            messages.success(request, "出品しました。")
-            return redirect("book_detail", book_id=book.id)
+            try:
+                book.save()
+            except OSError as error:
+                form.add_error("image", str(error))
+            else:
+                messages.success(request, "出品しました。")
+                return redirect("book_detail", book_id=book.id)
     else:
         form = BookForm(initial={"status": "available"})
 
@@ -225,26 +229,8 @@ def start_consultation(request, book_id):
     if book.status == "sold":
         messages.error(request, "売却済みの出品には購入相談できません。")
         return redirect("book_detail", book_id=book.id)
-    if book.buyer_id is not None and book.buyer != request.user:
-        messages.error(request, "この出品は既に別の購入希望者と取引中です。")
-        return redirect("book_detail", book_id=book.id)
-
     if request.method == "POST":
-        form = MessageForm(request.POST)
-        if form.is_valid():
-            Message.objects.create(
-                book=book,
-                sender=request.user,
-                receiver=book.seller,
-                content=form.cleaned_data["content"],
-            )
-            if book.status == "available":
-                book.status = "in_progress"
-            if book.buyer_id is None:
-                book.buyer = request.user
-            book.save(update_fields=["status", "buyer"])
-            messages.success(request, "購入相談を送信しました。")
-            return redirect("chat", book_id=book.id)
+        return redirect("chat", book_id=book.id)
 
     return redirect("book_detail", book_id=book.id)
 
@@ -259,21 +245,48 @@ def inbox(request):
     threads = {}
     for message in messages_qs:
         other_user = message.receiver if message.sender == request.user else message.sender
-        threads.setdefault((message.book_id, other_user.id), message)
+        key = (message.book_id, other_user.id)
+        if key not in threads:
+            chat_url = reverse("chat", kwargs={"book_id": message.book_id})
+            if request.user == message.book.seller:
+                chat_url = f"{chat_url}?partner={other_user.id}"
+            threads[key] = {
+                "book": message.book,
+                "other_user": other_user,
+                "message": message,
+                "chat_url": chat_url,
+            }
     return render(request, "main/inbox.html", {"threads": threads.values()})
 
 
 @login_required
 def chat(request, book_id):
     book = get_object_or_404(Book.objects.select_related("seller", "buyer"), id=book_id)
-    if request.user not in [book.seller, book.buyer]:
-        messages.error(request, "この取引メッセージは閲覧できません。")
-        return redirect("inbox")
+    is_seller = request.user == book.seller
+    if is_seller:
+        partner_id = request.POST.get("partner") or request.GET.get("partner") or book.buyer_id
+        if partner_id is None:
+            messages.error(request, "取引相手がまだ設定されていません。")
+            return redirect("inbox")
+        partner = get_object_or_404(User, id=partner_id)
+        has_thread = Message.objects.filter(book=book).filter(
+            Q(sender=book.seller, receiver=partner) | Q(sender=partner, receiver=book.seller)
+        ).exists()
+        if partner == book.seller or (not has_thread and partner != book.buyer):
+            messages.error(request, "この取引メッセージは閲覧できません。")
+            return redirect("inbox")
+    else:
+        partner = book.seller
+        has_thread = Message.objects.filter(book=book).filter(
+            Q(sender=request.user, receiver=partner) | Q(sender=partner, receiver=request.user)
+        ).exists()
+        if book.status == "sold" and request.user != book.buyer and not has_thread:
+            messages.error(request, "売却済みの出品には購入相談できません。")
+            return redirect("book_detail", book_id=book.id)
 
-    partner = book.buyer if request.user == book.seller else book.seller
-    if partner is None:
-        messages.error(request, "取引相手がまだ設定されていません。")
-        return redirect("inbox")
+    thread_messages = Message.objects.filter(book=book).filter(
+        Q(sender=request.user, receiver=partner) | Q(sender=partner, receiver=request.user)
+    ).select_related("sender", "receiver")
 
     if request.method == "POST":
         form = MessageForm(request.POST)
@@ -284,7 +297,14 @@ def chat(request, book_id):
                 receiver=partner,
                 content=form.cleaned_data["content"],
             )
-            return redirect("chat", book_id=book.id)
+            if not is_seller and book.status == "available":
+                book.status = "in_progress"
+                book.buyer = request.user
+                book.save(update_fields=["status", "buyer"])
+            chat_url = reverse("chat", kwargs={"book_id": book.id})
+            if is_seller:
+                chat_url = f"{chat_url}?partner={partner.id}"
+            return redirect(chat_url)
     else:
         form = MessageForm()
 
@@ -294,8 +314,10 @@ def chat(request, book_id):
         {
             "book": book,
             "partner": partner,
-            "messages": book.messages.select_related("sender", "receiver"),
+            "chat_messages": thread_messages,
             "form": form,
+            "is_seller": is_seller,
+            "can_manage_trade": book.status == "in_progress" and partner == book.buyer,
         },
     )
 
@@ -386,9 +408,13 @@ def edit_book(request, book_id):
     if request.method == "POST":
         form = BookEditForm(request.POST, request.FILES, instance=book)
         if form.is_valid():
-            form.save()
-            messages.success(request, "出品情報を更新しました。")
-            return redirect("book_detail", book_id=book.id)
+            try:
+                form.save()
+            except OSError as error:
+                form.add_error("image", str(error))
+            else:
+                messages.success(request, "出品情報を更新しました。")
+                return redirect("book_detail", book_id=book.id)
     else:
         form = BookEditForm(instance=book)
     return render(request, "main/edit_book.html", {"form": form, "book": book})

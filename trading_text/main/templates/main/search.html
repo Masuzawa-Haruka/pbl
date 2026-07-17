@@ -86,7 +86,7 @@
           <p class="book-item__author">著者：{{ book.author }}</p>
           <p class="book-item__price">{{ book.price }}円</p>
           <p class="book-item__campus">{{ book.get_campus_display }}</p>
-          <p class="book-item__status">{{ book.get_status_display }}</p>
+          <p class="book-item__status book-item__status--{{ book.status }}">{{ book.get_status_display }}</p>
         </div>
         <p class="book-item__likes" aria-label="いいね{{ book.likes_count }}件">♡いいね{{ book.likes_count }}</p>
       </a>

@@ -100,6 +100,16 @@
   font-weight: 800;
 }
 
+.status-label--in_progress {
+  color: #805000;
+  background: #fff0b8;
+}
+
+.status-label--sold {
+  color: #596173;
+  background: #e9edf3;
+}
+
 .edit-link {
   color: #0034b8;
   font-size: 13px;
