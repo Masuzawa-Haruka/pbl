@@ -15,11 +15,12 @@ from .forms import (
     BookForm,
     EcsLoginForm,
     EcsUserCreationForm,
+    HandoffProposalForm,
     MessageForm,
     ProfileForm,
     TradeOfferForm,
 )
-from .models import Book, Favorite, Message, TradeOffer, UserProfile
+from .models import Book, Favorite, HandoffProposal, Message, TradeOffer, UserProfile
 from .services import apply_cancellation, submit_evaluation
 from .supabase_auth import SupabaseAuthError, is_configured as supabase_is_configured
 from .supabase_auth import sign_in_with_password, sign_up
@@ -279,6 +280,22 @@ def inbox(request):
                 "message": message,
                 "chat_url": chat_url,
             }
+    for thread in threads.values():
+        thread_buyer = thread["other_user"] if request.user == thread["book"].seller else request.user
+        accepted_offer = (
+            TradeOffer.objects.filter(
+                book=thread["book"],
+                buyer=thread_buyer,
+                status="accepted",
+            )
+            .select_related("buyer", "seller")
+            .first()
+        )
+        thread["accepted_offer"] = accepted_offer
+        if accepted_offer:
+            thread["handoff"] = accepted_offer.handoff_proposals.filter(
+                status__in=["accepted", "pending"]
+            ).first()
     return render(request, "main/inbox.html", {"threads": threads.values()})
 
 
@@ -329,10 +346,13 @@ def chat(request, book_id):
 
     thread_buyer = partner if is_seller else request.user
     latest_offer = (
-        TradeOffer.objects.filter(book=book, buyer=thread_buyer)
+        TradeOffer.objects.filter(book=book, buyer=thread_buyer, status__in=["accepted", "pending"])
         .select_related("buyer", "seller")
         .first()
     )
+    handoff = None
+    if latest_offer and latest_offer.status == "accepted":
+        handoff = latest_offer.handoff_proposals.filter(status__in=["accepted", "pending"]).first()
 
     return render(
         request,
@@ -343,7 +363,9 @@ def chat(request, book_id):
             "chat_messages": thread_messages,
             "form": form,
             "offer_form": TradeOfferForm(initial={"price": book.price}),
+            "handoff_form": HandoffProposalForm(),
             "latest_offer": latest_offer,
+            "handoff": handoff,
             "is_seller": is_seller,
             "can_create_offer": is_seller and book.status == "available" and has_thread,
             "can_accept_offer": (
@@ -353,6 +375,21 @@ def chat(request, book_id):
                 and latest_offer.status == "pending"
             ),
             "can_manage_trade": book.status == "in_progress" and partner == book.buyer,
+            "can_create_handoff": (
+                is_seller
+                and book.status == "in_progress"
+                and latest_offer is not None
+                and latest_offer.status == "accepted"
+                and handoff is None
+            ),
+            "can_accept_handoff": (
+                not is_seller
+                and book.status == "in_progress"
+                and latest_offer is not None
+                and latest_offer.status == "accepted"
+                and handoff is not None
+                and handoff.status == "pending"
+            ),
         },
     )
 
@@ -431,6 +468,87 @@ def accept_trade_offer(request, offer_id):
 
 
 @login_required
+def create_handoff_proposal(request, offer_id):
+    offer = get_object_or_404(TradeOffer.objects.select_related("book", "seller", "buyer"), id=offer_id)
+    book = offer.book
+    chat_url = f"{reverse('chat', kwargs={'book_id': book.id})}?partner={offer.buyer_id}"
+    if request.method != "POST" or request.user != offer.seller:
+        messages.error(request, "受け渡し日時と場所を提示できるのは出品者だけです。")
+        return redirect(chat_url)
+
+    form = HandoffProposalForm(request.POST)
+    if not form.is_valid():
+        error = next(iter(form.errors.values()))[0]
+        messages.error(request, str(error))
+        return redirect(chat_url)
+
+    with transaction.atomic():
+        locked_book = Book.objects.select_for_update().get(id=book.id)
+        locked_offer = TradeOffer.objects.select_for_update().get(id=offer.id)
+        if (
+            locked_offer.status != "accepted"
+            or locked_book.status != "in_progress"
+            or locked_book.buyer_id != locked_offer.buyer_id
+        ):
+            messages.error(request, "成立済みの取引にだけ受け渡し条件を提示できます。")
+            return redirect(chat_url)
+        if HandoffProposal.objects.filter(trade_offer=locked_offer, status="accepted").exists():
+            messages.info(request, "受け渡し日時と場所はすでに確定しています。")
+            return redirect(chat_url)
+
+        HandoffProposal.objects.filter(trade_offer=locked_offer, status="pending").update(status="withdrawn")
+        HandoffProposal.objects.create(
+            trade_offer=locked_offer,
+            handoff_at=form.cleaned_data["handoff_at"],
+            location=form.cleaned_data["location"],
+        )
+
+    messages.success(request, "受け渡し日時と場所を提示しました。購入者の同意待ちです。")
+    return redirect(chat_url)
+
+
+@login_required
+def accept_handoff_proposal(request, proposal_id):
+    proposal = get_object_or_404(
+        HandoffProposal.objects.select_related("trade_offer__book", "trade_offer__buyer"),
+        id=proposal_id,
+    )
+    offer = proposal.trade_offer
+    book = offer.book
+    chat_url = reverse("chat", kwargs={"book_id": book.id})
+    if request.method != "POST" or request.user != offer.buyer:
+        messages.error(request, "この受け渡し条件には同意できません。")
+        return redirect(chat_url)
+
+    with transaction.atomic():
+        locked_book = Book.objects.select_for_update().get(id=book.id)
+        locked_offer = TradeOffer.objects.select_for_update().get(id=offer.id)
+        locked_proposal = HandoffProposal.objects.select_for_update().get(id=proposal.id)
+        if locked_proposal.status != "pending":
+            messages.info(request, "この受け渡し条件はすでに処理されています。")
+            return redirect(chat_url)
+        if (
+            locked_offer.status != "accepted"
+            or locked_book.status != "in_progress"
+            or locked_book.buyer_id != request.user.id
+            or locked_offer.buyer_id != request.user.id
+        ):
+            locked_proposal.status = "withdrawn"
+            locked_proposal.save(update_fields=["status", "updated_at"])
+            messages.error(request, "この取引の受け渡し条件には同意できません。")
+            return redirect(chat_url)
+
+        HandoffProposal.objects.filter(trade_offer=locked_offer, status="pending").exclude(
+            id=locked_proposal.id
+        ).update(status="withdrawn")
+        locked_proposal.status = "accepted"
+        locked_proposal.save(update_fields=["status", "updated_at"])
+
+    messages.success(request, "受け渡し日時と場所が確定しました。あとは参考書を渡すだけです。")
+    return redirect(chat_url)
+
+
+@login_required
 def evaluate_trade(request, book_id):
     book = get_object_or_404(Book.objects.select_related("seller", "buyer"), id=book_id)
     if request.user not in [book.seller, book.buyer] or book.buyer is None:
@@ -483,6 +601,27 @@ def mypage(request):
         Q(seller=request.user) | Q(buyer=request.user),
         status__in=["in_progress", "sold"],
     ).distinct()
+    accepted_handoffs = HandoffProposal.objects.filter(
+        Q(trade_offer__seller=request.user) | Q(trade_offer__buyer=request.user),
+        status="accepted",
+        trade_offer__status="accepted",
+        trade_offer__book__status="in_progress",
+    ).select_related("trade_offer__book", "trade_offer__seller", "trade_offer__buyer")
+    handoff_trades = []
+    for handoff in accepted_handoffs:
+        offer = handoff.trade_offer
+        partner = offer.buyer if request.user == offer.seller else offer.seller
+        chat_url = reverse("chat", kwargs={"book_id": offer.book_id})
+        if request.user == offer.seller:
+            chat_url = f"{chat_url}?partner={offer.buyer_id}"
+        handoff_trades.append(
+            {
+                "book": offer.book,
+                "partner": partner,
+                "handoff": handoff,
+                "chat_url": chat_url,
+            }
+        )
 
     return render(
         request,
@@ -492,6 +631,7 @@ def mypage(request):
             "selling_books": selling_books,
             "favorite_books": favorite_books,
             "trading_books": trading_books,
+            "handoff_trades": handoff_trades,
         },
     )
 

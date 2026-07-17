@@ -152,6 +152,39 @@ class TradeOffer(models.Model):
         return f"{self.book.title}: {self.price}円 ({self.get_status_display()})"
 
 
+class HandoffProposal(models.Model):
+    STATUS_CHOICES = [
+        ("pending", "同意待ち"),
+        ("accepted", "確定"),
+        ("withdrawn", "取り下げ"),
+        ("cancelled", "キャンセル"),
+    ]
+
+    trade_offer = models.ForeignKey(
+        TradeOffer,
+        on_delete=models.CASCADE,
+        related_name="handoff_proposals",
+    )
+    handoff_at = models.DateTimeField()
+    location = models.CharField(max_length=200)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=("trade_offer",),
+                condition=models.Q(status="accepted"),
+                name="one_accepted_handoff_per_trade_offer",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.trade_offer.book.title}: {self.handoff_at} {self.location}"
+
+
 class Evaluation(models.Model):
     TYPE_CHOICES = [
         ("good", "good"),

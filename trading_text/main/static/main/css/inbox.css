@@ -192,6 +192,25 @@
   text-decoration: none;
 }
 
+.inbox-thread > div {
+  min-width: 0;
+  flex: 1;
+}
+
+.inbox-thread--action,
+.inbox-thread--handoff {
+  margin: 8px 0;
+  padding: 14px;
+  border: 1px solid #efc34d;
+  border-radius: 8px;
+  background: #fff9e8;
+}
+
+.inbox-thread--handoff {
+  border-color: #4eae69;
+  background: #edf9f0;
+}
+
 .inbox-thread__title {
   margin: 0;
   color: #070d2f;
@@ -206,6 +225,23 @@
   font-size: 12px;
   font-weight: 600;
   line-height: 1.45;
+}
+
+.inbox-thread__notice,
+.inbox-thread__schedule {
+  margin: 6px 0 0;
+  color: #8a3b00;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.5;
+}
+
+.inbox-thread--handoff .inbox-thread__notice {
+  color: #176b2d;
+}
+
+.inbox-thread__schedule {
+  color: #070d2f;
 }
 
 .chat-page {
@@ -372,4 +408,78 @@
   color: #070d2f;
   font-size: 16px;
   font-weight: 800;
+}
+
+.handoff-card {
+  margin-top: 18px;
+  padding: 16px;
+  border: 1px solid #efc34d;
+  border-radius: 8px;
+  background: #fff9e8;
+}
+
+.handoff-card--accepted {
+  border-color: #4eae69;
+  background: #edf9f0;
+}
+
+.handoff-card--seller {
+  border-color: #d9dfeb;
+  background: #ffffff;
+}
+
+.handoff-card h2,
+.handoff-card p {
+  margin: 0;
+}
+
+.handoff-card h2 {
+  margin-top: 6px;
+  color: #070d2f;
+  font-size: 18px;
+}
+
+.handoff-card p:not(.trade-offer__label) {
+  margin-top: 8px;
+  color: #596173;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.handoff-card .trade-offer__confirmation-note {
+  color: #8a3b00;
+  font-weight: 800;
+}
+
+.handoff-card .submit-button {
+  margin-top: 14px;
+}
+
+.handoff-details {
+  margin: 14px 0 0;
+}
+
+.handoff-details > div {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  gap: 10px;
+  padding: 8px 0;
+  border-top: 1px solid rgba(7, 13, 47, 0.12);
+}
+
+.handoff-details dt,
+.handoff-details dd {
+  margin: 0;
+  color: #070d2f;
+  font-size: 14px;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.handoff-details dt {
+  color: #596173;
+}
+
+.handoff-form {
+  margin-top: 12px;
 }

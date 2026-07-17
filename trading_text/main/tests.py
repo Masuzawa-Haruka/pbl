@@ -1,4 +1,5 @@
 from unittest.mock import MagicMock, patch
+from datetime import timedelta
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -7,9 +8,10 @@ from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import SimpleTestCase, TestCase, override_settings
 from django.urls import reverse
+from django.utils import timezone
 
 from .forms import EcsUserCreationForm
-from .models import Book, Favorite, Message, TradeOffer, UserProfile
+from .models import Book, Favorite, HandoffProposal, Message, TradeOffer, UserProfile
 from .services import apply_cancellation, submit_evaluation
 from .storage import SupabaseStorage
 from .views import sync_supabase_user
@@ -409,6 +411,116 @@ class TradeFlowTests(TestCase):
         self.assertEqual(self.book.buyer, self.buyer)
         self.assertEqual(self.book.price, 250)
 
+    def test_seller_proposes_and_target_buyer_accepts_handoff(self):
+        offer = TradeOffer.objects.create(
+            book=self.book,
+            seller=self.seller,
+            buyer=self.buyer,
+            price=250,
+            status="accepted",
+        )
+        self.book.buyer = self.buyer
+        self.book.price = 250
+        self.book.status = "in_progress"
+        self.book.save(update_fields=["buyer", "price", "status"])
+        Message.objects.create(
+            book=self.book,
+            sender=self.buyer,
+            receiver=self.seller,
+            content="受け渡し予定を相談します。",
+        )
+        handoff_at = timezone.now() + timedelta(days=2)
+        self.client.login(username=self.seller.username, password="password12345")
+
+        response = self.client.post(
+            reverse("create_handoff_proposal", args=[offer.id]),
+            {
+                "handoff_at": timezone.localtime(handoff_at).strftime("%Y-%m-%dT%H:%M"),
+                "location": "豊中キャンパス 図書館前",
+            },
+        )
+
+        self.assertRedirects(
+            response,
+            f"{reverse('chat', args=[self.book.id])}?partner={self.buyer.id}",
+        )
+        proposal = HandoffProposal.objects.get(trade_offer=offer)
+        self.assertEqual(proposal.status, "pending")
+        self.client.logout()
+        self.client.login(username=self.buyer.username, password="password12345")
+        response = self.client.get(reverse("chat", args=[self.book.id]))
+        self.assertContains(response, "この日時と場所に同意する")
+        self.assertContains(response, "豊中キャンパス 図書館前")
+
+        response = self.client.post(reverse("accept_handoff_proposal", args=[proposal.id]), follow=True)
+
+        proposal.refresh_from_db()
+        self.assertEqual(proposal.status, "accepted")
+        self.assertContains(response, "受け渡し日時と場所が確定しました。")
+        self.assertContains(response, "取引は終わり、あとは渡すだけです")
+
+    def test_other_buyer_cannot_accept_handoff_and_accepted_handoff_cannot_change(self):
+        offer = TradeOffer.objects.create(
+            book=self.book,
+            seller=self.seller,
+            buyer=self.buyer,
+            price=250,
+            status="accepted",
+        )
+        self.book.buyer = self.buyer
+        self.book.status = "in_progress"
+        self.book.save(update_fields=["buyer", "status"])
+        proposal = HandoffProposal.objects.create(
+            trade_offer=offer,
+            handoff_at=timezone.now() + timedelta(days=1),
+            location="吹田キャンパス 正門",
+        )
+        self.client.login(username=self.other_buyer.username, password="password12345")
+
+        self.client.post(reverse("accept_handoff_proposal", args=[proposal.id]))
+
+        proposal.refresh_from_db()
+        self.assertEqual(proposal.status, "pending")
+        self.client.logout()
+        self.client.login(username=self.buyer.username, password="password12345")
+        self.client.post(reverse("accept_handoff_proposal", args=[proposal.id]))
+        self.client.post(reverse("accept_handoff_proposal", args=[proposal.id]))
+        proposal.refresh_from_db()
+        self.assertEqual(proposal.status, "accepted")
+        self.assertEqual(HandoffProposal.objects.filter(trade_offer=offer, status="accepted").count(), 1)
+
+    def test_confirmed_handoff_is_prominent_in_inbox_and_mypage(self):
+        offer = TradeOffer.objects.create(
+            book=self.book,
+            seller=self.seller,
+            buyer=self.buyer,
+            price=250,
+            status="accepted",
+        )
+        self.book.buyer = self.buyer
+        self.book.status = "in_progress"
+        self.book.save(update_fields=["buyer", "status"])
+        Message.objects.create(
+            book=self.book,
+            sender=self.buyer,
+            receiver=self.seller,
+            content="当日よろしくお願いします。",
+        )
+        HandoffProposal.objects.create(
+            trade_offer=offer,
+            handoff_at=timezone.now() + timedelta(days=1),
+            location="箕面キャンパス 1階入口",
+            status="accepted",
+        )
+        self.client.login(username=self.buyer.username, password="password12345")
+
+        response = self.client.get(reverse("inbox"))
+        self.assertContains(response, "受け渡し予定が確定しました")
+        self.assertContains(response, "箕面キャンパス 1階入口")
+        response = self.client.get(reverse("mypage"))
+        self.assertContains(response, "取引は終わり、あとは渡すだけ")
+        self.assertContains(response, "箕面キャンパス 1階入口")
+
     def test_second_buyer_can_send_a_separate_consultation(self):
         self.book.buyer = self.buyer
         self.book.status = "in_progress"
@@ -497,14 +609,29 @@ class TradeFlowTests(TestCase):
         self.book.buyer = self.buyer
         self.book.status = "in_progress"
         self.book.save(update_fields=["buyer", "status"])
+        offer = TradeOffer.objects.create(
+            book=self.book,
+            seller=self.seller,
+            buyer=self.buyer,
+            price=self.book.price,
+            status="accepted",
+        )
+        handoff = HandoffProposal.objects.create(
+            trade_offer=offer,
+            handoff_at=timezone.now() + timedelta(days=1),
+            location="豊中キャンパス",
+            status="accepted",
+        )
 
         _log, created = apply_cancellation(self.book, reporter=self.buyer, target=self.buyer, kind="cancel")
         self.assertTrue(created)
         self.buyer.profile.refresh_from_db()
         self.assertEqual(self.buyer.profile.credit_score, 90)
         self.book.refresh_from_db()
+        handoff.refresh_from_db()
         self.assertEqual(self.book.status, "available")
         self.assertIsNone(self.book.buyer)
+        self.assertEqual(handoff.status, "cancelled")
 
     def test_no_show_report_scores_the_other_party(self):
         self.book.buyer = self.buyer

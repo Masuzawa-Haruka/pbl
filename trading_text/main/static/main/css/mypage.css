@@ -329,3 +329,50 @@
 .mypage-book em { grid-column: 1 / -1; color: #596173; font-size: 12px; font-style: normal; font-weight: 700; }
 .placeholder-page__section { color: inherit; text-decoration: none; }
 .mypage-section h2 { margin: 18px 0 8px; color: #070d2f; font-size: 16px; font-weight: 800; }
+
+.handoff-summary {
+  margin: 0 0 22px;
+  padding: 16px;
+  border: 2px solid #4eae69;
+  border-radius: 8px;
+  background: #edf9f0;
+  text-align: left;
+}
+
+.handoff-summary__eyebrow {
+  margin: 0;
+  color: #176b2d;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.handoff-summary h2 {
+  margin: 5px 0 12px;
+  color: #070d2f;
+  font-size: 18px;
+}
+
+.handoff-summary__item {
+  display: grid;
+  gap: 5px;
+  padding: 12px 0;
+  border-top: 1px solid #b9ddc2;
+  color: #070d2f;
+  text-decoration: none;
+}
+
+.handoff-summary__item strong {
+  font-size: 15px;
+}
+
+.handoff-summary__item span {
+  font-size: 14px;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.handoff-summary__item small {
+  color: #596173;
+  font-size: 12px;
+  font-weight: 700;
+}

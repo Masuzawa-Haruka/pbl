@@ -35,6 +35,21 @@
     </div>
   </div>
 
+  {% if handoff_trades %}
+    <section class="handoff-summary" aria-label="確定した受け渡し予定">
+      <p class="handoff-summary__eyebrow">受け渡し予定</p>
+      <h2>取引は終わり、あとは渡すだけ</h2>
+      {% for trade in handoff_trades %}
+        <a class="handoff-summary__item" href="{{ trade.chat_url }}">
+          <strong>{{ trade.book.title }}</strong>
+          <span>{{ trade.handoff.handoff_at|date:"Y年n月j日 H:i" }}</span>
+          <span>{{ trade.handoff.location }}</span>
+          <small>相手：{{ trade.partner.profile.display_name|default:"取引相手" }}</small>
+        </a>
+      {% endfor %}
+    </section>
+  {% endif %}
+
   <div class="placeholder-page_display_sale">
     <p class="placeholder-page_display_sale_left">出品一覧</p>
     <a class="placeholder-page_display_sale_right" href="{% url 'listing_form' %}">＋出品</a>

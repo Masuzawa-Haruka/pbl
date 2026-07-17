@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Book, CancellationLog, Evaluation, Favorite, Message, TradeOffer, UserProfile
+from .models import Book, CancellationLog, Evaluation, Favorite, HandoffProposal, Message, TradeOffer, UserProfile
 
 
 @admin.register(Book)
@@ -32,6 +32,13 @@ class TradeOfferAdmin(admin.ModelAdmin):
     list_display = ("book", "seller", "buyer", "price", "status", "created_at", "updated_at")
     list_filter = ("status",)
     search_fields = ("book__title", "seller__username", "buyer__username")
+
+
+@admin.register(HandoffProposal)
+class HandoffProposalAdmin(admin.ModelAdmin):
+    list_display = ("trade_offer", "handoff_at", "location", "status", "created_at", "updated_at")
+    list_filter = ("status",)
+    search_fields = ("trade_offer__book__title", "location")
 
 
 @admin.register(Evaluation)

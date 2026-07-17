@@ -1,4 +1,5 @@
 from django import forms
+from django.utils import timezone
 from django.core.files.uploadedfile import UploadedFile
 
 from .models import Book, UserProfile
@@ -103,3 +104,21 @@ class MessageForm(forms.Form):
 
 class TradeOfferForm(forms.Form):
     price = forms.IntegerField(label="取引価格", min_value=0, max_value=1_000_000)
+
+
+class HandoffProposalForm(forms.Form):
+    handoff_at = forms.DateTimeField(
+        label="受け渡し日時",
+        input_formats=["%Y-%m-%dT%H:%M"],
+        widget=forms.DateTimeInput(attrs={"type": "datetime-local"}),
+    )
+    location = forms.CharField(label="受け渡し場所", max_length=200)
+
+    def clean_handoff_at(self):
+        handoff_at = self.cleaned_data["handoff_at"]
+        if handoff_at <= timezone.now():
+            raise forms.ValidationError("現在より後の日時を指定してください。")
+        return handoff_at
+
+    def clean_location(self):
+        return self.cleaned_data["location"].strip()

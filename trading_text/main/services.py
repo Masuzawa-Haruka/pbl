@@ -1,7 +1,7 @@
 from django.db import transaction
 from django.db.models import F
 
-from .models import CancellationLog, Evaluation, TradeOffer, UserProfile
+from .models import CancellationLog, Evaluation, HandoffProposal, TradeOffer, UserProfile
 
 
 EVALUATION_SCORE_CHANGES = {
@@ -67,6 +67,10 @@ def apply_cancellation(book, reporter, target, kind):
     book.status = "available"
     book.save(update_fields=["buyer", "status"])
     TradeOffer.objects.filter(book=book, status="accepted").update(status="cancelled")
+    HandoffProposal.objects.filter(
+        trade_offer__book=book,
+        status__in=["pending", "accepted"],
+    ).update(status="cancelled")
     return log, True
 
 

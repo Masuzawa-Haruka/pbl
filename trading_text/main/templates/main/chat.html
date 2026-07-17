@@ -63,6 +63,51 @@
     </section>
   {% endif %}
 
+  {% if handoff.status == 'accepted' %}
+    <section class="handoff-card handoff-card--accepted" aria-label="確定した受け渡し予定">
+      <p class="trade-offer__label">受け渡し予定確定</p>
+      <h2>取引は終わり、あとは渡すだけです</h2>
+      <dl class="handoff-details">
+        <div><dt>日時</dt><dd>{{ handoff.handoff_at|date:"Y年n月j日 H:i" }}</dd></div>
+        <div><dt>場所</dt><dd>{{ handoff.location }}</dd></div>
+      </dl>
+    </section>
+  {% elif handoff.status == 'pending' %}
+    <section class="handoff-card" aria-label="提示された受け渡し予定">
+      <p class="trade-offer__label">受け渡し日時・場所</p>
+      <dl class="handoff-details">
+        <div><dt>日時</dt><dd>{{ handoff.handoff_at|date:"Y年n月j日 H:i" }}</dd></div>
+        <div><dt>場所</dt><dd>{{ handoff.location }}</dd></div>
+      </dl>
+      {% if is_seller %}
+        <p>購入者の同意を待っています。</p>
+      {% elif can_accept_handoff %}
+        <p class="trade-offer__confirmation-note">同意すると受け渡し予定が確定します。ほかの人がこの取引に同意することはできません。</p>
+        <form action="{% url 'accept_handoff_proposal' handoff.id %}" method="post">
+          {% csrf_token %}
+          <button class="submit-button" type="submit">この日時と場所に同意する</button>
+        </form>
+      {% endif %}
+    </section>
+  {% elif can_create_handoff %}
+    <section class="handoff-card handoff-card--seller" aria-label="受け渡し予定を提示する">
+      <p class="trade-offer__label">受け渡し日時・場所を提示</p>
+      <p>購入者が同意すると、この予定で受け渡しが確定します。</p>
+      <form class="handoff-form" action="{% url 'create_handoff_proposal' latest_offer.id %}" method="post">
+        {% csrf_token %}
+        <label class="form-group">
+          <span class="form-label">日時</span>
+          <input class="form-control" type="datetime-local" name="handoff_at" required>
+        </label>
+        <label class="form-group">
+          <span class="form-label">場所</span>
+          <input class="form-control" type="text" name="location" maxlength="200" placeholder="例：豊中キャンパス 図書館前" required>
+        </label>
+        <button class="submit-button" type="submit">日時と場所を提示する</button>
+      </form>
+    </section>
+  {% endif %}
+
   {% if can_create_offer %}
     <section class="trade-offer trade-offer--seller" aria-label="取引条件を提示する">
       <p class="trade-offer__label">取引条件を提示</p>
