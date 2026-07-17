@@ -93,6 +93,21 @@
   </div>
 </section>
 
+{% if user == book.seller and consultation_threads %}
+  <section class="seller-consultations" aria-label="この出品への購入相談">
+    <h2>購入相談のチャット</h2>
+    {% for thread in consultation_threads %}
+      <a class="seller-consultation" href="{{ thread.chat_url }}">
+        <span class="seller-consultation__body">
+          <strong>{{ thread.buyer.profile.display_name|default:"購入希望者" }}</strong>
+          <span>{{ thread.latest_message.content|truncatechars:36 }}</span>
+        </span>
+        <span class="seller-consultation__action">チャットを開く</span>
+      </a>
+    {% endfor %}
+  </section>
+{% endif %}
+
 <div class="bottom-action-bar">
   {% if user.is_authenticated and user != book.seller %}
     <form action="{% url 'start_consultation' book.id %}" method="post">

@@ -194,14 +194,29 @@ def listing_form(request):
 def book_detail(request, book_id):
     book = get_object_or_404(Book.objects.select_related("seller", "buyer"), id=book_id)
     is_favorited = False
+    consultation_threads = []
     if request.user.is_authenticated:
         is_favorited = Favorite.objects.filter(user=request.user, book=book).exists()
+        if request.user == book.seller:
+            thread_by_buyer = {}
+            book_messages = book.messages.select_related("sender", "receiver").order_by("-created_at")
+            for message in book_messages:
+                buyer = message.receiver if message.sender == book.seller else message.sender
+                if buyer == book.seller or buyer.id in thread_by_buyer:
+                    continue
+                thread_by_buyer[buyer.id] = {
+                    "buyer": buyer,
+                    "latest_message": message,
+                    "chat_url": f"{reverse('chat', kwargs={'book_id': book.id})}?partner={buyer.id}",
+                }
+            consultation_threads = list(thread_by_buyer.values())
     return render(
         request,
         "main/book_detail.html",
         {
             "book": book,
             "is_favorited": is_favorited,
+            "consultation_threads": consultation_threads,
             "message_form": MessageForm(),
         },
     )

@@ -211,6 +211,55 @@
   color: currentColor;
 }
 
+.seller-consultations {
+  padding: 20px 22px 120px;
+  background: #ffffff;
+}
+
+.seller-consultations h2 {
+  margin: 0 0 12px;
+  color: #070d2f;
+  font-size: 16px;
+}
+
+.seller-consultation {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 0;
+  border-top: 1px solid #e5e9f1;
+  color: inherit;
+  text-decoration: none;
+}
+
+.seller-consultation__body {
+  display: grid;
+  min-width: 0;
+  gap: 4px;
+}
+
+.seller-consultation__body strong {
+  color: #070d2f;
+  font-size: 14px;
+}
+
+.seller-consultation__body > span {
+  overflow: hidden;
+  color: #596173;
+  font-size: 12px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.seller-consultation__action {
+  color: #0034b8;
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
 .bottom-action-bar {
   position: fixed;
   bottom: 70px;

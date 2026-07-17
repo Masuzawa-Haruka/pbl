@@ -145,6 +145,23 @@ class TradeFlowTests(TestCase):
         self.assertContains(response, "いいね 0")
         self.assertContains(response, "ログインして購入相談する")
 
+    def test_seller_can_open_each_buyer_chat_from_book_detail(self):
+        Message.objects.create(
+            book=self.book,
+            sender=self.buyer,
+            receiver=self.seller,
+            content="購入したいので相談します。",
+        )
+        self.client.login(username="seller@ecs.osaka-u.ac.jp", password="password12345")
+
+        response = self.client.get(reverse("book_detail", args=[self.book.id]))
+
+        chat_url = f"{reverse('chat', args=[self.book.id])}?partner={self.buyer.id}"
+        self.assertContains(response, "購入相談のチャット")
+        self.assertContains(response, "チャットを開く")
+        self.assertContains(response, chat_url)
+        self.assertContains(response, "購入したいので相談します。")
+
     def test_search_page_links_to_book_detail(self):
         response = self.client.get(reverse("search"))
 
