@@ -4,10 +4,36 @@ from django.core.validators import FileExtensionValidator
 
 
 class UserProfile(models.Model):
+    FACULTY_CHOICES = [
+        ("文学部 人文学科", "文学部 人文学科"),
+        ("人間科学部 人間科学科", "人間科学部 人間科学科"),
+        ("外国語学部 外国語学科", "外国語学部 外国語学科"),
+        ("法学部 法学科", "法学部 法学科"),
+        ("法学部 国際公共政策学科", "法学部 国際公共政策学科"),
+        ("経済学部 経済・経営学科", "経済学部 経済・経営学科"),
+        ("理学部 数学科", "理学部 数学科"),
+        ("理学部 物理学科", "理学部 物理学科"),
+        ("理学部 化学科", "理学部 化学科"),
+        ("理学部 生物科学科", "理学部 生物科学科"),
+        ("医学部 医学科", "医学部 医学科"),
+        ("医学部 保健学科", "医学部 保健学科"),
+        ("歯学部 歯学科", "歯学部 歯学科"),
+        ("薬学部 薬学科", "薬学部 薬学科"),
+        ("工学部 応用自然科学科", "工学部 応用自然科学科"),
+        ("工学部 応用理工学科", "工学部 応用理工学科"),
+        ("工学部 電子情報工学科", "工学部 電子情報工学科"),
+        ("工学部 環境・エネルギー工学科", "工学部 環境・エネルギー工学科"),
+        ("工学部 地球総合工学科", "工学部 地球総合工学科"),
+        ("基礎工学部 電子物理科学科", "基礎工学部 電子物理科学科"),
+        ("基礎工学部 化学応用科学科", "基礎工学部 化学応用科学科"),
+        ("基礎工学部 システム科学科", "基礎工学部 システム科学科"),
+        ("基礎工学部 情報科学科", "基礎工学部 情報科学科"),
+    ]
+
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
     display_name = models.CharField(max_length=80, blank=True, default="")
     university = models.CharField(max_length=80, blank=True, default="")
-    faculty = models.CharField(max_length=120, blank=True, default="")
+    faculty = models.CharField(max_length=120, choices=FACULTY_CHOICES, blank=True, default="")
     school_year = models.CharField(max_length=20, blank=True, default="")
     rating = models.DecimalField(max_digits=2, decimal_places=1, default=0)
     credit_score = models.IntegerField(default=100)

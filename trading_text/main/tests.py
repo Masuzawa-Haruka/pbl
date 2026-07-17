@@ -10,7 +10,7 @@ from django.test import SimpleTestCase, TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
-from .forms import EcsUserCreationForm
+from .forms import EcsUserCreationForm, ProfileForm
 from .models import Book, Favorite, HandoffProposal, Message, TradeOffer, UserProfile
 from .services import apply_cancellation, submit_evaluation
 from .storage import SupabaseStorage
@@ -100,6 +100,26 @@ class AuthFormTests(TestCase):
 
         self.assertEqual(user.profile.supabase_user_id, "supabase-id-123")
 
+    def test_profile_accepts_only_official_faculty_department_choices(self):
+        valid_form = ProfileForm(
+            data={
+                "display_name": "大阪 太郎",
+                "faculty": "基礎工学部 情報科学科",
+                "school_year": "2年",
+            }
+        )
+        invalid_form = ProfileForm(
+            data={
+                "display_name": "大阪 太郎",
+                "faculty": "部部科科",
+                "school_year": "2年",
+            }
+        )
+
+        self.assertTrue(valid_form.is_valid())
+        self.assertFalse(invalid_form.is_valid())
+        self.assertIn("faculty", invalid_form.errors)
+
 
 class TradeFlowTests(TestCase):
     def setUp(self):
@@ -146,6 +166,33 @@ class TradeFlowTests(TestCase):
         self.assertContains(response, "300")
         self.assertContains(response, "いいね 0")
         self.assertContains(response, "ログインして購入相談する")
+
+    def test_profile_edit_uses_official_faculty_department_select(self):
+        self.client.login(username=self.seller.username, password="password12345")
+
+        response = self.client.get(reverse("edit_profile"))
+
+        self.assertContains(response, '<select name="faculty"', html=False)
+        self.assertContains(response, "工学部 電子情報工学科")
+        self.assertContains(response, "基礎工学部 情報科学科")
+        self.assertNotContains(response, 'type="text" name="faculty"')
+
+    def test_profile_edit_rejects_unknown_faculty_department(self):
+        self.client.login(username=self.seller.username, password="password12345")
+
+        response = self.client.post(
+            reverse("edit_profile"),
+            {
+                "display_name": "大阪 太郎",
+                "faculty": "部部科科",
+                "school_year": "2年",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.seller.profile.refresh_from_db()
+        self.assertNotEqual(self.seller.profile.faculty, "部部科科")
+        self.assertContains(response, "一覧から正しい学部・学科を選択してください。")
 
     def test_seller_can_open_each_buyer_chat_from_book_detail(self):
         Message.objects.create(

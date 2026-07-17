@@ -89,6 +89,16 @@ class BookEditForm(BookForm):
 
 
 class ProfileForm(forms.ModelForm):
+    faculty = forms.ChoiceField(
+        label="学部・学科",
+        choices=[("", "学部・学科を選択してください"), *UserProfile.FACULTY_CHOICES],
+        widget=forms.Select(attrs={"class": "form-control"}),
+        error_messages={
+            "required": "学部・学科を選択してください。",
+            "invalid_choice": "一覧から正しい学部・学科を選択してください。",
+        },
+    )
+
     class Meta:
         model = UserProfile
         fields = ("display_name", "faculty", "school_year")

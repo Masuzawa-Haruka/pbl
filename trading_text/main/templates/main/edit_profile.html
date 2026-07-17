@@ -17,7 +17,8 @@
     </label>
     <label class="form-group">
       <span class="form-label">学部・学科</span>
-      <input class="form-control" type="text" name="faculty" value="{{ form.faculty.value|default:'' }}" required>
+      {{ form.faculty }}
+      {% for error in form.faculty.errors %}<span class="form-error">{{ error }}</span>{% endfor %}
     </label>
     <label class="form-group">
       <span class="form-label">学年</span>
