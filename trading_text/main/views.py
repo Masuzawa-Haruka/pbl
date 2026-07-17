@@ -395,7 +395,7 @@ def chat(request, book_id):
                 and latest_offer is not None
                 and latest_offer.status == "pending"
             ),
-            "can_manage_trade": book.status == "in_progress" and partner == book.buyer,
+            "can_manage_trade": book.status == "in_progress" and thread_buyer == book.buyer,
             "can_create_handoff": (
                 is_seller
                 and book.status == "in_progress"

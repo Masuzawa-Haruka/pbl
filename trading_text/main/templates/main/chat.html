@@ -145,17 +145,19 @@
     </section>
   {% endif %}
 
-  {% if can_manage_trade %}
-    <section class="trade-actions" aria-label="取引を完了または解除する">
-      {% if not handoff.completed_at %}
-        <h2>取引を解除する</h2>
-        <p>キャンセル後はこの出品を再開します。</p>
-        <form class="detail-actions" action="{% url 'cancel_trade' book.id %}" method="post">
-          {% csrf_token %}
-          <button class="chip chip--outline" type="submit" name="kind" value="cancel">自分の都合でキャンセル（-10）</button>
-          <button class="chip chip--outline" type="submit" name="kind" value="no_show">相手の無断キャンセルを報告（-30）</button>
-        </form>
-      {% endif %}
+  {% if can_manage_trade and not handoff.completed_at %}
+    <section class="trade-actions" aria-label="取引を解除する">
+      <h2>取引を解除する</h2>
+      <p>キャンセル後はこの出品を再開します。</p>
+      <form class="cancel-actions" action="{% url 'cancel_trade' book.id %}" method="post">
+        {% csrf_token %}
+        <button class="cancel-button" type="submit" name="kind" value="cancel">
+          <span>自分の都合でキャンセル</span><small>信用スコア -10</small>
+        </button>
+        <button class="cancel-button cancel-button--report" type="submit" name="kind" value="no_show">
+          <span>相手の無断キャンセルを報告</span><small>相手の信用スコア -30</small>
+        </button>
+      </form>
     </section>
   {% endif %}
 </section>

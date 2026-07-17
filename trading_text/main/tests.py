@@ -665,6 +665,32 @@ class TradeFlowTests(TestCase):
         self.assertIsNotNone(handoff.completed_at)
         self.assertRedirects(response, reverse("evaluate_trade", args=[self.book.id]))
 
+    def test_chat_hides_old_evaluation_actions_and_styles_cancellation_actions(self):
+        offer = TradeOffer.objects.create(
+            book=self.book,
+            seller=self.seller,
+            buyer=self.buyer,
+            price=250,
+            status="accepted",
+        )
+        self.book.buyer = self.buyer
+        self.book.status = "in_progress"
+        self.book.save(update_fields=["buyer", "status"])
+        HandoffProposal.objects.create(
+            trade_offer=offer,
+            handoff_at=timezone.now() + timedelta(days=1),
+            location="豊中キャンパス 図書館前",
+            status="accepted",
+        )
+        self.client.login(username=self.buyer.username, password="password12345")
+
+        response = self.client.get(reverse("chat", args=[self.book.id]))
+
+        self.assertNotContains(response, "取引完了後の評価")
+        self.assertNotContains(response, "良い評価を送る")
+        self.assertContains(response, 'class="cancel-button"', html=False)
+        self.assertContains(response, 'class="cancel-button cancel-button--report"', html=False)
+
     def test_both_parties_receive_completion_notice_and_evaluation_screen(self):
         handoff = self._create_completed_handoff()
         Message.objects.create(
