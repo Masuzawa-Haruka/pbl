@@ -269,14 +269,41 @@ class TradeFlowTests(TestCase):
         with self.assertRaises(ValueError):
             submit_evaluation(self.book, self.buyer, self.seller, "normal")
 
-    def test_cancellation_scores_apply_immediately(self):
-        apply_cancellation(self.book, reporter=self.buyer, target=self.buyer, kind="cancel")
+    def test_cancellation_scores_apply_immediately_and_reopens_listing(self):
+        self.book.buyer = self.buyer
+        self.book.status = "in_progress"
+        self.book.save(update_fields=["buyer", "status"])
+
+        _log, created = apply_cancellation(self.book, reporter=self.buyer, target=self.buyer, kind="cancel")
+        self.assertTrue(created)
         self.buyer.profile.refresh_from_db()
         self.assertEqual(self.buyer.profile.credit_score, 90)
+        self.book.refresh_from_db()
+        self.assertEqual(self.book.status, "available")
+        self.assertIsNone(self.book.buyer)
 
-        apply_cancellation(self.book, reporter=self.seller, target=self.buyer, kind="no_show")
+    def test_no_show_report_scores_the_other_party(self):
+        self.book.buyer = self.buyer
+        self.book.status = "in_progress"
+        self.book.save(update_fields=["buyer", "status"])
+
+        _log, created = apply_cancellation(self.book, reporter=self.seller, target=self.buyer, kind="no_show")
+        self.assertTrue(created)
         self.buyer.profile.refresh_from_db()
-        self.assertEqual(self.buyer.profile.credit_score, 60)
+        self.assertEqual(self.buyer.profile.credit_score, 70)
+
+    def test_cancellation_view_reopens_listing(self):
+        self.book.buyer = self.buyer
+        self.book.status = "in_progress"
+        self.book.save(update_fields=["buyer", "status"])
+        self.client.login(username="buyer@ecs.osaka-u.ac.jp", password="password12345")
+
+        response = self.client.post(reverse("cancel_trade", args=[self.book.id]), {"kind": "cancel"})
+
+        self.assertRedirects(response, reverse("book_detail", args=[self.book.id]))
+        self.book.refresh_from_db()
+        self.assertEqual(self.book.status, "available")
+        self.assertIsNone(self.book.buyer)
 
     def test_evaluation_view_accepts_good_or_bad(self):
         self.book.buyer = self.buyer

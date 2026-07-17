@@ -44,17 +44,29 @@ def apply_cancellation(book, reporter, target, kind):
     if kind not in CANCELLATION_SCORE_CHANGES:
         raise ValueError("kind must be 'cancel' or 'no_show'")
 
+    book = book.__class__.objects.select_for_update().get(id=book.id)
+    if book.status != "in_progress" or book.buyer_id is None:
+        raise ValueError("取引中の出品だけがキャンセルできます")
+    if reporter not in [book.seller, book.buyer] or target not in [book.seller, book.buyer]:
+        raise ValueError("この取引の当事者だけが報告できます")
+
     score_change = CANCELLATION_SCORE_CHANGES[kind]
-    log = CancellationLog.objects.create(
+    log, created = CancellationLog.objects.get_or_create(
         book=book,
         reporter=reporter,
         target=target,
         kind=kind,
-        score_change=score_change,
+        defaults={"score_change": score_change},
     )
+    if not created:
+        return log, False
+
     profile, _ = UserProfile.objects.get_or_create(user=target)
     UserProfile.objects.filter(id=profile.id).update(credit_score=F("credit_score") + score_change)
-    return log
+    book.buyer = None
+    book.status = "available"
+    book.save(update_fields=["buyer", "status"])
+    return log, True
 
 
 def _apply_evaluations_if_both_submitted(book):

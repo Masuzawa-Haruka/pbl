@@ -1,70 +1,6 @@
 from django.db import migrations, models
 
 
-def create_sample_books(apps, schema_editor):
-    Book = apps.get_model("main", "Book")
-    books = [
-        {
-            "title": "基礎からの線形代数",
-            "author": "石村園子",
-            "price": 300,
-            "category": "general",
-            "campus": "toyonaka",
-            "condition": "good",
-            "likes_count": 12,
-            "cover_theme": "blue",
-        },
-        {
-            "title": "ミクロ経済学の基礎",
-            "author": "大山道広",
-            "price": 400,
-            "category": "general",
-            "campus": "suita",
-            "condition": "good",
-            "likes_count": 8,
-            "cover_theme": "green",
-        },
-        {
-            "title": "化学の新研究",
-            "author": "卯田正彦",
-            "price": 350,
-            "category": "science",
-            "campus": "toyonaka",
-            "condition": "normal",
-            "likes_count": 5,
-            "cover_theme": "red",
-        },
-        {
-            "title": "物理学のエッセンス",
-            "author": "浜島清利",
-            "price": 300,
-            "category": "science",
-            "campus": "minoh",
-            "condition": "used",
-            "likes_count": 3,
-            "cover_theme": "purple",
-        },
-    ]
-    for book in books:
-        Book.objects.get_or_create(
-            title=book["title"],
-            author=book["author"],
-            defaults=book,
-        )
-
-
-def delete_sample_books(apps, schema_editor):
-    Book = apps.get_model("main", "Book")
-    Book.objects.filter(
-        title__in=[
-            "基礎からの線形代数",
-            "ミクロ経済学の基礎",
-            "化学の新研究",
-            "物理学のエッセンス",
-        ]
-    ).delete()
-
-
 class Migration(migrations.Migration):
 
     initial = True
@@ -134,5 +70,4 @@ class Migration(migrations.Migration):
                 "ordering": ["-created_at"],
             },
         ),
-        migrations.RunPython(create_sample_books, delete_sample_books),
     ]

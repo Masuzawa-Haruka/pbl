@@ -33,10 +33,22 @@
     <button class="submit-button" type="submit">送信</button>
   </form>
 
-  <form class="detail-actions" action="{% url 'evaluate_trade' book.id %}" method="post">
-    {% csrf_token %}
-    <button class="chip chip--active" type="submit" name="evaluation_type" value="good">good +10</button>
-    <button class="chip chip--outline" type="submit" name="evaluation_type" value="bad">bad -10</button>
-  </form>
+  {% if book.status == 'in_progress' %}
+    <section class="trade-actions" aria-label="取引を完了または解除する">
+      <h2>取引完了後の評価</h2>
+      <form class="detail-actions" action="{% url 'evaluate_trade' book.id %}" method="post">
+        {% csrf_token %}
+        <button class="chip chip--active" type="submit" name="evaluation_type" value="good">良い評価を送る（+10）</button>
+        <button class="chip chip--outline" type="submit" name="evaluation_type" value="bad">悪い評価を送る（-10）</button>
+      </form>
+      <h2>取引を解除する</h2>
+      <p>キャンセル後はこの出品を再開します。</p>
+      <form class="detail-actions" action="{% url 'cancel_trade' book.id %}" method="post">
+        {% csrf_token %}
+        <button class="chip chip--outline" type="submit" name="kind" value="cancel">自分の都合でキャンセル（-10）</button>
+        <button class="chip chip--outline" type="submit" name="kind" value="no_show">相手の無断キャンセルを報告（-30）</button>
+      </form>
+    </section>
+  {% endif %}
 </section>
 {% endblock %}

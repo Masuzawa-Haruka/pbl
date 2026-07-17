@@ -5,11 +5,11 @@ from django.core.validators import FileExtensionValidator
 
 class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
-    display_name = models.CharField(max_length=80, default="大阪 太郎")
-    university = models.CharField(max_length=80, default="大阪大学")
-    faculty = models.CharField(max_length=120, default="工学部 電子情報工学科")
-    school_year = models.CharField(max_length=20, default="2年")
-    rating = models.DecimalField(max_digits=2, decimal_places=1, default=4.8)
+    display_name = models.CharField(max_length=80, blank=True, default="")
+    university = models.CharField(max_length=80, blank=True, default="")
+    faculty = models.CharField(max_length=120, blank=True, default="")
+    school_year = models.CharField(max_length=20, blank=True, default="")
+    rating = models.DecimalField(max_digits=2, decimal_places=1, default=0)
     credit_score = models.IntegerField(default=100)
     supabase_user_id = models.CharField(max_length=80, blank=True, default="")
 
@@ -159,6 +159,12 @@ class CancellationLog(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=("book", "reporter", "target", "kind"),
+                name="unique_cancellation_report",
+            )
+        ]
 
     def __str__(self):
         return f"{self.kind}: {self.target.username} {self.score_change}"

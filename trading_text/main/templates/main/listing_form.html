@@ -25,19 +25,19 @@
 
     <label class="form-group">
       <span class="form-label">書名</span>
-      <input class="form-control" type="text" name="title" value="{{ form.title.value|default:'' }}" placeholder="例：基礎からの線形代数" required>
+      <input class="form-control" type="text" name="title" value="{{ form.title.value|default:'' }}" required>
       {{ form.title.errors }}
     </label>
 
     <label class="form-group">
       <span class="form-label">著者</span>
-      <input class="form-control" type="text" name="author" value="{{ form.author.value|default:'' }}" placeholder="例：石村園子" required>
+      <input class="form-control" type="text" name="author" value="{{ form.author.value|default:'' }}" required>
       {{ form.author.errors }}
     </label>
 
     <label class="form-group">
       <span class="form-label">価格</span>
-      <input class="form-control" type="number" name="price" value="{{ form.price.value|default:'' }}" min="0" placeholder="300" required>
+      <input class="form-control" type="number" name="price" value="{{ form.price.value|default:'' }}" min="0" required>
       {{ form.price.errors }}
     </label>
 

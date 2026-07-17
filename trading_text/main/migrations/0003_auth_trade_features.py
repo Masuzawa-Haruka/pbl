@@ -1,68 +1,7 @@
 from django.conf import settings
-from django.contrib.auth.hashers import make_password
 from django.core.validators import FileExtensionValidator
 from django.db import migrations, models
 import django.db.models.deletion
-
-
-def seed_users_and_profiles(apps, schema_editor):
-    User = apps.get_model("auth", "User")
-    Book = apps.get_model("main", "Book")
-    UserProfile = apps.get_model("main", "UserProfile")
-
-    seller, _ = User.objects.get_or_create(
-        username="seller@ecs.osaka-u.ac.jp",
-        defaults={
-            "email": "seller@ecs.osaka-u.ac.jp",
-            "password": make_password("password12345"),
-            "is_active": True,
-            "first_name": "大阪",
-            "last_name": "太郎",
-        },
-    )
-    seller.password = make_password("password12345")
-    seller.email = "seller@ecs.osaka-u.ac.jp"
-    seller.is_active = True
-    seller.save()
-
-    buyer, _ = User.objects.get_or_create(
-        username="buyer@ecs.osaka-u.ac.jp",
-        defaults={
-            "email": "buyer@ecs.osaka-u.ac.jp",
-            "password": make_password("password12345"),
-            "is_active": True,
-            "first_name": "大阪",
-            "last_name": "花子",
-        },
-    )
-    buyer.password = make_password("password12345")
-    buyer.email = "buyer@ecs.osaka-u.ac.jp"
-    buyer.is_active = True
-    buyer.save()
-
-    UserProfile.objects.get_or_create(
-        user=seller,
-        defaults={
-            "display_name": "大阪 太郎",
-            "university": "大阪大学",
-            "faculty": "工学部 電子情報工学科",
-            "school_year": "2年",
-        },
-    )
-    UserProfile.objects.get_or_create(
-        user=buyer,
-        defaults={
-            "display_name": "大阪 花子",
-            "university": "大阪大学",
-            "faculty": "基礎工学部 情報科学科",
-            "school_year": "1年",
-        },
-    )
-
-    for user in User.objects.all():
-        UserProfile.objects.get_or_create(user=user)
-
-    Book.objects.filter(seller__isnull=True).update(seller=seller)
 
 
 class Migration(migrations.Migration):
@@ -77,11 +16,11 @@ class Migration(migrations.Migration):
             name="UserProfile",
             fields=[
                 ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-                ("display_name", models.CharField(default="大阪 太郎", max_length=80)),
-                ("university", models.CharField(default="大阪大学", max_length=80)),
-                ("faculty", models.CharField(default="工学部 電子情報工学科", max_length=120)),
-                ("school_year", models.CharField(default="2年", max_length=20)),
-                ("rating", models.DecimalField(decimal_places=1, default=4.8, max_digits=2)),
+                ("display_name", models.CharField(blank=True, default="", max_length=80)),
+                ("university", models.CharField(blank=True, default="", max_length=80)),
+                ("faculty", models.CharField(blank=True, default="", max_length=120)),
+                ("school_year", models.CharField(blank=True, default="", max_length=20)),
+                ("rating", models.DecimalField(decimal_places=1, default=0, max_digits=2)),
                 ("user", models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name="profile", to=settings.AUTH_USER_MODEL)),
             ],
         ),
@@ -132,7 +71,6 @@ class Migration(migrations.Migration):
                 "ordering": ["created_at"],
             },
         ),
-        migrations.RunPython(seed_users_and_profiles, migrations.RunPython.noop),
         migrations.AlterField(
             model_name="book",
             name="seller",
