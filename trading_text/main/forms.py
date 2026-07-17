@@ -1,4 +1,5 @@
 from django import forms
+from django.core.files.uploadedfile import UploadedFile
 
 from .models import Book, UserProfile
 
@@ -38,7 +39,7 @@ class EcsLoginForm(forms.Form):
 
 
 def validate_uploaded_image(uploaded_file):
-    if not uploaded_file:
+    if not uploaded_file or not isinstance(uploaded_file, UploadedFile):
         return uploaded_file
 
     max_size = 5 * 1024 * 1024

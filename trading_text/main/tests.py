@@ -173,6 +173,30 @@ class TradeFlowTests(TestCase):
         self.assertEqual(created_book.seller, self.buyer)
         self.assertEqual(created_book.status, "available")
 
+    def test_edit_succeeds_when_existing_image_file_is_missing(self):
+        self.book.image = "book_images/missing-cover.png"
+        self.book.save(update_fields=["image"])
+        self.client.login(username="seller@ecs.osaka-u.ac.jp", password="password12345")
+
+        response = self.client.post(
+            reverse("edit_book", args=[self.book.id]),
+            {
+                "title": "更新した線形代数",
+                "author": self.book.author,
+                "price": self.book.price,
+                "category": self.book.category,
+                "campus": self.book.campus,
+                "condition": self.book.condition,
+                "description": self.book.description,
+                "status": self.book.status,
+            },
+        )
+
+        self.assertRedirects(response, reverse("book_detail", args=[self.book.id]))
+        self.book.refresh_from_db()
+        self.assertEqual(self.book.title, "更新した線形代数")
+        self.assertEqual(self.book.image.name, "book_images/missing-cover.png")
+
     def test_like_toggles_favorite_and_likes_count(self):
         self.client.login(username="buyer@ecs.osaka-u.ac.jp", password="password12345")
 
