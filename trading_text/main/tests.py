@@ -1,6 +1,9 @@
 from unittest.mock import patch
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 from django.contrib.auth.models import User
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
@@ -317,3 +320,32 @@ class TradeFlowTests(TestCase):
         )
 
         self.assertRedirects(response, reverse("chat", args=[self.book.id]))
+
+
+class MediaDeliveryTests(TestCase):
+    def test_uploaded_book_image_is_available_when_debug_is_disabled(self):
+        with TemporaryDirectory() as media_root:
+            with override_settings(DEBUG=False, MEDIA_ROOT=Path(media_root)):
+                user = User.objects.create_user(
+                    username="media@ecs.osaka-u.ac.jp",
+                    email="media@ecs.osaka-u.ac.jp",
+                    password="password12345",
+                )
+                book = Book.objects.create(
+                    seller=user,
+                    title="画像付き教科書",
+                    author="著者",
+                    price=300,
+                    category="general",
+                    campus="toyonaka",
+                    image=SimpleUploadedFile(
+                        "cover.png",
+                        b"\x89PNG\r\n\x1a\nimage-content",
+                        content_type="image/png",
+                    ),
+                )
+
+                response = self.client.get(book.image.url)
+
+                self.assertEqual(response.status_code, 200)
+                self.assertEqual(b"".join(response.streaming_content), b"\x89PNG\r\n\x1a\nimage-content")

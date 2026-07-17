@@ -13,7 +13,7 @@
     <div class="placeholder-page__profile_icon" aria-hidden="true"></div>
     <div class="placeholder-page__profile_text">
       <span>{{ profile.display_name|default:user.email }}</span>
-      {% if profile.university %}<span>{{ profile.university }} 学生</span>{% endif %}
+      <span>大阪大学生</span>
       {% if profile.faculty or profile.school_year %}<span>{{ profile.faculty }} {{ profile.school_year }}</span>{% endif %}
     </div>
     <a class="placeholder-page__profileedit" href="{% url 'edit_profile' %}">編集</a>
@@ -64,7 +64,7 @@
     </a>
     <a class="placeholder-page__section" href="{% url 'help_contact' %}">
       <span>?</span>
-      <span class="placeholder-page__section_text">ヘルプお問い合わせ</span>
+      <span class="placeholder-page__section_text">ヘルプ/お問い合わせ</span>
       <span class="placeholder-page__arrow">›</span>
     </a>
     <a class="placeholder-page__section" href="{% url 'terms' %}">

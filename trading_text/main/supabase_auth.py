@@ -15,7 +15,7 @@ def is_configured():
 
 def _request(path, payload):
     if not is_configured():
-        raise SupabaseAuthError("Supabase Auth の環境変数が未設定です。")
+        raise SupabaseAuthError("認証サービスの設定が未完了です。")
 
     body = json.dumps(payload).encode("utf-8")
     request = Request(
@@ -36,10 +36,10 @@ def _request(path, payload):
             detail = json.loads(error.read().decode("utf-8"))
         except json.JSONDecodeError:
             detail = {}
-        message = detail.get("msg") or detail.get("message") or "Supabase Auth で認証に失敗しました。"
+        message = detail.get("msg") or detail.get("message") or "メール認証に失敗しました。"
         raise SupabaseAuthError(message) from error
     except URLError as error:
-        raise SupabaseAuthError("Supabase Auth に接続できませんでした。") from error
+        raise SupabaseAuthError("認証サービスに接続できませんでした。") from error
 
 
 def sign_up(email, password, redirect_to=None):

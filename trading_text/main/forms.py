@@ -89,7 +89,7 @@ class BookEditForm(BookForm):
 class ProfileForm(forms.ModelForm):
     class Meta:
         model = UserProfile
-        fields = ("display_name", "university", "faculty", "school_year")
+        fields = ("display_name", "faculty", "school_year")
 
 
 class MessageForm(forms.Form):

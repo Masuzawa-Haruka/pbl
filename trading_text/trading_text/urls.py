@@ -19,9 +19,12 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
+from main import views
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('main.urls')),
+    path('media/<path:path>', views.media_file, name='media_file'),
 ]
 
 if settings.DEBUG:

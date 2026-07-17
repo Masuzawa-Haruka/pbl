@@ -1,4 +1,5 @@
 from django.contrib import messages
+from django.conf import settings
 from django.contrib.auth import login as auth_login
 from django.contrib.auth import logout as auth_logout
 from django.contrib.auth.decorators import login_required
@@ -7,6 +8,7 @@ from django.db import IntegrityError, transaction
 from django.db.models import F, Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.views.static import serve
 
 from .forms import BookEditForm, BookForm, EcsLoginForm, EcsUserCreationForm, MessageForm, ProfileForm
 from .models import Book, Favorite, Message, UserProfile
@@ -92,7 +94,7 @@ def signup(request):
         form = EcsUserCreationForm(request.POST)
         if form.is_valid():
             if not supabase_is_configured():
-                form.add_error(None, "Supabase Auth の設定が未完了です。SUPABASE_URL と SUPABASE_ANON_KEY を設定してください。")
+                form.add_error(None, "認証サービスの設定が未完了です。管理者にお問い合わせください。")
             else:
                 email = form.cleaned_data["email"]
                 password = form.cleaned_data["password1"]
@@ -123,7 +125,7 @@ def login(request):
         form = EcsLoginForm(request.POST)
         if form.is_valid():
             if not supabase_is_configured():
-                form.add_error(None, "Supabase Auth の設定が未完了です。SUPABASE_URL と SUPABASE_ANON_KEY を設定してください。")
+                form.add_error(None, "認証サービスの設定が未完了です。管理者にお問い合わせください。")
             else:
                 email = form.cleaned_data["email"]
                 password = form.cleaned_data["password"]
@@ -398,3 +400,7 @@ def terms(request):
 
 def help_contact(request):
     return render(request, "main/help_contact.html")
+
+
+def media_file(request, path):
+    return serve(request, path, document_root=settings.MEDIA_ROOT)
