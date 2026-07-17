@@ -299,6 +299,9 @@ class TradeFlowTests(TestCase):
         )
         self.client.login(username="buyer@ecs.osaka-u.ac.jp", password="password12345")
 
+        response = self.client.get(reverse("chat", args=[self.book.id]))
+        self.assertContains(response, "このボタンを押すと取引が確定し、この参考書の募集は終了します。")
+
         response = self.client.post(reverse("accept_trade_offer", args=[offer.id]), follow=True)
 
         self.assertContains(response, "この参考書の取引が成立しました。")

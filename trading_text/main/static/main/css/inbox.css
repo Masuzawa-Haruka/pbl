@@ -347,6 +347,11 @@
   font-weight: 700;
 }
 
+.trade-offer .trade-offer__confirmation-note {
+  color: #8a3b00;
+  font-weight: 800;
+}
+
 .trade-offer__price strong {
   color: #070d2f;
   font-size: 18px;

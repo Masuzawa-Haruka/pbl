@@ -54,6 +54,7 @@
         <p>購入者の同意を待っています。</p>
       {% elif can_accept_offer %}
         <p>出品者からこの価格で取引条件が提示されています。</p>
+        <p class="trade-offer__confirmation-note">このボタンを押すと取引が確定し、この参考書の募集は終了します。</p>
         <form action="{% url 'accept_trade_offer' latest_offer.id %}" method="post">
           {% csrf_token %}
           <button class="submit-button" type="submit">この条件に同意する</button>
