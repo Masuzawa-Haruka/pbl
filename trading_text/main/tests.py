@@ -9,7 +9,7 @@ from django.test import SimpleTestCase, TestCase, override_settings
 from django.urls import reverse
 
 from .forms import EcsUserCreationForm
-from .models import Book, Favorite, Message, UserProfile
+from .models import Book, Favorite, Message, TradeOffer, UserProfile
 from .services import apply_cancellation, submit_evaluation
 from .storage import SupabaseStorage
 from .views import sync_supabase_user
@@ -223,6 +223,169 @@ class TradeFlowTests(TestCase):
         self.assertEqual(self.book.status, "available")
         self.assertIsNone(self.book.buyer)
         self.assertFalse(Message.objects.filter(book=self.book).exists())
+
+    def test_message_does_not_establish_trade(self):
+        self.client.login(username="buyer@ecs.osaka-u.ac.jp", password="password12345")
+
+        response = self.client.post(reverse("chat", args=[self.book.id]), {"content": "購入を相談します。"})
+
+        self.assertRedirects(response, reverse("chat", args=[self.book.id]))
+        self.book.refresh_from_db()
+        self.assertEqual(self.book.status, "available")
+        self.assertIsNone(self.book.buyer)
+
+    def test_chat_messages_do_not_render_as_flash_notifications(self):
+        Message.objects.create(
+            book=self.book,
+            sender=self.buyer,
+            receiver=self.seller,
+            content="価格を相談したいです。",
+        )
+        self.client.login(username="buyer@ecs.osaka-u.ac.jp", password="password12345")
+
+        response = self.client.get(reverse("chat", args=[self.book.id]))
+
+        self.assertContains(response, "価格を相談したいです。")
+        self.assertNotContains(response, f"{self.book.title}: {self.buyer.username}")
+
+    def test_seller_can_offer_a_changed_price(self):
+        Message.objects.create(
+            book=self.book,
+            sender=self.buyer,
+            receiver=self.seller,
+            content="購入を相談します。",
+        )
+        self.client.login(username="seller@ecs.osaka-u.ac.jp", password="password12345")
+
+        response = self.client.post(
+            reverse("create_trade_offer", args=[self.book.id]),
+            {"buyer": self.buyer.id, "price": 250},
+        )
+
+        self.assertRedirects(
+            response,
+            f"{reverse('chat', args=[self.book.id])}?partner={self.buyer.id}",
+        )
+        offer = TradeOffer.objects.get(book=self.book, buyer=self.buyer)
+        self.assertEqual(offer.price, 250)
+        self.assertEqual(offer.status, "pending")
+        self.book.refresh_from_db()
+        self.assertEqual(self.book.status, "available")
+
+    def test_buyer_cannot_create_trade_offer(self):
+        Message.objects.create(
+            book=self.book,
+            sender=self.buyer,
+            receiver=self.seller,
+            content="購入を相談します。",
+        )
+        self.client.login(username="buyer@ecs.osaka-u.ac.jp", password="password12345")
+
+        self.client.post(
+            reverse("create_trade_offer", args=[self.book.id]),
+            {"buyer": self.buyer.id, "price": 1},
+        )
+
+        self.assertFalse(TradeOffer.objects.filter(book=self.book).exists())
+
+    def test_buyer_acceptance_establishes_trade_at_offered_price(self):
+        offer = TradeOffer.objects.create(
+            book=self.book,
+            seller=self.seller,
+            buyer=self.buyer,
+            price=250,
+        )
+        self.client.login(username="buyer@ecs.osaka-u.ac.jp", password="password12345")
+
+        response = self.client.post(reverse("accept_trade_offer", args=[offer.id]), follow=True)
+
+        self.assertContains(response, "この参考書の取引が成立しました。")
+        offer.refresh_from_db()
+        self.book.refresh_from_db()
+        self.assertEqual(offer.status, "accepted")
+        self.assertEqual(self.book.status, "in_progress")
+        self.assertEqual(self.book.buyer, self.buyer)
+        self.assertEqual(self.book.price, 250)
+
+        response = self.client.get(reverse("chat", args=[self.book.id]))
+        self.assertNotContains(response, "flash-message--success")
+
+    def test_non_target_buyer_cannot_accept_offer(self):
+        offer = TradeOffer.objects.create(
+            book=self.book,
+            seller=self.seller,
+            buyer=self.buyer,
+            price=250,
+        )
+        self.client.login(username="other@ecs.osaka-u.ac.jp", password="password12345")
+
+        self.client.post(reverse("accept_trade_offer", args=[offer.id]))
+
+        offer.refresh_from_db()
+        self.book.refresh_from_db()
+        self.assertEqual(offer.status, "pending")
+        self.assertEqual(self.book.status, "available")
+        self.assertIsNone(self.book.buyer)
+
+    def test_new_offer_withdraws_previous_buyers_offer(self):
+        for buyer in (self.buyer, self.other_buyer):
+            Message.objects.create(
+                book=self.book,
+                sender=buyer,
+                receiver=self.seller,
+                content="購入を相談します。",
+            )
+        first_offer = TradeOffer.objects.create(
+            book=self.book,
+            seller=self.seller,
+            buyer=self.buyer,
+            price=250,
+        )
+        self.client.login(username="seller@ecs.osaka-u.ac.jp", password="password12345")
+
+        self.client.post(
+            reverse("create_trade_offer", args=[self.book.id]),
+            {"buyer": self.other_buyer.id, "price": 280},
+        )
+
+        first_offer.refresh_from_db()
+        self.assertEqual(first_offer.status, "withdrawn")
+        self.assertTrue(
+            TradeOffer.objects.filter(
+                book=self.book,
+                buyer=self.other_buyer,
+                price=280,
+                status="pending",
+            ).exists()
+        )
+
+    def test_only_one_buyer_can_establish_trade(self):
+        first_offer = TradeOffer.objects.create(
+            book=self.book,
+            seller=self.seller,
+            buyer=self.buyer,
+            price=250,
+        )
+        second_offer = TradeOffer.objects.create(
+            book=self.book,
+            seller=self.seller,
+            buyer=self.other_buyer,
+            price=280,
+        )
+        self.client.login(username="buyer@ecs.osaka-u.ac.jp", password="password12345")
+        self.client.post(reverse("accept_trade_offer", args=[first_offer.id]))
+        self.client.logout()
+        self.client.login(username="other@ecs.osaka-u.ac.jp", password="password12345")
+
+        self.client.post(reverse("accept_trade_offer", args=[second_offer.id]))
+
+        first_offer.refresh_from_db()
+        second_offer.refresh_from_db()
+        self.book.refresh_from_db()
+        self.assertEqual(first_offer.status, "accepted")
+        self.assertEqual(second_offer.status, "withdrawn")
+        self.assertEqual(self.book.buyer, self.buyer)
+        self.assertEqual(self.book.price, 250)
 
     def test_second_buyer_can_send_a_separate_consultation(self):
         self.book.buyer = self.buyer

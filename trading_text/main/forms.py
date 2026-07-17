@@ -99,3 +99,7 @@ class MessageForm(forms.Form):
         widget=forms.Textarea(attrs={"rows": 3, "placeholder": "購入相談の内容を入力"}),
         max_length=1000,
     )
+
+
+class TradeOfferForm(forms.Form):
+    price = forms.IntegerField(label="取引価格", min_value=0, max_value=1_000_000)

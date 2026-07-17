@@ -122,6 +122,36 @@ class Message(models.Model):
         return f"{self.book.title}: {self.sender.username}"
 
 
+class TradeOffer(models.Model):
+    STATUS_CHOICES = [
+        ("pending", "同意待ち"),
+        ("accepted", "成立"),
+        ("withdrawn", "取り下げ"),
+        ("cancelled", "キャンセル"),
+    ]
+
+    book = models.ForeignKey(Book, on_delete=models.CASCADE, related_name="trade_offers")
+    seller = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sent_trade_offers")
+    buyer = models.ForeignKey(User, on_delete=models.CASCADE, related_name="received_trade_offers")
+    price = models.PositiveIntegerField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=("book",),
+                condition=models.Q(status="accepted"),
+                name="one_accepted_offer_per_book",
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.book.title}: {self.price}円 ({self.get_status_display()})"
+
+
 class Evaluation(models.Model):
     TYPE_CHOICES = [
         ("good", "good"),

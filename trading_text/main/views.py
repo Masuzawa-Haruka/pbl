@@ -10,8 +10,16 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.static import serve
 
-from .forms import BookEditForm, BookForm, EcsLoginForm, EcsUserCreationForm, MessageForm, ProfileForm
-from .models import Book, Favorite, Message, UserProfile
+from .forms import (
+    BookEditForm,
+    BookForm,
+    EcsLoginForm,
+    EcsUserCreationForm,
+    MessageForm,
+    ProfileForm,
+    TradeOfferForm,
+)
+from .models import Book, Favorite, Message, TradeOffer, UserProfile
 from .services import apply_cancellation, submit_evaluation
 from .supabase_auth import SupabaseAuthError, is_configured as supabase_is_configured
 from .supabase_auth import sign_in_with_password, sign_up
@@ -297,16 +305,19 @@ def chat(request, book_id):
                 receiver=partner,
                 content=form.cleaned_data["content"],
             )
-            if not is_seller and book.status == "available":
-                book.status = "in_progress"
-                book.buyer = request.user
-                book.save(update_fields=["status", "buyer"])
             chat_url = reverse("chat", kwargs={"book_id": book.id})
             if is_seller:
                 chat_url = f"{chat_url}?partner={partner.id}"
             return redirect(chat_url)
     else:
         form = MessageForm()
+
+    thread_buyer = partner if is_seller else request.user
+    latest_offer = (
+        TradeOffer.objects.filter(book=book, buyer=thread_buyer)
+        .select_related("buyer", "seller")
+        .first()
+    )
 
     return render(
         request,
@@ -316,10 +327,92 @@ def chat(request, book_id):
             "partner": partner,
             "chat_messages": thread_messages,
             "form": form,
+            "offer_form": TradeOfferForm(initial={"price": book.price}),
+            "latest_offer": latest_offer,
             "is_seller": is_seller,
+            "can_create_offer": is_seller and book.status == "available" and has_thread,
+            "can_accept_offer": (
+                not is_seller
+                and book.status == "available"
+                and latest_offer is not None
+                and latest_offer.status == "pending"
+            ),
             "can_manage_trade": book.status == "in_progress" and partner == book.buyer,
         },
     )
+
+
+@login_required
+def create_trade_offer(request, book_id):
+    book = get_object_or_404(Book.objects.select_related("seller"), id=book_id)
+    if request.user != book.seller or request.method != "POST":
+        messages.error(request, "取引条件を提示できるのは出品者だけです。")
+        return redirect("book_detail", book_id=book.id)
+
+    buyer = get_object_or_404(User, id=request.POST.get("buyer"))
+    chat_url = f"{reverse('chat', kwargs={'book_id': book.id})}?partner={buyer.id}"
+    has_thread = Message.objects.filter(book=book).filter(
+        Q(sender=book.seller, receiver=buyer) | Q(sender=buyer, receiver=book.seller)
+    ).exists()
+    if buyer == book.seller or not has_thread:
+        messages.error(request, "この購入希望者には取引条件を提示できません。")
+        return redirect(chat_url)
+
+    form = TradeOfferForm(request.POST)
+    if not form.is_valid():
+        messages.error(request, "取引価格を正しく入力してください。")
+        return redirect(chat_url)
+
+    with transaction.atomic():
+        locked_book = Book.objects.select_for_update().get(id=book.id)
+        if locked_book.status != "available":
+            messages.error(request, "この出品はすでに取引が成立しています。")
+            return redirect(chat_url)
+        TradeOffer.objects.filter(book=locked_book, status="pending").update(status="withdrawn")
+        TradeOffer.objects.create(
+            book=locked_book,
+            seller=request.user,
+            buyer=buyer,
+            price=form.cleaned_data["price"],
+        )
+
+    messages.success(request, "取引条件を提示しました。購入者の同意待ちです。")
+    return redirect(chat_url)
+
+
+@login_required
+def accept_trade_offer(request, offer_id):
+    offer = get_object_or_404(TradeOffer.objects.select_related("book", "seller", "buyer"), id=offer_id)
+    book = offer.book
+    chat_url = reverse("chat", kwargs={"book_id": book.id})
+    if request.user != offer.buyer or request.method != "POST":
+        messages.error(request, "この取引条件には同意できません。")
+        return redirect(chat_url)
+
+    with transaction.atomic():
+        locked_book = Book.objects.select_for_update().get(id=book.id)
+        locked_offer = TradeOffer.objects.select_for_update().get(id=offer.id)
+        if locked_offer.status != "pending":
+            messages.info(request, "この取引条件はすでに処理されています。")
+            return redirect(chat_url)
+        if locked_book.status != "available":
+            locked_offer.status = "withdrawn"
+            locked_offer.save(update_fields=["status", "updated_at"])
+            messages.error(request, "この参考書はすでに別の取引が成立しています。")
+            return redirect(chat_url)
+
+        TradeOffer.objects.filter(book=locked_book, status="pending").exclude(id=locked_offer.id).update(
+            status="withdrawn"
+        )
+        locked_offer.status = "accepted"
+        locked_offer.save(update_fields=["status", "updated_at"])
+        locked_book.buyer = request.user
+        locked_book.price = locked_offer.price
+        locked_book.status = "in_progress"
+        locked_book.save(update_fields=["buyer", "price", "status"])
+
+    messages.success(request, "この参考書の取引が成立しました。")
+    return redirect(chat_url)
 
 
 @login_required

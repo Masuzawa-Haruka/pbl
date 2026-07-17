@@ -36,6 +36,46 @@
     <button class="submit-button" type="submit">送信</button>
   </form>
 
+  {% if latest_offer.status == 'accepted' %}
+    <section class="trade-offer trade-offer--accepted" aria-label="成立した取引">
+      <p class="trade-offer__label">取引成立</p>
+      <h2>この参考書の取引が成立しました</h2>
+      <p class="trade-offer__price">合意価格 <strong>{{ latest_offer.price }}円</strong></p>
+    </section>
+  {% elif latest_offer.status == 'pending' %}
+    <section class="trade-offer" aria-label="提示された取引条件">
+      <p class="trade-offer__label">取引条件</p>
+      <h2>{{ latest_offer.price }}円</h2>
+      {% if is_seller %}
+        <p>購入者の同意を待っています。</p>
+      {% elif can_accept_offer %}
+        <p>出品者からこの価格で取引条件が提示されています。</p>
+        <form action="{% url 'accept_trade_offer' latest_offer.id %}" method="post">
+          {% csrf_token %}
+          <button class="submit-button" type="submit">この条件に同意する</button>
+        </form>
+      {% endif %}
+    </section>
+  {% endif %}
+
+  {% if can_create_offer %}
+    <section class="trade-offer trade-offer--seller" aria-label="取引条件を提示する">
+      <p class="trade-offer__label">取引条件を提示</p>
+      <form class="trade-offer__form" action="{% url 'create_trade_offer' book.id %}" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="buyer" value="{{ partner.id }}">
+        <label class="form-group">
+          <span class="form-label">取引価格</span>
+          <span class="trade-offer__price-field">
+            <input class="form-control" type="number" name="price" value="{{ book.price }}" min="0" max="1000000" required>
+            <span>円</span>
+          </span>
+        </label>
+        <button class="submit-button" type="submit">取引する</button>
+      </form>
+    </section>
+  {% endif %}
+
   {% if can_manage_trade %}
     <section class="trade-actions" aria-label="取引を完了または解除する">
       <h2>取引完了後の評価</h2>

@@ -286,3 +286,68 @@
 .chat-form {
   margin-top: 18px;
 }
+
+.trade-offer {
+  margin-top: 18px;
+  padding: 16px;
+  border: 1px solid #b8cff5;
+  border-radius: 8px;
+  background: #f5f8ff;
+}
+
+.trade-offer--seller {
+  border-color: #d9dfeb;
+  background: #ffffff;
+}
+
+.trade-offer--accepted {
+  border-color: #9ddaaa;
+  background: #edf9f0;
+}
+
+.trade-offer__label,
+.trade-offer h2,
+.trade-offer p {
+  margin: 0;
+}
+
+.trade-offer__label {
+  color: #0034b8;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.trade-offer h2 {
+  margin-top: 6px;
+  color: #070d2f;
+  font-size: 20px;
+}
+
+.trade-offer p:not(.trade-offer__label) {
+  margin-top: 8px;
+  color: #596173;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.trade-offer__price strong {
+  color: #070d2f;
+  font-size: 18px;
+}
+
+.trade-offer .submit-button {
+  margin-top: 14px;
+}
+
+.trade-offer__price-field {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.trade-offer__price-field > span {
+  color: #070d2f;
+  font-size: 16px;
+  font-weight: 800;
+}
