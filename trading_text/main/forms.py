@@ -9,6 +9,7 @@ ALLOWED_EMAIL_DOMAIN = "@ecs.osaka-u.ac.jp"
 
 
 class EcsUserCreationForm(forms.Form):
+    display_name = forms.CharField(label="名前", max_length=80)
     email = forms.EmailField(label="大阪大学 ECS メール")
     password1 = forms.CharField(label="パスワード", widget=forms.PasswordInput, min_length=8)
     password2 = forms.CharField(label="パスワード確認", widget=forms.PasswordInput, min_length=8)
@@ -18,6 +19,12 @@ class EcsUserCreationForm(forms.Form):
         if not email.endswith(ALLOWED_EMAIL_DOMAIN):
             raise forms.ValidationError("@ecs.osaka-u.ac.jp のメールアドレスのみ登録できます。")
         return email
+
+    def clean_display_name(self):
+        display_name = self.cleaned_data["display_name"].strip()
+        if not display_name:
+            raise forms.ValidationError("名前を入力してください。")
+        return display_name
 
     def clean(self):
         cleaned_data = super().clean()
@@ -89,6 +96,7 @@ class BookEditForm(BookForm):
 
 
 class ProfileForm(forms.ModelForm):
+    display_name = forms.CharField(label="名前", max_length=80)
     faculty = forms.ChoiceField(
         label="学部・学科",
         choices=[("", "学部・学科を選択してください"), *UserProfile.FACULTY_CHOICES],
@@ -102,6 +110,9 @@ class ProfileForm(forms.ModelForm):
     class Meta:
         model = UserProfile
         fields = ("display_name", "faculty", "school_year")
+
+    def clean_display_name(self):
+        return self.cleaned_data["display_name"].strip()
 
 
 class MessageForm(forms.Form):

@@ -128,8 +128,24 @@
 .book-author {
   font-size: 16px;
   color: #333;
-  margin: 0 0 24px;
+  margin: 0 0 8px;
   font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.book-seller {
+  margin: 0 0 24px;
+  color: #596173;
+  font-size: 14px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.book-seller a {
+  color: #0034b8;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .tags {

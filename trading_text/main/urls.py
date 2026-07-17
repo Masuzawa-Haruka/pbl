@@ -9,6 +9,7 @@ urlpatterns = [
     path("signup/", views.signup, name="signup"),
     path("activate/<uidb64>/<token>/", views.activate, name="activate"),
     path("search/", views.search, name="search"),
+    path("user/<int:user_id>/", views.user_profile, name="user_profile"),
     path("listing/new/", views.listing_form, name="listing_form"),
     path("book/<int:book_id>/", views.book_detail, name="book_detail"),
     path("book/<int:book_id>/like/", views.toggle_like, name="toggle_like"),

@@ -15,7 +15,7 @@
   <div class="handoff-card handoff-card--accepted">
     <p class="trade-offer__label">受け渡し完了</p>
     <h2>{{ book.title }}</h2>
-    <p>相手：{{ target.profile.display_name|default:"取引相手" }}</p>
+    <p>相手：<a class="profile-link" href="{% url 'user_profile' target.id %}">{{ target.profile.display_name|default:"名前未設定" }}</a></p>
     <dl class="handoff-details">
       <div><dt>日時</dt><dd>{{ handoff.handoff_at|date:"Y年n月j日 H:i" }}</dd></div>
       <div><dt>場所</dt><dd>{{ handoff.location }}</dd></div>

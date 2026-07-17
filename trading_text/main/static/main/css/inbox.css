@@ -284,6 +284,13 @@
   background: #ffffff;
 }
 
+.profile-link {
+  color: #0034b8;
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 .chat-messages {
   display: flex;
   flex-direction: column;

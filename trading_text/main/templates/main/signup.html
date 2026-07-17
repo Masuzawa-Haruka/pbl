@@ -15,6 +15,11 @@
       {% csrf_token %}
       {{ form.non_field_errors }}
       <label class="login-field">
+        <span>名前</span>
+        <input type="text" name="display_name" value="{{ form.display_name.value|default:'' }}" maxlength="80" autocomplete="name" required>
+        {{ form.display_name.errors }}
+      </label>
+      <label class="login-field">
         <span>メールアドレス</span>
         <input type="email" name="email" value="{{ form.email.value|default:'' }}" placeholder="name@ecs.osaka-u.ac.jp" required>
         {{ form.email.errors }}

@@ -27,7 +27,7 @@ from .supabase_auth import SupabaseAuthError, is_configured as supabase_is_confi
 from .supabase_auth import sign_in_with_password, sign_up
 
 
-def sync_supabase_user(email, supabase_user_id=None):
+def sync_supabase_user(email, supabase_user_id=None, display_name=None):
     user, _created = User.objects.get_or_create(
         username=email,
         defaults={
@@ -45,9 +45,15 @@ def sync_supabase_user(email, supabase_user_id=None):
     if updates:
         user.save(update_fields=updates)
     profile, _ = UserProfile.objects.get_or_create(user=user)
+    profile_updates = []
     if supabase_user_id and profile.supabase_user_id != supabase_user_id:
         profile.supabase_user_id = supabase_user_id
-        profile.save(update_fields=["supabase_user_id"])
+        profile_updates.append("supabase_user_id")
+    if display_name and profile.display_name != display_name:
+        profile.display_name = display_name
+        profile_updates.append("display_name")
+    if profile_updates:
+        profile.save(update_fields=profile_updates)
     return user
 
 
@@ -96,6 +102,31 @@ def search(request):
     return render(request, "main/search.html", get_search_context(request))
 
 
+def user_profile(request, user_id):
+    profile_user = get_object_or_404(User.objects.select_related("profile"), id=user_id)
+    profile, _ = UserProfile.objects.get_or_create(user=profile_user)
+    listing_count = Book.objects.filter(seller=profile_user).count()
+    completed_trade_count = Book.objects.filter(
+        Q(seller=profile_user) | Q(buyer=profile_user),
+        status="sold",
+    ).distinct().count()
+    active_listings = Book.objects.filter(
+        seller=profile_user,
+        status__in=["available", "in_progress"],
+    )[:6]
+    return render(
+        request,
+        "main/user_profile.html",
+        {
+            "profile_user": profile_user,
+            "profile": profile,
+            "listing_count": listing_count,
+            "completed_trade_count": completed_trade_count,
+            "active_listings": active_listings,
+        },
+    )
+
+
 def signup(request):
     if request.user.is_authenticated:
         return redirect("search")
@@ -108,11 +139,13 @@ def signup(request):
             else:
                 email = form.cleaned_data["email"]
                 password = form.cleaned_data["password1"]
+                display_name = form.cleaned_data["display_name"]
                 try:
                     sign_up(
                         email,
                         password,
                         request.build_absolute_uri(reverse("login")),
+                        display_name,
                     )
                 except SupabaseAuthError as error:
                     form.add_error(None, str(error))
@@ -145,7 +178,12 @@ def login(request):
                     form.add_error(None, str(error))
                 else:
                     supabase_user = auth_response.get("user") or {}
-                    user = sync_supabase_user(email, supabase_user.get("id"))
+                    user_metadata = supabase_user.get("user_metadata") or {}
+                    user = sync_supabase_user(
+                        email,
+                        supabase_user.get("id"),
+                        user_metadata.get("display_name"),
+                    )
                     request.session["supabase_access_token"] = auth_response.get("access_token", "")
                     request.session["supabase_refresh_token"] = auth_response.get("refresh_token", "")
                     request.session["supabase_user_id"] = supabase_user.get("id", "")

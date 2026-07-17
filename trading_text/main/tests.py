@@ -38,6 +38,7 @@ class AuthFormTests(TestCase):
     def test_signup_requires_ecs_email(self):
         form = EcsUserCreationForm(
             data={
+                "display_name": "大阪 太郎",
                 "email": "student@osaka-u.ac.jp",
                 "password1": "StrongPass12345",
                 "password2": "StrongPass12345",
@@ -50,6 +51,7 @@ class AuthFormTests(TestCase):
     def test_signup_accepts_ecs_email(self):
         form = EcsUserCreationForm(
             data={
+                "display_name": "大阪 太郎",
                 "email": "student@ecs.osaka-u.ac.jp",
                 "password1": "StrongPass12345",
                 "password2": "StrongPass12345",
@@ -65,6 +67,7 @@ class AuthFormTests(TestCase):
         response = self.client.post(
             reverse("signup"),
             {
+                "display_name": "大阪 太郎",
                 "email": "student@ecs.osaka-u.ac.jp",
                 "password1": "StrongPass12345",
                 "password2": "StrongPass12345",
@@ -72,7 +75,25 @@ class AuthFormTests(TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        mock_sign_up.assert_called_once()
+        mock_sign_up.assert_called_once_with(
+            "student@ecs.osaka-u.ac.jp",
+            "StrongPass12345",
+            "http://testserver/login/",
+            "大阪 太郎",
+        )
+
+    def test_signup_requires_display_name(self):
+        form = EcsUserCreationForm(
+            data={
+                "display_name": "   ",
+                "email": "student@ecs.osaka-u.ac.jp",
+                "password1": "StrongPass12345",
+                "password2": "StrongPass12345",
+            }
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertIn("display_name", form.errors)
 
     @override_settings(SUPABASE_URL="https://example.supabase.co", SUPABASE_ANON_KEY="anon-key")
     @patch("main.views.sign_in_with_password")
@@ -80,7 +101,10 @@ class AuthFormTests(TestCase):
         mock_sign_in.return_value = {
             "access_token": "access-token",
             "refresh_token": "refresh-token",
-            "user": {"id": "supabase-user-id"},
+            "user": {
+                "id": "supabase-user-id",
+                "user_metadata": {"display_name": "大阪 花子"},
+            },
         }
 
         response = self.client.post(
@@ -94,11 +118,13 @@ class AuthFormTests(TestCase):
         self.assertRedirects(response, reverse("search"))
         user = User.objects.get(username="student@ecs.osaka-u.ac.jp")
         self.assertEqual(user.profile.supabase_user_id, "supabase-user-id")
+        self.assertEqual(user.profile.display_name, "大阪 花子")
 
     def test_sync_supabase_user_persists_supabase_user_id(self):
-        user = sync_supabase_user("sync@ecs.osaka-u.ac.jp", "supabase-id-123")
+        user = sync_supabase_user("sync@ecs.osaka-u.ac.jp", "supabase-id-123", "同期 太郎")
 
         self.assertEqual(user.profile.supabase_user_id, "supabase-id-123")
+        self.assertEqual(user.profile.display_name, "同期 太郎")
 
     def test_profile_accepts_only_official_faculty_department_choices(self):
         valid_form = ProfileForm(
@@ -183,11 +209,45 @@ class TradeFlowTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, self.book.title)
         self.assertContains(response, "著者：石村園子")
+        self.assertContains(response, "出品者：")
+        self.assertContains(response, "大阪 太郎")
+        self.assertContains(response, reverse("user_profile", args=[self.seller.id]))
         self.assertContains(response, "状態 良い")
         self.assertContains(response, "豊中キャンパス")
         self.assertContains(response, "300")
         self.assertContains(response, "いいね 0")
         self.assertContains(response, "ログインして購入相談する")
+
+    def test_public_profile_shows_score_listing_and_completed_trade_counts(self):
+        Book.objects.create(
+            seller=self.seller,
+            buyer=self.buyer,
+            title="取引完了した教科書",
+            author="著者",
+            price=200,
+            category="general",
+            campus="toyonaka",
+            status="sold",
+        )
+
+        response = self.client.get(reverse("user_profile", args=[self.seller.id]))
+
+        self.assertContains(response, "大阪 太郎")
+        self.assertContains(response, "信用点数")
+        self.assertContains(response, "100点")
+        self.assertContains(response, "出品数")
+        self.assertContains(response, "2件")
+        self.assertContains(response, "取引完了数")
+        self.assertContains(response, "1件")
+        self.assertNotContains(response, self.seller.email)
+
+    def test_chat_partner_name_links_to_public_profile(self):
+        self.client.login(username=self.buyer.username, password="password12345")
+
+        response = self.client.get(reverse("chat", args=[self.book.id]))
+
+        self.assertContains(response, "大阪 太郎")
+        self.assertContains(response, reverse("user_profile", args=[self.seller.id]))
 
     def test_profile_edit_uses_official_faculty_department_select(self):
         self.client.login(username=self.seller.username, password="password12345")

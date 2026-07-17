@@ -1,0 +1,36 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}{{ profile.display_name|default:"プロフィール" }} | OU Textbook{% endblock %}
+{% block extra_style %}<link rel="stylesheet" href="{% static 'main/css/mypage.css' %}">{% endblock %}
+{% block header_title %}プロフィール{% endblock %}
+
+{% block content %}
+<section class="public-profile" aria-label="利用者プロフィール">
+  <header class="public-profile__header">
+    <div class="public-profile__avatar" aria-hidden="true">{{ profile.display_name|first|default:"名" }}</div>
+    <div class="public-profile__identity">
+      <h1>{{ profile.display_name|default:"名前未設定" }}</h1>
+      {% if profile.faculty %}<p>{{ profile.faculty }}</p>{% endif %}
+      {% if profile.school_year %}<p>{{ profile.school_year }}</p>{% endif %}
+    </div>
+  </header>
+
+  <dl class="public-profile__stats">
+    <div><dt>信用点数</dt><dd>{{ profile.credit_score }}点</dd></div>
+    <div><dt>出品数</dt><dd>{{ listing_count }}件</dd></div>
+    <div><dt>取引完了数</dt><dd>{{ completed_trade_count }}件</dd></div>
+  </dl>
+
+  <section class="public-profile__listings" aria-label="出品中の商品">
+    <h2>出品中の商品</h2>
+    {% for book in active_listings %}
+      <a href="{% url 'book_detail' book.id %}">
+        <span>{{ book.title }}</span><strong>{{ book.price }}円</strong>
+      </a>
+    {% empty %}
+      <p>現在出品中の商品はありません。</p>
+    {% endfor %}
+  </section>
+</section>
+{% endblock %}

@@ -42,13 +42,18 @@ def _request(path, payload):
         raise SupabaseAuthError("認証サービスに接続できませんでした。") from error
 
 
-def sign_up(email, password, redirect_to=None):
+def sign_up(email, password, redirect_to=None, display_name=None):
     payload = {
         "email": email,
         "password": password,
     }
+    options = {}
     if redirect_to:
-        payload["options"] = {"email_redirect_to": redirect_to}
+        options["email_redirect_to"] = redirect_to
+    if display_name:
+        options["data"] = {"display_name": display_name}
+    if options:
+        payload["options"] = options
     return _request("signup", payload)
 
 

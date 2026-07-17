@@ -376,3 +376,128 @@
   font-size: 12px;
   font-weight: 700;
 }
+
+.public-profile {
+  padding: 24px 20px 44px;
+}
+
+.public-profile__header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid #d9dfeb;
+}
+
+.public-profile__avatar {
+  display: flex;
+  flex: 0 0 64px;
+  width: 64px;
+  height: 64px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #dce8ff;
+  color: #0034b8;
+  font-size: 24px;
+  font-weight: 900;
+}
+
+.public-profile__identity {
+  min-width: 0;
+}
+
+.public-profile__identity h1,
+.public-profile__identity p {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.public-profile__identity h1 {
+  color: #070d2f;
+  font-size: 22px;
+  line-height: 1.4;
+}
+
+.public-profile__identity p {
+  margin-top: 4px;
+  color: #596173;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.public-profile__stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 22px 0 0;
+  border-top: 1px solid #d9dfeb;
+  border-bottom: 1px solid #d9dfeb;
+}
+
+.public-profile__stats > div {
+  min-width: 0;
+  padding: 16px 6px;
+  text-align: center;
+}
+
+.public-profile__stats > div + div {
+  border-left: 1px solid #d9dfeb;
+}
+
+.public-profile__stats dt,
+.public-profile__stats dd {
+  margin: 0;
+}
+
+.public-profile__stats dt {
+  color: #596173;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1.4;
+}
+
+.public-profile__stats dd {
+  margin-top: 7px;
+  color: #070d2f;
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.public-profile__listings {
+  margin-top: 26px;
+}
+
+.public-profile__listings h2 {
+  margin: 0 0 8px;
+  color: #070d2f;
+  font-size: 16px;
+}
+
+.public-profile__listings a {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid #e5e9f1;
+  color: #070d2f;
+  text-decoration: none;
+}
+
+.public-profile__listings span {
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.public-profile__listings strong {
+  color: #e31b23;
+  font-size: 14px;
+}
+
+.public-profile__listings p {
+  margin: 12px 0 0;
+  color: #596173;
+  font-size: 13px;
+  font-weight: 700;
+}

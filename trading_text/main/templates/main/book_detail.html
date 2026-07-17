@@ -40,6 +40,9 @@
 
     <h1 class="book-title">{{ book.title }}</h1>
     <p class="book-author">著者：{{ book.author }}</p>
+    <p class="book-seller">
+      出品者：<a href="{% url 'user_profile' book.seller.id %}">{{ book.seller.profile.display_name|default:"名前未設定" }}</a>
+    </p>
 
     <div class="tags">
       <span class="tag">状態 {{ book.get_condition_display }}</span>

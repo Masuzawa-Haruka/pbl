@@ -16,7 +16,7 @@
   </a>
   <div class="chat-book">
     <p class="inbox-thread__title">{{ book.title }}</p>
-    <p class="inbox-thread__meta">相手：{{ partner.profile.display_name|default:"取引相手" }}</p>
+    <p class="inbox-thread__meta">相手：<a class="profile-link" href="{% url 'user_profile' partner.id %}">{{ partner.profile.display_name|default:"名前未設定" }}</a></p>
   </div>
 
   <div class="chat-messages">
