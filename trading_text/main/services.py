@@ -23,6 +23,14 @@ def submit_evaluation(book, evaluator, target, evaluation_type):
         raise ValueError("自分自身は評価できません")
 
     book = book.__class__.objects.select_for_update().get(id=book.id)
+    handoff_completed = HandoffProposal.objects.filter(
+        trade_offer__book=book,
+        trade_offer__status="accepted",
+        status="accepted",
+        completed_at__isnull=False,
+    ).exists()
+    if not handoff_completed:
+        raise ValueError("双方が受け渡し完了を確認した後に評価できます")
     evaluation, created = Evaluation.objects.get_or_create(
         book=book,
         evaluator=evaluator,
@@ -47,6 +55,12 @@ def apply_cancellation(book, reporter, target, kind):
     book = book.__class__.objects.select_for_update().get(id=book.id)
     if book.status != "in_progress" or book.buyer_id is None:
         raise ValueError("取引中の出品だけがキャンセルできます")
+    if HandoffProposal.objects.filter(
+        trade_offer__book=book,
+        status="accepted",
+        completed_at__isnull=False,
+    ).exists():
+        raise ValueError("受け渡し完了後の取引はキャンセルできません")
     if reporter not in [book.seller, book.buyer] or target not in [book.seller, book.buyer]:
         raise ValueError("この取引の当事者だけが報告できます")
 

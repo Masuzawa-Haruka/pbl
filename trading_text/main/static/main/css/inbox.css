@@ -206,6 +206,18 @@
   background: #fff9e8;
 }
 
+.inbox-thread--completed {
+  margin: 8px 0;
+  padding: 14px;
+  border: 2px solid #0034b8;
+  border-radius: 8px;
+  background: #eef3ff;
+}
+
+.inbox-thread--completed .inbox-thread__notice {
+  color: #0034b8;
+}
+
 .inbox-thread--handoff {
   border-color: #4eae69;
   background: #edf9f0;
@@ -482,4 +494,62 @@
 
 .handoff-form {
   margin-top: 12px;
+}
+
+.submit-button--link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+}
+
+.evaluation-page {
+  padding: 12px 20px 40px;
+}
+
+.evaluation-card {
+  margin-top: 18px;
+  padding: 18px;
+  border: 1px solid #d9dfeb;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.evaluation-card h1,
+.evaluation-card p {
+  margin: 0;
+}
+
+.evaluation-card h1 {
+  color: #070d2f;
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+.evaluation-card p {
+  margin-top: 8px;
+  color: #596173;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.evaluation-card form {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.evaluation-card .submit-button {
+  margin: 0;
+}
+
+.secondary-button {
+  min-height: 48px;
+  border: 1px solid #b42318;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #b42318;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
 }

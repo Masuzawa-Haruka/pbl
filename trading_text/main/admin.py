@@ -36,7 +36,15 @@ class TradeOfferAdmin(admin.ModelAdmin):
 
 @admin.register(HandoffProposal)
 class HandoffProposalAdmin(admin.ModelAdmin):
-    list_display = ("trade_offer", "handoff_at", "location", "status", "created_at", "updated_at")
+    list_display = (
+        "trade_offer",
+        "handoff_at",
+        "location",
+        "status",
+        "seller_confirmed_at",
+        "buyer_confirmed_at",
+        "completed_at",
+    )
     list_filter = ("status",)
     search_fields = ("trade_offer__book__title", "location")
 

@@ -155,6 +155,28 @@ class TradeFlowTests(TestCase):
             description="授業で使いました。",
         )
 
+    def _create_completed_handoff(self):
+        self.book.buyer = self.buyer
+        self.book.status = "in_progress"
+        self.book.save(update_fields=["buyer", "status"])
+        offer = TradeOffer.objects.create(
+            book=self.book,
+            seller=self.seller,
+            buyer=self.buyer,
+            price=self.book.price,
+            status="accepted",
+        )
+        confirmed_at = timezone.now()
+        return HandoffProposal.objects.create(
+            trade_offer=offer,
+            handoff_at=confirmed_at - timedelta(hours=1),
+            location="豊中キャンパス 図書館前",
+            status="accepted",
+            seller_confirmed_at=confirmed_at,
+            buyer_confirmed_at=confirmed_at,
+            completed_at=confirmed_at,
+        )
+
     def test_book_detail_page_renders_current_ui_and_backend_actions(self):
         response = self.client.get(reverse("book_detail", args=[self.book.id]))
 
@@ -315,6 +337,40 @@ class TradeFlowTests(TestCase):
         self.assertContains(response, "本の詳細に戻る")
         self.assertContains(response, reverse("book_detail", args=[self.book.id]))
         self.assertNotContains(response, f"{self.book.title}: {self.buyer.username}")
+
+    def test_inbox_does_not_show_messages_sent_by_the_current_user(self):
+        Message.objects.create(
+            book=self.book,
+            sender=self.buyer,
+            receiver=self.seller,
+            content="自分が送っただけのメッセージ",
+        )
+        self.client.login(username=self.buyer.username, password="password12345")
+
+        response = self.client.get(reverse("inbox"))
+
+        self.assertNotContains(response, "自分が送っただけのメッセージ")
+        self.assertNotContains(response, self.book.title)
+
+    def test_inbox_preview_uses_latest_received_message_not_own_reply(self):
+        Message.objects.create(
+            book=self.book,
+            sender=self.seller,
+            receiver=self.buyer,
+            content="相手から届いたメッセージ",
+        )
+        Message.objects.create(
+            book=self.book,
+            sender=self.buyer,
+            receiver=self.seller,
+            content="その後に自分が送った返信",
+        )
+        self.client.login(username=self.buyer.username, password="password12345")
+
+        response = self.client.get(reverse("inbox"))
+
+        self.assertContains(response, "相手から届いたメッセージ")
+        self.assertNotContains(response, "その後に自分が送った返信")
 
     def test_seller_can_offer_a_changed_price(self):
         Message.objects.create(
@@ -568,6 +624,80 @@ class TradeFlowTests(TestCase):
         self.assertContains(response, "取引は終わり、あとは渡すだけ")
         self.assertContains(response, "箕面キャンパス 1階入口")
 
+    def test_handoff_completion_requires_scheduled_time_and_both_parties(self):
+        offer = TradeOffer.objects.create(
+            book=self.book,
+            seller=self.seller,
+            buyer=self.buyer,
+            price=250,
+            status="accepted",
+        )
+        self.book.buyer = self.buyer
+        self.book.status = "in_progress"
+        self.book.save(update_fields=["buyer", "status"])
+        handoff = HandoffProposal.objects.create(
+            trade_offer=offer,
+            handoff_at=timezone.now() + timedelta(hours=1),
+            location="吹田キャンパス 正門",
+            status="accepted",
+        )
+        self.client.login(username=self.buyer.username, password="password12345")
+
+        self.client.post(reverse("confirm_handoff_complete", args=[handoff.id]))
+
+        handoff.refresh_from_db()
+        self.assertIsNone(handoff.buyer_confirmed_at)
+        handoff.handoff_at = timezone.now() - timedelta(minutes=1)
+        handoff.save(update_fields=["handoff_at"])
+        self.client.post(reverse("confirm_handoff_complete", args=[handoff.id]))
+        handoff.refresh_from_db()
+        self.assertIsNotNone(handoff.buyer_confirmed_at)
+        self.assertIsNone(handoff.completed_at)
+
+        response = self.client.get(reverse("evaluate_trade", args=[self.book.id]))
+        self.assertRedirects(response, reverse("chat", args=[self.book.id]))
+        self.client.logout()
+        self.client.login(username=self.seller.username, password="password12345")
+        response = self.client.post(reverse("confirm_handoff_complete", args=[handoff.id]))
+
+        handoff.refresh_from_db()
+        self.assertIsNotNone(handoff.seller_confirmed_at)
+        self.assertIsNotNone(handoff.completed_at)
+        self.assertRedirects(response, reverse("evaluate_trade", args=[self.book.id]))
+
+    def test_both_parties_receive_completion_notice_and_evaluation_screen(self):
+        handoff = self._create_completed_handoff()
+        Message.objects.create(
+            book=self.book,
+            sender=self.buyer,
+            receiver=self.seller,
+            content="受け渡し完了です。",
+        )
+        for user in (self.seller, self.buyer):
+            self.client.login(username=user.username, password="password12345")
+            response = self.client.get(reverse("inbox"))
+            self.assertContains(response, "受け渡しが完了しました")
+            self.assertContains(response, "相手を評価してください")
+            response = self.client.get(reverse("evaluate_trade", args=[self.book.id]))
+            self.assertContains(response, "相手との取引はいかがでしたか？")
+            self.assertContains(response, handoff.location)
+            self.client.logout()
+
+    def test_non_participant_cannot_confirm_handoff_completion(self):
+        handoff = self._create_completed_handoff()
+        handoff.seller_confirmed_at = None
+        handoff.buyer_confirmed_at = None
+        handoff.completed_at = None
+        handoff.save(update_fields=["seller_confirmed_at", "buyer_confirmed_at", "completed_at"])
+        self.client.login(username=self.other_buyer.username, password="password12345")
+
+        self.client.post(reverse("confirm_handoff_complete", args=[handoff.id]))
+
+        handoff.refresh_from_db()
+        self.assertIsNone(handoff.completed_at)
+        self.assertIsNone(handoff.seller_confirmed_at)
+        self.assertIsNone(handoff.buyer_confirmed_at)
+
     def test_second_buyer_can_send_a_separate_consultation(self):
         self.book.buyer = self.buyer
         self.book.status = "in_progress"
@@ -617,9 +747,7 @@ class TradeFlowTests(TestCase):
         self.assertNotContains(response, "最初の購入者の相談です。")
 
     def test_evaluation_applies_after_both_sides_submit(self):
-        self.book.buyer = self.buyer
-        self.book.status = "in_progress"
-        self.book.save(update_fields=["buyer", "status"])
+        self._create_completed_handoff()
 
         _evaluation, created = submit_evaluation(self.book, self.buyer, self.seller, "good")
         self.assertTrue(created)
@@ -636,9 +764,7 @@ class TradeFlowTests(TestCase):
         self.assertEqual(self.book.status, "sold")
 
     def test_duplicate_evaluation_does_not_apply_score_twice(self):
-        self.book.buyer = self.buyer
-        self.book.status = "in_progress"
-        self.book.save(update_fields=["buyer", "status"])
+        self._create_completed_handoff()
 
         submit_evaluation(self.book, self.buyer, self.seller, "good")
         submit_evaluation(self.book, self.seller, self.buyer, "good")
@@ -704,9 +830,7 @@ class TradeFlowTests(TestCase):
         self.assertIsNone(self.book.buyer)
 
     def test_evaluation_view_accepts_good_or_bad(self):
-        self.book.buyer = self.buyer
-        self.book.status = "in_progress"
-        self.book.save(update_fields=["buyer", "status"])
+        self._create_completed_handoff()
         self.client.login(username="buyer@ecs.osaka-u.ac.jp", password="password12345")
 
         response = self.client.post(
@@ -714,7 +838,7 @@ class TradeFlowTests(TestCase):
             {"evaluation_type": "good"},
         )
 
-        self.assertRedirects(response, reverse("chat", args=[self.book.id]))
+        self.assertRedirects(response, reverse("evaluate_trade", args=[self.book.id]))
 
 
 class MediaDeliveryTests(TestCase):

@@ -8,6 +8,7 @@ from django.db import IntegrityError, transaction
 from django.db.models import F, Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils import timezone
 from django.views.static import serve
 
 from .forms import (
@@ -20,7 +21,7 @@ from .forms import (
     ProfileForm,
     TradeOfferForm,
 )
-from .models import Book, Favorite, HandoffProposal, Message, TradeOffer, UserProfile
+from .models import Book, Evaluation, Favorite, HandoffProposal, Message, TradeOffer, UserProfile
 from .services import apply_cancellation, submit_evaluation
 from .supabase_auth import SupabaseAuthError, is_configured as supabase_is_configured
 from .supabase_auth import sign_in_with_password, sign_up
@@ -277,9 +278,11 @@ def inbox(request):
             threads[key] = {
                 "book": message.book,
                 "other_user": other_user,
-                "message": message,
+                "message": None,
                 "chat_url": chat_url,
             }
+        if message.receiver == request.user and threads[key]["message"] is None:
+            threads[key]["message"] = message
     for thread in threads.values():
         thread_buyer = thread["other_user"] if request.user == thread["book"].seller else request.user
         accepted_offer = (
@@ -296,7 +299,18 @@ def inbox(request):
             thread["handoff"] = accepted_offer.handoff_proposals.filter(
                 status__in=["accepted", "pending"]
             ).first()
-    return render(request, "main/inbox.html", {"threads": threads.values()})
+            handoff = thread["handoff"]
+            if handoff:
+                thread["handoff_due"] = handoff.handoff_at <= timezone.now()
+                thread["user_confirmed"] = (
+                    handoff.seller_confirmed_at is not None
+                    if request.user == accepted_offer.seller
+                    else handoff.buyer_confirmed_at is not None
+                )
+                if handoff.completed_at:
+                    thread["chat_url"] = reverse("evaluate_trade", kwargs={"book_id": thread["book"].id})
+    visible_threads = [thread for thread in threads.values() if thread["message"] or thread["accepted_offer"]]
+    return render(request, "main/inbox.html", {"threads": visible_threads})
 
 
 @login_required
@@ -353,6 +367,11 @@ def chat(request, book_id):
     handoff = None
     if latest_offer and latest_offer.status == "accepted":
         handoff = latest_offer.handoff_proposals.filter(status__in=["accepted", "pending"]).first()
+    user_handoff_confirmed = False
+    if handoff and handoff.status == "accepted":
+        user_handoff_confirmed = (
+            handoff.seller_confirmed_at is not None if is_seller else handoff.buyer_confirmed_at is not None
+        )
 
     return render(
         request,
@@ -366,6 +385,8 @@ def chat(request, book_id):
             "handoff_form": HandoffProposalForm(),
             "latest_offer": latest_offer,
             "handoff": handoff,
+            "handoff_due": handoff is not None and handoff.handoff_at <= timezone.now(),
+            "user_handoff_confirmed": user_handoff_confirmed,
             "is_seller": is_seller,
             "can_create_offer": is_seller and book.status == "available" and has_thread,
             "can_accept_offer": (
@@ -549,11 +570,78 @@ def accept_handoff_proposal(request, proposal_id):
 
 
 @login_required
+def confirm_handoff_complete(request, proposal_id):
+    proposal = get_object_or_404(
+        HandoffProposal.objects.select_related("trade_offer__book", "trade_offer__seller", "trade_offer__buyer"),
+        id=proposal_id,
+    )
+    offer = proposal.trade_offer
+    book = offer.book
+    chat_url = reverse("chat", kwargs={"book_id": book.id})
+    if request.user == offer.seller:
+        chat_url = f"{chat_url}?partner={offer.buyer_id}"
+    if request.method != "POST" or request.user not in [offer.seller, offer.buyer]:
+        messages.error(request, "この受け渡し完了は確認できません。")
+        return redirect(chat_url)
+
+    now = timezone.now()
+    with transaction.atomic():
+        locked_book = Book.objects.select_for_update().get(id=book.id)
+        locked_offer = TradeOffer.objects.select_for_update().get(id=offer.id)
+        locked_proposal = HandoffProposal.objects.select_for_update().get(id=proposal.id)
+        if (
+            locked_proposal.status != "accepted"
+            or locked_offer.status != "accepted"
+            or locked_book.status != "in_progress"
+            or locked_book.buyer_id != locked_offer.buyer_id
+        ):
+            messages.error(request, "この受け渡しは完了確認できる状態ではありません。")
+            return redirect(chat_url)
+        if now < locked_proposal.handoff_at:
+            messages.error(request, "受け渡し予定日時になるまで完了確認はできません。")
+            return redirect(chat_url)
+
+        update_fields = []
+        if request.user.id == locked_offer.seller_id and locked_proposal.seller_confirmed_at is None:
+            locked_proposal.seller_confirmed_at = now
+            update_fields.append("seller_confirmed_at")
+        if request.user.id == locked_offer.buyer_id and locked_proposal.buyer_confirmed_at is None:
+            locked_proposal.buyer_confirmed_at = now
+            update_fields.append("buyer_confirmed_at")
+        if (
+            locked_proposal.seller_confirmed_at
+            and locked_proposal.buyer_confirmed_at
+            and locked_proposal.completed_at is None
+        ):
+            locked_proposal.completed_at = now
+            update_fields.append("completed_at")
+        if update_fields:
+            update_fields.append("updated_at")
+            locked_proposal.save(update_fields=update_fields)
+
+    if locked_proposal.completed_at:
+        messages.success(request, "双方の受け渡し完了を確認しました。相手を評価してください。")
+        return redirect("evaluate_trade", book_id=book.id)
+    messages.success(request, "受け渡し完了を記録しました。相手の完了確認を待っています。")
+    return redirect(chat_url)
+
+
+@login_required
 def evaluate_trade(request, book_id):
     book = get_object_or_404(Book.objects.select_related("seller", "buyer"), id=book_id)
     if request.user not in [book.seller, book.buyer] or book.buyer is None:
         messages.error(request, "この取引は評価できません。")
         return redirect("inbox")
+
+    handoff = HandoffProposal.objects.filter(
+        trade_offer__book=book,
+        trade_offer__status="accepted",
+        status="accepted",
+        completed_at__isnull=False,
+    ).select_related("trade_offer").first()
+    if handoff is None:
+        messages.error(request, "双方が受け渡し完了を確認した後に評価できます。")
+        return redirect("chat", book_id=book.id)
 
     target = book.buyer if request.user == book.seller else book.seller
     if request.method == "POST":
@@ -566,7 +654,18 @@ def evaluate_trade(request, book_id):
                 messages.info(request, "この取引は既に評価済みです。")
         except ValueError as error:
             messages.error(request, str(error))
-    return redirect("chat", book_id=book.id)
+        return redirect("evaluate_trade", book_id=book.id)
+    existing_evaluation = Evaluation.objects.filter(book=book, evaluator=request.user, target=target).first()
+    return render(
+        request,
+        "main/evaluate_trade.html",
+        {
+            "book": book,
+            "target": target,
+            "handoff": handoff,
+            "existing_evaluation": existing_evaluation,
+        },
+    )
 
 
 @login_required
@@ -614,6 +713,8 @@ def mypage(request):
         chat_url = reverse("chat", kwargs={"book_id": offer.book_id})
         if request.user == offer.seller:
             chat_url = f"{chat_url}?partner={offer.buyer_id}"
+        if handoff.completed_at:
+            chat_url = reverse("evaluate_trade", kwargs={"book_id": offer.book_id})
         handoff_trades.append(
             {
                 "book": offer.book,

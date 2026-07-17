@@ -11,11 +11,20 @@
 {% block content %}
 <section class="placeholder-page placeholder-page--inbox" aria-label="受信箱">
   {% for thread in threads %}
-    <a class="inbox-thread{% if thread.handoff.status == 'accepted' %} inbox-thread--handoff{% elif thread.handoff.status == 'pending' %} inbox-thread--action{% endif %}" href="{{ thread.chat_url }}">
+    <a class="inbox-thread{% if thread.handoff.completed_at %} inbox-thread--completed{% elif thread.handoff.status == 'accepted' %} inbox-thread--handoff{% elif thread.handoff.status == 'pending' %} inbox-thread--action{% endif %}" href="{{ thread.chat_url }}">
       <div>
         <p class="inbox-thread__title">{{ thread.book.title }}</p>
         <p class="inbox-thread__meta">{{ thread.other_user.profile.display_name|default:"取引相手" }}</p>
-        {% if thread.handoff.status == 'accepted' %}
+        {% if thread.handoff.completed_at %}
+          <p class="inbox-thread__notice">受け渡しが完了しました</p>
+          <p class="inbox-thread__schedule">相手を評価してください</p>
+        {% elif thread.handoff.status == 'accepted' and thread.handoff_due and not thread.user_confirmed %}
+          <p class="inbox-thread__notice">受け渡し完了の確認が必要です</p>
+          <p class="inbox-thread__schedule">{{ thread.handoff.location }}で受け渡したことを確認してください</p>
+        {% elif thread.handoff.status == 'accepted' and thread.user_confirmed %}
+          <p class="inbox-thread__notice">相手の受け渡し完了確認を待っています</p>
+          <p class="inbox-thread__schedule">{{ thread.handoff.handoff_at|date:"Y年n月j日 H:i" }} / {{ thread.handoff.location }}</p>
+        {% elif thread.handoff.status == 'accepted' %}
           <p class="inbox-thread__notice">受け渡し予定が確定しました</p>
           <p class="inbox-thread__schedule">{{ thread.handoff.handoff_at|date:"Y年n月j日 H:i" }}<br>{{ thread.handoff.location }}</p>
         {% elif thread.handoff.status == 'pending' %}
@@ -26,7 +35,7 @@
         {% elif thread.accepted_offer %}
           <p class="inbox-thread__notice">{% if user == thread.book.seller %}受け渡し日時・場所を提示してください{% else %}出品者からの受け渡し予定をお待ちください{% endif %}</p>
         {% else %}
-          <p class="inbox-thread__message">{{ thread.message.content }}</p>
+          {% if thread.message %}<p class="inbox-thread__message">{{ thread.message.content }}</p>{% endif %}
         {% endif %}
       </div>
       <span class="placeholder-page__arrow">›</span>

@@ -1,0 +1,42 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block title %}取引相手を評価 | OU Textbook{% endblock %}
+{% block extra_style %}
+<link rel="stylesheet" href="{% static 'main/css/inbox.css' %}">
+{% endblock %}
+{% block header_title %}取引相手を評価{% endblock %}
+
+{% block content %}
+<section class="evaluation-page" aria-label="取引相手の評価">
+  <a class="chat-detail-link" href="{% url 'book_detail' book.id %}">
+    <span aria-hidden="true">←</span><span>本の詳細に戻る</span>
+  </a>
+  <div class="handoff-card handoff-card--accepted">
+    <p class="trade-offer__label">受け渡し完了</p>
+    <h2>{{ book.title }}</h2>
+    <p>相手：{{ target.profile.display_name|default:"取引相手" }}</p>
+    <dl class="handoff-details">
+      <div><dt>日時</dt><dd>{{ handoff.handoff_at|date:"Y年n月j日 H:i" }}</dd></div>
+      <div><dt>場所</dt><dd>{{ handoff.location }}</dd></div>
+    </dl>
+  </div>
+
+  {% if existing_evaluation %}
+    <section class="evaluation-card">
+      <h1>評価を送信済みです</h1>
+      <p>相手の評価が揃うと取引が完了します。</p>
+    </section>
+  {% else %}
+    <section class="evaluation-card">
+      <h1>相手との取引はいかがでしたか？</h1>
+      <p>送信後に評価を変更することはできません。</p>
+      <form action="{% url 'evaluate_trade' book.id %}" method="post">
+        {% csrf_token %}
+        <button class="submit-button" type="submit" name="evaluation_type" value="good">良い評価を送る（+10）</button>
+        <button class="secondary-button" type="submit" name="evaluation_type" value="bad">悪い評価を送る（-10）</button>
+      </form>
+    </section>
+  {% endif %}
+</section>
+{% endblock %}

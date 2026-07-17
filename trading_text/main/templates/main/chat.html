@@ -65,12 +65,31 @@
 
   {% if handoff.status == 'accepted' %}
     <section class="handoff-card handoff-card--accepted" aria-label="確定した受け渡し予定">
-      <p class="trade-offer__label">受け渡し予定確定</p>
-      <h2>取引は終わり、あとは渡すだけです</h2>
+      {% if handoff.completed_at %}
+        <p class="trade-offer__label">受け渡し完了</p>
+        <h2>双方の完了確認が揃いました</h2>
+      {% else %}
+        <p class="trade-offer__label">受け渡し予定確定</p>
+        <h2>取引は終わり、あとは渡すだけです</h2>
+      {% endif %}
       <dl class="handoff-details">
         <div><dt>日時</dt><dd>{{ handoff.handoff_at|date:"Y年n月j日 H:i" }}</dd></div>
         <div><dt>場所</dt><dd>{{ handoff.location }}</dd></div>
       </dl>
+      {% if handoff.completed_at %}
+        <p>相手を評価して取引を完了してください。</p>
+        <a class="submit-button submit-button--link" href="{% url 'evaluate_trade' book.id %}">相手を評価する</a>
+      {% elif handoff_due and user_handoff_confirmed %}
+        <p class="trade-offer__confirmation-note">受け渡し完了を確認済みです。相手の確認を待っています。</p>
+      {% elif handoff_due %}
+        <p class="trade-offer__confirmation-note">実際に参考書の受け渡しが完了してから押してください。双方が押すと評価へ進みます。</p>
+        <form action="{% url 'confirm_handoff_complete' handoff.id %}" method="post">
+          {% csrf_token %}
+          <button class="submit-button" type="submit">受け渡し完了を確認する</button>
+        </form>
+      {% else %}
+        <p>予定日時になると受け渡し完了を確認できます。</p>
+      {% endif %}
     </section>
   {% elif handoff.status == 'pending' %}
     <section class="handoff-card" aria-label="提示された受け渡し予定">
@@ -128,19 +147,15 @@
 
   {% if can_manage_trade %}
     <section class="trade-actions" aria-label="取引を完了または解除する">
-      <h2>取引完了後の評価</h2>
-      <form class="detail-actions" action="{% url 'evaluate_trade' book.id %}" method="post">
-        {% csrf_token %}
-        <button class="chip chip--active" type="submit" name="evaluation_type" value="good">良い評価を送る（+10）</button>
-        <button class="chip chip--outline" type="submit" name="evaluation_type" value="bad">悪い評価を送る（-10）</button>
-      </form>
-      <h2>取引を解除する</h2>
-      <p>キャンセル後はこの出品を再開します。</p>
-      <form class="detail-actions" action="{% url 'cancel_trade' book.id %}" method="post">
-        {% csrf_token %}
-        <button class="chip chip--outline" type="submit" name="kind" value="cancel">自分の都合でキャンセル（-10）</button>
-        <button class="chip chip--outline" type="submit" name="kind" value="no_show">相手の無断キャンセルを報告（-30）</button>
-      </form>
+      {% if not handoff.completed_at %}
+        <h2>取引を解除する</h2>
+        <p>キャンセル後はこの出品を再開します。</p>
+        <form class="detail-actions" action="{% url 'cancel_trade' book.id %}" method="post">
+          {% csrf_token %}
+          <button class="chip chip--outline" type="submit" name="kind" value="cancel">自分の都合でキャンセル（-10）</button>
+          <button class="chip chip--outline" type="submit" name="kind" value="no_show">相手の無断キャンセルを報告（-30）</button>
+        </form>
+      {% endif %}
     </section>
   {% endif %}
 </section>

@@ -194,6 +194,9 @@ class HandoffProposal(models.Model):
     handoff_at = models.DateTimeField()
     location = models.CharField(max_length=200)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
+    seller_confirmed_at = models.DateTimeField(blank=True, null=True)
+    buyer_confirmed_at = models.DateTimeField(blank=True, null=True)
+    completed_at = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

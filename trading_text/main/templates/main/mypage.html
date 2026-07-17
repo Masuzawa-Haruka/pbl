@@ -38,10 +38,11 @@
   {% if handoff_trades %}
     <section class="handoff-summary" aria-label="確定した受け渡し予定">
       <p class="handoff-summary__eyebrow">受け渡し予定</p>
-      <h2>取引は終わり、あとは渡すだけ</h2>
+      <h2>取引状況</h2>
       {% for trade in handoff_trades %}
         <a class="handoff-summary__item" href="{{ trade.chat_url }}">
           <strong>{{ trade.book.title }}</strong>
+          {% if trade.handoff.completed_at %}<span>受け渡し完了・評価待ち</span>{% else %}<span>取引は終わり、あとは渡すだけ</span>{% endif %}
           <span>{{ trade.handoff.handoff_at|date:"Y年n月j日 H:i" }}</span>
           <span>{{ trade.handoff.location }}</span>
           <small>相手：{{ trade.partner.profile.display_name|default:"取引相手" }}</small>

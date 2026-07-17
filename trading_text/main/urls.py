@@ -18,6 +18,7 @@ urlpatterns = [
     path("trade-offer/<int:offer_id>/accept/", views.accept_trade_offer, name="accept_trade_offer"),
     path("trade-offer/<int:offer_id>/handoff/", views.create_handoff_proposal, name="create_handoff_proposal"),
     path("handoff/<int:proposal_id>/accept/", views.accept_handoff_proposal, name="accept_handoff_proposal"),
+    path("handoff/<int:proposal_id>/complete/", views.confirm_handoff_complete, name="confirm_handoff_complete"),
     path("book/<int:book_id>/evaluate/", views.evaluate_trade, name="evaluate_trade"),
     path("book/<int:book_id>/cancel/", views.cancel_trade, name="cancel_trade"),
     path("book/<int:book_id>/edit/", views.edit_book, name="edit_book"),
