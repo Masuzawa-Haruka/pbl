@@ -360,13 +360,13 @@ def chat(request, book_id):
 
     thread_buyer = partner if is_seller else request.user
     latest_offer = (
-        TradeOffer.objects.filter(book=book, buyer=thread_buyer, status__in=["accepted", "pending"])
+        TradeOffer.objects.filter(book=book, buyer=thread_buyer, status__in=["accepted", "pending", "rejected"])
         .select_related("buyer", "seller")
         .first()
     )
     handoff = None
     if latest_offer and latest_offer.status == "accepted":
-        handoff = latest_offer.handoff_proposals.filter(status__in=["accepted", "pending"]).first()
+        handoff = latest_offer.handoff_proposals.filter(status__in=["accepted", "pending", "rejected"]).first()
     user_handoff_confirmed = False
     if handoff and handoff.status == "accepted":
         user_handoff_confirmed = (
@@ -401,7 +401,7 @@ def chat(request, book_id):
                 and book.status == "in_progress"
                 and latest_offer is not None
                 and latest_offer.status == "accepted"
-                and handoff is None
+                and (handoff is None or handoff.status == "rejected")
             ),
             "can_accept_handoff": (
                 not is_seller
@@ -489,6 +489,33 @@ def accept_trade_offer(request, offer_id):
 
 
 @login_required
+def reject_trade_offer(request, offer_id):
+    offer = get_object_or_404(TradeOffer.objects.select_related("book", "buyer"), id=offer_id)
+    book = offer.book
+    chat_url = reverse("chat", kwargs={"book_id": book.id})
+    if request.method != "POST" or request.user != offer.buyer:
+        messages.error(request, "この取引条件は拒否できません。")
+        return redirect(chat_url)
+
+    with transaction.atomic():
+        locked_book = Book.objects.select_for_update().get(id=book.id)
+        locked_offer = TradeOffer.objects.select_for_update().get(id=offer.id)
+        if locked_offer.status != "pending":
+            messages.info(request, "この取引条件はすでに処理されています。")
+            return redirect(chat_url)
+        if locked_book.status != "available":
+            locked_offer.status = "withdrawn"
+            locked_offer.save(update_fields=["status", "updated_at"])
+            messages.error(request, "この参考書はすでに別の取引が成立しています。")
+            return redirect(chat_url)
+        locked_offer.status = "rejected"
+        locked_offer.save(update_fields=["status", "updated_at"])
+
+    messages.success(request, "提示された価格には同意しませんでした。")
+    return redirect(chat_url)
+
+
+@login_required
 def create_handoff_proposal(request, offer_id):
     offer = get_object_or_404(TradeOffer.objects.select_related("book", "seller", "buyer"), id=offer_id)
     book = offer.book
@@ -566,6 +593,43 @@ def accept_handoff_proposal(request, proposal_id):
         locked_proposal.save(update_fields=["status", "updated_at"])
 
     messages.success(request, "受け渡し日時と場所が確定しました。あとは参考書を渡すだけです。")
+    return redirect(chat_url)
+
+
+@login_required
+def reject_handoff_proposal(request, proposal_id):
+    proposal = get_object_or_404(
+        HandoffProposal.objects.select_related("trade_offer__book", "trade_offer__buyer"),
+        id=proposal_id,
+    )
+    offer = proposal.trade_offer
+    book = offer.book
+    chat_url = reverse("chat", kwargs={"book_id": book.id})
+    if request.method != "POST" or request.user != offer.buyer:
+        messages.error(request, "この受け渡し条件は拒否できません。")
+        return redirect(chat_url)
+
+    with transaction.atomic():
+        locked_book = Book.objects.select_for_update().get(id=book.id)
+        locked_offer = TradeOffer.objects.select_for_update().get(id=offer.id)
+        locked_proposal = HandoffProposal.objects.select_for_update().get(id=proposal.id)
+        if locked_proposal.status != "pending":
+            messages.info(request, "この受け渡し条件はすでに処理されています。")
+            return redirect(chat_url)
+        if (
+            locked_offer.status != "accepted"
+            or locked_book.status != "in_progress"
+            or locked_book.buyer_id != request.user.id
+            or locked_offer.buyer_id != request.user.id
+        ):
+            locked_proposal.status = "withdrawn"
+            locked_proposal.save(update_fields=["status", "updated_at"])
+            messages.error(request, "この取引の受け渡し条件は拒否できません。")
+            return redirect(chat_url)
+        locked_proposal.status = "rejected"
+        locked_proposal.save(update_fields=["status", "updated_at"])
+
+    messages.success(request, "提示された日時と場所には同意しませんでした。")
     return redirect(chat_url)
 
 

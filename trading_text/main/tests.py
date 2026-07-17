@@ -437,6 +437,41 @@ class TradeFlowTests(TestCase):
         response = self.client.get(reverse("chat", args=[self.book.id]))
         self.assertNotContains(response, "flash-message--success")
 
+    def test_buyer_can_reject_price_without_establishing_trade(self):
+        offer = TradeOffer.objects.create(
+            book=self.book,
+            seller=self.seller,
+            buyer=self.buyer,
+            price=250,
+        )
+        self.client.login(username=self.buyer.username, password="password12345")
+        response = self.client.get(reverse("chat", args=[self.book.id]))
+        self.assertContains(response, "この条件に同意する")
+        self.assertContains(response, "同意しない")
+
+        response = self.client.post(reverse("reject_trade_offer", args=[offer.id]), follow=True)
+
+        offer.refresh_from_db()
+        self.book.refresh_from_db()
+        self.assertEqual(offer.status, "rejected")
+        self.assertEqual(self.book.status, "available")
+        self.assertIsNone(self.book.buyer)
+        self.assertContains(response, "この価格への同意を見送りました。")
+
+    def test_non_target_buyer_cannot_reject_price(self):
+        offer = TradeOffer.objects.create(
+            book=self.book,
+            seller=self.seller,
+            buyer=self.buyer,
+            price=250,
+        )
+        self.client.login(username=self.other_buyer.username, password="password12345")
+
+        self.client.post(reverse("reject_trade_offer", args=[offer.id]))
+
+        offer.refresh_from_db()
+        self.assertEqual(offer.status, "pending")
+
     def test_non_target_buyer_cannot_accept_offer(self):
         offer = TradeOffer.objects.create(
             book=self.book,
@@ -591,6 +626,74 @@ class TradeFlowTests(TestCase):
         proposal.refresh_from_db()
         self.assertEqual(proposal.status, "accepted")
         self.assertEqual(HandoffProposal.objects.filter(trade_offer=offer, status="accepted").count(), 1)
+
+    def test_buyer_can_reject_handoff_and_seller_can_propose_again(self):
+        offer = TradeOffer.objects.create(
+            book=self.book,
+            seller=self.seller,
+            buyer=self.buyer,
+            price=250,
+            status="accepted",
+        )
+        self.book.buyer = self.buyer
+        self.book.status = "in_progress"
+        self.book.save(update_fields=["buyer", "status"])
+        proposal = HandoffProposal.objects.create(
+            trade_offer=offer,
+            handoff_at=timezone.now() + timedelta(days=1),
+            location="吹田キャンパス 正門",
+        )
+        self.client.login(username=self.buyer.username, password="password12345")
+        response = self.client.get(reverse("chat", args=[self.book.id]))
+        self.assertContains(response, "この日時と場所に同意する")
+        self.assertContains(response, "同意しない")
+
+        self.client.post(reverse("reject_handoff_proposal", args=[proposal.id]))
+
+        proposal.refresh_from_db()
+        self.assertEqual(proposal.status, "rejected")
+        self.book.refresh_from_db()
+        self.assertEqual(self.book.status, "in_progress")
+        self.assertEqual(self.book.buyer, self.buyer)
+        self.client.logout()
+        self.client.login(username=self.seller.username, password="password12345")
+        chat_url = f"{reverse('chat', args=[self.book.id])}?partner={self.buyer.id}"
+        response = self.client.get(chat_url)
+        self.assertContains(response, "購入者が前回の日時・場所に同意しませんでした。")
+
+        self.client.post(
+            reverse("create_handoff_proposal", args=[offer.id]),
+            {
+                "handoff_at": timezone.localtime(timezone.now() + timedelta(days=2)).strftime(
+                    "%Y-%m-%dT%H:%M"
+                ),
+                "location": "豊中キャンパス 図書館前",
+            },
+        )
+        self.assertEqual(HandoffProposal.objects.filter(trade_offer=offer, status="pending").count(), 1)
+
+    def test_non_target_buyer_cannot_reject_handoff(self):
+        offer = TradeOffer.objects.create(
+            book=self.book,
+            seller=self.seller,
+            buyer=self.buyer,
+            price=250,
+            status="accepted",
+        )
+        self.book.buyer = self.buyer
+        self.book.status = "in_progress"
+        self.book.save(update_fields=["buyer", "status"])
+        proposal = HandoffProposal.objects.create(
+            trade_offer=offer,
+            handoff_at=timezone.now() + timedelta(days=1),
+            location="吹田キャンパス 正門",
+        )
+        self.client.login(username=self.other_buyer.username, password="password12345")
+
+        self.client.post(reverse("reject_handoff_proposal", args=[proposal.id]))
+
+        proposal.refresh_from_db()
+        self.assertEqual(proposal.status, "pending")
 
     def test_confirmed_handoff_is_prominent_in_inbox_and_mypage(self):
         offer = TradeOffer.objects.create(

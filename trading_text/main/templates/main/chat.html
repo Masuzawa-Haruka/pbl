@@ -55,11 +55,23 @@
       {% elif can_accept_offer %}
         <p>出品者からこの価格で取引条件が提示されています。</p>
         <p class="trade-offer__confirmation-note">このボタンを押すと取引が確定し、この参考書の募集は終了します。</p>
-        <form action="{% url 'accept_trade_offer' latest_offer.id %}" method="post">
-          {% csrf_token %}
-          <button class="submit-button" type="submit">この条件に同意する</button>
-        </form>
+        <div class="decision-actions">
+          <form action="{% url 'accept_trade_offer' latest_offer.id %}" method="post">
+            {% csrf_token %}
+            <button class="submit-button" type="submit">この条件に同意する</button>
+          </form>
+          <form action="{% url 'reject_trade_offer' latest_offer.id %}" method="post">
+            {% csrf_token %}
+            <button class="decline-button" type="submit">同意しない</button>
+          </form>
+        </div>
       {% endif %}
+    </section>
+  {% elif latest_offer.status == 'rejected' %}
+    <section class="trade-offer trade-offer--rejected" aria-label="同意されなかった取引条件">
+      <p class="trade-offer__label">価格に同意されませんでした</p>
+      <h2>{{ latest_offer.price }}円</h2>
+      {% if is_seller %}<p>価格を変更して、もう一度提示できます。</p>{% else %}<p>この価格への同意を見送りました。</p>{% endif %}
     </section>
   {% endif %}
 
@@ -102,15 +114,22 @@
         <p>購入者の同意を待っています。</p>
       {% elif can_accept_handoff %}
         <p class="trade-offer__confirmation-note">同意すると受け渡し予定が確定します。ほかの人がこの取引に同意することはできません。</p>
-        <form action="{% url 'accept_handoff_proposal' handoff.id %}" method="post">
-          {% csrf_token %}
-          <button class="submit-button" type="submit">この日時と場所に同意する</button>
-        </form>
+        <div class="decision-actions">
+          <form action="{% url 'accept_handoff_proposal' handoff.id %}" method="post">
+            {% csrf_token %}
+            <button class="submit-button" type="submit">この日時と場所に同意する</button>
+          </form>
+          <form action="{% url 'reject_handoff_proposal' handoff.id %}" method="post">
+            {% csrf_token %}
+            <button class="decline-button" type="submit">同意しない</button>
+          </form>
+        </div>
       {% endif %}
     </section>
   {% elif can_create_handoff %}
     <section class="handoff-card handoff-card--seller" aria-label="受け渡し予定を提示する">
       <p class="trade-offer__label">受け渡し日時・場所を提示</p>
+      {% if handoff.status == 'rejected' %}<p class="rejected-notice">購入者が前回の日時・場所に同意しませんでした。条件を変更して再提示してください。</p>{% endif %}
       <p>購入者が同意すると、この予定で受け渡しが確定します。</p>
       <form class="handoff-form" action="{% url 'create_handoff_proposal' latest_offer.id %}" method="post">
         {% csrf_token %}

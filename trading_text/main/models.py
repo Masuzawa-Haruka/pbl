@@ -152,6 +152,7 @@ class TradeOffer(models.Model):
     STATUS_CHOICES = [
         ("pending", "同意待ち"),
         ("accepted", "成立"),
+        ("rejected", "同意されず"),
         ("withdrawn", "取り下げ"),
         ("cancelled", "キャンセル"),
     ]
@@ -182,6 +183,7 @@ class HandoffProposal(models.Model):
     STATUS_CHOICES = [
         ("pending", "同意待ち"),
         ("accepted", "確定"),
+        ("rejected", "同意されず"),
         ("withdrawn", "取り下げ"),
         ("cancelled", "キャンセル"),
     ]

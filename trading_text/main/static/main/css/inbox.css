@@ -417,6 +417,16 @@
   background: #edf9f0;
 }
 
+.trade-offer--rejected {
+  border-color: #f0b8b2;
+  background: #fff8f7;
+}
+
+.trade-offer--rejected .trade-offer__label,
+.rejected-notice {
+  color: #b42318;
+}
+
 .trade-offer__label,
 .trade-offer h2,
 .trade-offer p {
@@ -454,6 +464,46 @@
 
 .trade-offer .submit-button {
   margin-top: 14px;
+}
+
+.decision-actions {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.decision-actions form {
+  margin: 0;
+}
+
+.decision-actions .submit-button {
+  margin: 0;
+}
+
+.decline-button {
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 16px;
+  border: 1px solid #8c94a8;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #3f4758;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.decline-button:hover,
+.decline-button:focus-visible {
+  border-color: #596173;
+  background: #f5f6f8;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(89, 97, 115, 0.12);
+}
+
+.decline-button:active {
+  background: #e9ebef;
 }
 
 .trade-offer__price-field {
