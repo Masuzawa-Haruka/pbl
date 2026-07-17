@@ -246,6 +246,8 @@ class TradeFlowTests(TestCase):
         response = self.client.get(reverse("chat", args=[self.book.id]))
 
         self.assertContains(response, "価格を相談したいです。")
+        self.assertContains(response, "本の詳細に戻る")
+        self.assertContains(response, reverse("book_detail", args=[self.book.id]))
         self.assertNotContains(response, f"{self.book.title}: {self.buyer.username}")
 
     def test_seller_can_offer_a_changed_price(self):

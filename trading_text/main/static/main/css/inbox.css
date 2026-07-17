@@ -212,6 +212,23 @@
   padding: 12px 20px 28px;
 }
 
+.chat-detail-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 40px;
+  margin-bottom: 10px;
+  color: #0034b8;
+  font-size: 14px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.chat-detail-link > span:first-child {
+  font-size: 21px;
+  line-height: 1;
+}
+
 .chat-book {
   padding: 14px;
   border: 1px solid #d9dfeb;

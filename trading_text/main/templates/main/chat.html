@@ -10,6 +10,10 @@
 
 {% block content %}
 <section class="chat-page" aria-label="取引メッセージ">
+  <a class="chat-detail-link" href="{% url 'book_detail' book.id %}">
+    <span aria-hidden="true">←</span>
+    <span>本の詳細に戻る</span>
+  </a>
   <div class="chat-book">
     <p class="inbox-thread__title">{{ book.title }}</p>
     <p class="inbox-thread__meta">相手：{{ partner.profile.display_name|default:"取引相手" }}</p>
