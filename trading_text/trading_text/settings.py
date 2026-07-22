@@ -155,6 +155,9 @@ STORAGES = {
     'default': {
         'BACKEND': 'django.core.files.storage.FileSystemStorage',
     },
+    'staticfiles': {
+        'BACKEND': 'django.contrib.staticfiles.storage.StaticFilesStorage',
+    },
 }
 
 if SUPABASE_URL and SUPABASE_STORAGE_BUCKET and SUPABASE_STORAGE_KEY:
