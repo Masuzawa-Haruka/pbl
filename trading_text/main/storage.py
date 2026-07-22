@@ -14,10 +14,11 @@ class SupabaseStorage(Storage):
         self.api_key = settings.SUPABASE_STORAGE_KEY
 
     def _headers(self, content_type=None):
-        headers = {
-            "apikey": self.api_key,
-            "Authorization": f"Bearer {self.api_key}",
-        }
+        headers = {"apikey": self.api_key}
+        # Legacy service_role keys are JWTs. New sb_secret keys are not JWTs
+        # and must not be sent as a Bearer token.
+        if self.api_key.startswith("eyJ"):
+            headers["Authorization"] = f"Bearer {self.api_key}"
         if content_type:
             headers["Content-Type"] = content_type
         return headers
@@ -58,7 +59,9 @@ class SupabaseStorage(Storage):
             with urlopen(request, timeout=15):
                 return True
         except HTTPError as error:
-            if error.code == 404:
+            # Supabase Storage returns HTTP 400 for a HEAD request when the
+            # object does not exist, even though its JSON status is 404.
+            if error.code in (400, 404):
                 return False
             raise OSError(f"画像ストレージを確認できませんでした（{error.code}）") from error
         except URLError as error:

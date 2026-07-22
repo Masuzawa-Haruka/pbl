@@ -2,6 +2,7 @@ from unittest.mock import MagicMock, patch
 from datetime import timedelta
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from urllib.error import HTTPError
 
 from django.contrib.auth.models import User
 from django.core.files.base import ContentFile
@@ -1062,9 +1063,34 @@ class MediaDeliveryTests(TestCase):
 @override_settings(
     SUPABASE_URL="https://project.supabase.co",
     SUPABASE_STORAGE_BUCKET="book-images",
-    SUPABASE_STORAGE_KEY="server-secret",
+    SUPABASE_STORAGE_KEY="sb_secret_server-secret",
 )
 class SupabaseStorageTests(SimpleTestCase):
+    def test_uses_new_secret_key_only_as_api_key(self):
+        storage = SupabaseStorage()
+
+        self.assertEqual(storage._headers(), {"apikey": "sb_secret_server-secret"})
+
+    def test_uses_legacy_service_role_jwt_as_bearer_token(self):
+        storage = SupabaseStorage()
+        storage.api_key = "eyJservice-role-token"
+
+        self.assertEqual(
+            storage._headers(),
+            {
+                "apikey": "eyJservice-role-token",
+                "Authorization": "Bearer eyJservice-role-token",
+            },
+        )
+
+    @patch("main.storage.urlopen")
+    def test_missing_object_response_is_not_an_error(self, mock_urlopen):
+        mock_urlopen.side_effect = HTTPError(
+            "https://project.supabase.co/object", 400, "Bad Request", {}, None
+        )
+
+        self.assertFalse(SupabaseStorage().exists("book_images/missing.png"))
+
     @patch("main.storage.urlopen")
     def test_saves_to_storage_and_returns_public_url(self, mock_urlopen):
         mock_urlopen.return_value = MagicMock(__enter__=MagicMock(), __exit__=MagicMock())
