@@ -55,10 +55,8 @@
     <div class="placeholder-page_display_sale">
       {% if active_view == "favorites" %}
         <h2 class="placeholder-page_display_sale_left">お気に入り</h2>
-        <a class="placeholder-page_display_sale_right" href="{% url 'mypage' %}#mypage-list">出品一覧</a>
       {% elif active_view == "trades" %}
         <h2 class="placeholder-page_display_sale_left">取引中/売却済み</h2>
-        <a class="placeholder-page_display_sale_right" href="{% url 'mypage' %}#mypage-list">出品一覧</a>
       {% else %}
         <h2 class="placeholder-page_display_sale_left">出品一覧</h2>
         <a class="placeholder-page_display_sale_right" href="{% url 'listing_form' %}">＋出品</a>
@@ -101,6 +99,11 @@
   </section>
 
   <div class="placeholder-page_menue">
+    <a class="placeholder-page__section{% if active_view == 'listings' %} placeholder-page__section--active{% endif %}" href="{% url 'mypage' %}?view=listings#mypage-list"{% if active_view == 'listings' %} aria-current="page"{% endif %}>
+      <span aria-hidden="true">≡</span>
+      <span class="placeholder-page__section_text">出品一覧</span>
+      <span class="placeholder-page__section_right">{{ selling_books|length }}件</span>
+    </a>
     <a class="placeholder-page__section{% if active_view == 'favorites' %} placeholder-page__section--active{% endif %}" href="{% url 'mypage' %}?view=favorites#mypage-list"{% if active_view == 'favorites' %} aria-current="page"{% endif %}>
       <span class="placeholder-page__favorite-heart" aria-hidden="true"></span>
       <span class="placeholder-page__section_text">お気に入り</span>

@@ -1070,6 +1070,7 @@ class TradeFlowTests(TestCase):
         self.assertNotContains(response, in_progress.title)
         self.assertNotContains(response, sold.title)
         self.assertNotContains(response, "他人の出品")
+        self.assertContains(response, "?view=listings#mypage-list")
         self.assertNotContains(response, 'id="favorites"')
         self.assertNotContains(response, 'id="trades"')
 
@@ -1092,6 +1093,7 @@ class TradeFlowTests(TestCase):
         self.assertContains(response, favorite.title)
         self.assertNotContains(response, self.book.title)
         self.assertContains(response, 'aria-current="page"')
+        self.assertContains(response, "?view=listings#mypage-list")
 
     def test_mypage_trades_button_only_shows_users_trades_with_correct_chat(self):
         selling_trade = Book.objects.create(
@@ -1138,6 +1140,40 @@ class TradeFlowTests(TestCase):
             f'{reverse("chat", args=[selling_trade.id])}?partner={self.buyer.id}',
         )
         self.assertContains(response, reverse("chat", args=[bought_trade.id]))
+
+    def test_search_only_shows_available_books_and_cancelled_trade_reappears(self):
+        in_progress = Book.objects.create(
+            seller=self.seller,
+            buyer=self.buyer,
+            title="取引中で非表示の商品",
+            author="著者",
+            price=500,
+            category="general",
+            campus="toyonaka",
+            status="in_progress",
+        )
+        sold = Book.objects.create(
+            seller=self.seller,
+            buyer=self.buyer,
+            title="売却済みで非表示の商品",
+            author="著者",
+            price=600,
+            category="general",
+            campus="toyonaka",
+            status="sold",
+        )
+
+        response = self.client.get(reverse("search"))
+
+        self.assertContains(response, self.book.title)
+        self.assertNotContains(response, in_progress.title)
+        self.assertNotContains(response, sold.title)
+
+        apply_cancellation(in_progress, self.buyer, self.buyer, "cancel")
+        response = self.client.get(reverse("search"))
+
+        self.assertContains(response, in_progress.title)
+        self.assertNotContains(response, sold.title)
 
 
 class MediaDeliveryTests(TestCase):

@@ -58,7 +58,7 @@ def sync_supabase_user(email, supabase_user_id=None, display_name=None):
 
 
 def get_search_context(request):
-    books = Book.objects.select_related("seller").all()
+    books = Book.objects.select_related("seller").filter(status="available")
 
     keyword = request.GET.get("keyword", "").strip()
     category = request.GET.get("category", "").strip()
