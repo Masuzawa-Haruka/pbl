@@ -1030,11 +1030,131 @@ class TradeFlowTests(TestCase):
 
         self.assertRedirects(response, reverse("evaluate_trade", args=[self.book.id]))
 
+    def test_mypage_listing_view_only_shows_current_users_available_books(self):
+        in_progress = Book.objects.create(
+            seller=self.seller,
+            buyer=self.buyer,
+            title="取引中の商品",
+            author="著者",
+            price=500,
+            category="general",
+            campus="toyonaka",
+            status="in_progress",
+        )
+        sold = Book.objects.create(
+            seller=self.seller,
+            buyer=self.buyer,
+            title="売却済みの商品",
+            author="著者",
+            price=600,
+            category="general",
+            campus="toyonaka",
+            status="sold",
+        )
+        Book.objects.create(
+            seller=self.buyer,
+            title="他人の出品",
+            author="著者",
+            price=700,
+            category="general",
+            campus="toyonaka",
+        )
+        self.client.login(username=self.seller.username, password="password12345")
+
+        response = self.client.get(reverse("mypage"))
+
+        self.assertEqual(response.context["active_view"], "listings")
+        self.assertQuerySetEqual(response.context["selling_books"], [self.book])
+        self.assertEqual(response.context["completed_trade_count"], 1)
+        self.assertContains(response, self.book.title)
+        self.assertNotContains(response, in_progress.title)
+        self.assertNotContains(response, sold.title)
+        self.assertNotContains(response, "他人の出品")
+        self.assertNotContains(response, 'id="favorites"')
+        self.assertNotContains(response, 'id="trades"')
+
+    def test_mypage_favorites_button_replaces_listing_view(self):
+        favorite = Book.objects.create(
+            seller=self.buyer,
+            title="お気に入りの商品",
+            author="著者",
+            price=700,
+            category="general",
+            campus="toyonaka",
+        )
+        Favorite.objects.create(user=self.seller, book=favorite)
+        self.client.login(username=self.seller.username, password="password12345")
+
+        response = self.client.get(reverse("mypage"), {"view": "favorites"})
+
+        self.assertEqual(response.context["active_view"], "favorites")
+        self.assertQuerySetEqual(response.context["favorite_books"], [favorite])
+        self.assertContains(response, favorite.title)
+        self.assertNotContains(response, self.book.title)
+        self.assertContains(response, 'aria-current="page"')
+
+    def test_mypage_trades_button_only_shows_users_trades_with_correct_chat(self):
+        selling_trade = Book.objects.create(
+            seller=self.seller,
+            buyer=self.buyer,
+            title="販売側の取引",
+            author="著者",
+            price=500,
+            category="general",
+            campus="toyonaka",
+            status="in_progress",
+        )
+        bought_trade = Book.objects.create(
+            seller=self.buyer,
+            buyer=self.seller,
+            title="購入側の売却済み取引",
+            author="著者",
+            price=600,
+            category="general",
+            campus="toyonaka",
+            status="sold",
+        )
+        unrelated = Book.objects.create(
+            seller=self.other_buyer,
+            buyer=self.buyer,
+            title="無関係な取引",
+            author="著者",
+            price=800,
+            category="general",
+            campus="toyonaka",
+            status="in_progress",
+        )
+        self.client.login(username=self.seller.username, password="password12345")
+
+        response = self.client.get(reverse("mypage"), {"view": "trades"})
+
+        trade_ids = {item["book"].id for item in response.context["trade_items"]}
+        self.assertEqual(trade_ids, {selling_trade.id, bought_trade.id})
+        self.assertContains(response, selling_trade.title)
+        self.assertContains(response, bought_trade.title)
+        self.assertNotContains(response, unrelated.title)
+        self.assertContains(
+            response,
+            f'{reverse("chat", args=[selling_trade.id])}?partner={self.buyer.id}',
+        )
+        self.assertContains(response, reverse("chat", args=[bought_trade.id]))
+
 
 class MediaDeliveryTests(TestCase):
     def test_uploaded_book_image_is_available_when_debug_is_disabled(self):
         with TemporaryDirectory() as media_root:
-            with override_settings(DEBUG=False, MEDIA_ROOT=Path(media_root)):
+            with override_settings(
+                DEBUG=False,
+                MEDIA_ROOT=Path(media_root),
+                STORAGES={
+                    "default": {
+                        "BACKEND": "django.core.files.storage.FileSystemStorage",
+                    },
+                    "staticfiles": {
+                        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+                    },
+                },
+            ):
                 user = User.objects.create_user(
                     username="media@ecs.osaka-u.ac.jp",
                     email="media@ecs.osaka-u.ac.jp",

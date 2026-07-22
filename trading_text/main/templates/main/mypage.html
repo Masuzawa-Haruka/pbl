@@ -26,7 +26,7 @@
     </div>
     <div class="placeholder-page__current_information_text">
       <p>取引完了数</p>
-      <strong>{{ trading_books|length }}点</strong>
+      <strong>{{ completed_trade_count }}点</strong>
     </div>
     <div class="placeholder-page__current_information_text">
       <p>評価</p>
@@ -51,29 +51,62 @@
     </section>
   {% endif %}
 
-  <div class="placeholder-page_display_sale">
-    <p class="placeholder-page_display_sale_left">出品一覧</p>
-    <a class="placeholder-page_display_sale_right" href="{% url 'listing_form' %}">＋出品</a>
-  </div>
-  <div class="mypage-book-list">
-    {% for book in selling_books %}
-      <a class="mypage-book" href="{% url 'book_detail' book.id %}">
-        <span>{{ book.title }}</span>
-        <strong>{{ book.price }}円</strong>
-        <em>{{ book.get_status_display }}</em>
-      </a>
-    {% empty %}
-      <p class="placeholder-page__text">まだ出品はありません。</p>
-    {% endfor %}
-  </div>
+  <section id="mypage-list" class="mypage-section mypage-section--primary" aria-live="polite">
+    <div class="placeholder-page_display_sale">
+      {% if active_view == "favorites" %}
+        <h2 class="placeholder-page_display_sale_left">お気に入り</h2>
+        <a class="placeholder-page_display_sale_right" href="{% url 'mypage' %}#mypage-list">出品一覧</a>
+      {% elif active_view == "trades" %}
+        <h2 class="placeholder-page_display_sale_left">取引中/売却済み</h2>
+        <a class="placeholder-page_display_sale_right" href="{% url 'mypage' %}#mypage-list">出品一覧</a>
+      {% else %}
+        <h2 class="placeholder-page_display_sale_left">出品一覧</h2>
+        <a class="placeholder-page_display_sale_right" href="{% url 'listing_form' %}">＋出品</a>
+      {% endif %}
+    </div>
+
+    <div class="mypage-book-list">
+      {% if active_view == "favorites" %}
+        {% for book in favorite_books %}
+          <a class="mypage-book" href="{% url 'book_detail' book.id %}">
+            <span>{{ book.title }}</span>
+            <strong>{{ book.price }}円</strong>
+            <em>♡いいね{{ book.likes_count }}</em>
+          </a>
+        {% empty %}
+          <p class="placeholder-page__text">お気に入りはまだありません。</p>
+        {% endfor %}
+      {% elif active_view == "trades" %}
+        {% for item in trade_items %}
+          <a class="mypage-book" href="{{ item.url }}">
+            <span>{{ item.book.title }}</span>
+            <strong>{{ item.book.get_status_display }}</strong>
+            <em>{{ item.book.price }}円</em>
+          </a>
+        {% empty %}
+          <p class="placeholder-page__text">取引中または売却済みの教科書はありません。</p>
+        {% endfor %}
+      {% else %}
+        {% for book in selling_books %}
+          <a class="mypage-book" href="{% url 'book_detail' book.id %}">
+            <span>{{ book.title }}</span>
+            <strong>{{ book.price }}円</strong>
+            <em>{{ book.get_status_display }}</em>
+          </a>
+        {% empty %}
+          <p class="placeholder-page__text">現在出品中の教科書はありません。</p>
+        {% endfor %}
+      {% endif %}
+    </div>
+  </section>
 
   <div class="placeholder-page_menue">
-    <a class="placeholder-page__section" href="{% url 'mypage' %}#favorites">
+    <a class="placeholder-page__section{% if active_view == 'favorites' %} placeholder-page__section--active{% endif %}" href="{% url 'mypage' %}?view=favorites#mypage-list"{% if active_view == 'favorites' %} aria-current="page"{% endif %}>
       <span class="placeholder-page__favorite-heart" aria-hidden="true"></span>
       <span class="placeholder-page__section_text">お気に入り</span>
       <span class="placeholder-page__section_right">{{ favorite_books|length }}件</span>
     </a>
-    <a class="placeholder-page__section" href="{% url 'mypage' %}#trades">
+    <a class="placeholder-page__section{% if active_view == 'trades' %} placeholder-page__section--active{% endif %}" href="{% url 'mypage' %}?view=trades#mypage-list"{% if active_view == 'trades' %} aria-current="page"{% endif %}>
       <span>↔</span>
       <span class="placeholder-page__section_text">取引中/売却済み</span>
       <span class="placeholder-page__section_right">{{ trading_books|length }}件</span>
@@ -93,32 +126,6 @@
       <span class="placeholder-page__section_text">ログアウト</span>
       <span class="placeholder-page__arrow">›</span>
     </a>
-  </div>
-
-  <div id="favorites" class="mypage-section">
-    <h2>お気に入り</h2>
-    {% for book in favorite_books %}
-      <a class="mypage-book" href="{% url 'book_detail' book.id %}">
-        <span>{{ book.title }}</span>
-        <strong>{{ book.price }}円</strong>
-        <em>♡いいね{{ book.likes_count }}</em>
-      </a>
-    {% empty %}
-      <p class="placeholder-page__text">お気に入りはまだありません。</p>
-    {% endfor %}
-  </div>
-
-  <div id="trades" class="mypage-section">
-    <h2>取引中/売却済み</h2>
-    {% for book in trading_books %}
-      <a class="mypage-book" href="{% url 'chat' book.id %}">
-        <span>{{ book.title }}</span>
-        <strong>{{ book.get_status_display }}</strong>
-        <em>{{ book.price }}円</em>
-      </a>
-    {% empty %}
-      <p class="placeholder-page__text">取引中の教科書はありません。</p>
-    {% endfor %}
   </div>
 </section>
 {% endblock %}
