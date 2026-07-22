@@ -25,6 +25,7 @@ urlpatterns = [
     path("book/<int:book_id>/evaluate/", views.evaluate_trade, name="evaluate_trade"),
     path("book/<int:book_id>/cancel/", views.cancel_trade, name="cancel_trade"),
     path("book/<int:book_id>/edit/", views.edit_book, name="edit_book"),
+    path("book/<int:book_id>/withdraw/", views.withdraw_book, name="withdraw_book"),
     path("inbox/", views.inbox, name="inbox"),
     path("mypage/", views.mypage, name="mypage"),
     path("mypage/edit/", views.edit_profile, name="edit_profile"),

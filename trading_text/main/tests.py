@@ -131,21 +131,23 @@ class AuthFormTests(TestCase):
         valid_form = ProfileForm(
             data={
                 "display_name": "大阪 太郎",
-                "faculty": "基礎工学部 情報科学科",
+                "faculty_group": "基礎工学部",
+                "department": "情報科学科",
                 "school_year": "2年",
             }
         )
         invalid_form = ProfileForm(
             data={
                 "display_name": "大阪 太郎",
-                "faculty": "部部科科",
+                "faculty_group": "工学部",
+                "department": "情報科学科",
                 "school_year": "2年",
             }
         )
 
         self.assertTrue(valid_form.is_valid())
         self.assertFalse(invalid_form.is_valid())
-        self.assertIn("faculty", invalid_form.errors)
+        self.assertIn("department", invalid_form.errors)
 
 
 class TradeFlowTests(TestCase):
@@ -251,14 +253,18 @@ class TradeFlowTests(TestCase):
         self.assertContains(response, reverse("user_profile", args=[self.seller.id]))
 
     def test_profile_edit_uses_official_faculty_department_select(self):
+        self.seller.profile.faculty = "工学部 電子情報工学科"
+        self.seller.profile.save(update_fields=["faculty"])
         self.client.login(username=self.seller.username, password="password12345")
 
         response = self.client.get(reverse("edit_profile"))
 
-        self.assertContains(response, '<select name="faculty"', html=False)
-        self.assertContains(response, "工学部 電子情報工学科")
-        self.assertContains(response, "基礎工学部 情報科学科")
-        self.assertNotContains(response, 'type="text" name="faculty"')
+        self.assertContains(response, '<select name="faculty_group"', html=False)
+        self.assertContains(response, '<select name="department"', html=False)
+        self.assertEqual(response.context["form"]["faculty_group"].value(), "工学部")
+        self.assertEqual(response.context["form"]["department"].value(), "電子情報工学科")
+        self.assertContains(response, "基礎工学部")
+        self.assertContains(response, "情報科学科")
 
     def test_profile_edit_rejects_unknown_faculty_department(self):
         self.client.login(username=self.seller.username, password="password12345")
@@ -267,15 +273,33 @@ class TradeFlowTests(TestCase):
             reverse("edit_profile"),
             {
                 "display_name": "大阪 太郎",
-                "faculty": "部部科科",
+                "faculty_group": "工学部",
+                "department": "情報科学科",
                 "school_year": "2年",
             },
         )
 
         self.assertEqual(response.status_code, 200)
         self.seller.profile.refresh_from_db()
-        self.assertNotEqual(self.seller.profile.faculty, "部部科科")
-        self.assertContains(response, "一覧から正しい学部・学科を選択してください。")
+        self.assertNotEqual(self.seller.profile.faculty, "工学部 情報科学科")
+        self.assertContains(response, "選択した学部に所属する学科を選択してください。")
+
+    def test_profile_edit_saves_faculty_and_department_in_existing_format(self):
+        self.client.login(username=self.seller.username, password="password12345")
+
+        response = self.client.post(
+            reverse("edit_profile"),
+            {
+                "display_name": "大阪 太郎",
+                "faculty_group": "基礎工学部",
+                "department": "情報科学科",
+                "school_year": "2年",
+            },
+        )
+
+        self.assertRedirects(response, reverse("mypage"))
+        self.seller.profile.refresh_from_db()
+        self.assertEqual(self.seller.profile.faculty, "基礎工学部 情報科学科")
 
     def test_seller_can_open_each_buyer_chat_from_book_detail(self):
         Message.objects.create(
@@ -1094,6 +1118,37 @@ class TradeFlowTests(TestCase):
         self.assertNotContains(response, self.book.title)
         self.assertContains(response, 'aria-current="page"')
         self.assertContains(response, "?view=listings#mypage-list")
+
+    def test_seller_can_withdraw_available_book_from_mypage(self):
+        self.client.login(username=self.seller.username, password="password12345")
+        response = self.client.get(reverse("mypage"))
+
+        self.assertContains(response, reverse("withdraw_book", args=[self.book.id]))
+        self.assertContains(response, "mypage-book--withdraw")
+
+        response = self.client.post(reverse("withdraw_book", args=[self.book.id]))
+
+        self.assertRedirects(
+            response,
+            f"{reverse('mypage')}?view=listings#mypage-list",
+            fetch_redirect_response=False,
+        )
+        self.assertFalse(Book.objects.filter(id=self.book.id).exists())
+
+    def test_withdraw_requires_owner_available_status_and_post(self):
+        withdraw_url = reverse("withdraw_book", args=[self.book.id])
+        self.client.login(username=self.buyer.username, password="password12345")
+
+        self.assertEqual(self.client.post(withdraw_url).status_code, 404)
+        self.assertTrue(Book.objects.filter(id=self.book.id).exists())
+
+        self.client.login(username=self.seller.username, password="password12345")
+        self.assertEqual(self.client.get(withdraw_url).status_code, 405)
+        self.book.status = "in_progress"
+        self.book.buyer = self.buyer
+        self.book.save(update_fields=["status", "buyer"])
+        self.assertEqual(self.client.post(withdraw_url).status_code, 404)
+        self.assertTrue(Book.objects.filter(id=self.book.id).exists())
 
     def test_mypage_trades_button_only_shows_users_trades_with_correct_chat(self):
         selling_trade = Book.objects.create(

@@ -9,6 +9,7 @@ from django.db.models import F, Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.views.decorators.http import require_POST
 from django.views.static import serve
 
 from .forms import (
@@ -871,7 +872,11 @@ def edit_profile(request):
             return redirect("mypage")
     else:
         form = ProfileForm(instance=profile)
-    return render(request, "main/edit_profile.html", {"form": form})
+    return render(
+        request,
+        "main/edit_profile.html",
+        {"form": form, "faculty_departments": UserProfile.FACULTY_DEPARTMENTS},
+    )
 
 
 @login_required
@@ -890,6 +895,22 @@ def edit_book(request, book_id):
     else:
         form = BookEditForm(instance=book)
     return render(request, "main/edit_book.html", {"form": form, "book": book})
+
+
+@login_required
+@require_POST
+def withdraw_book(request, book_id):
+    book = get_object_or_404(Book, id=book_id, seller=request.user, status="available")
+    title = book.title
+    if book.image:
+        try:
+            book.image.delete(save=False)
+        except OSError as error:
+            messages.error(request, str(error))
+            return redirect(f"{reverse('mypage')}?view=listings#mypage-list")
+    book.delete()
+    messages.success(request, f"「{title}」の出品を取り下げました。")
+    return redirect(f"{reverse('mypage')}?view=listings#mypage-list")
 
 
 def terms(request):

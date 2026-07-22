@@ -97,22 +97,60 @@ class BookEditForm(BookForm):
 
 class ProfileForm(forms.ModelForm):
     display_name = forms.CharField(label="名前", max_length=80)
-    faculty = forms.ChoiceField(
-        label="学部・学科",
-        choices=[("", "学部・学科を選択してください"), *UserProfile.FACULTY_CHOICES],
+    faculty_group = forms.ChoiceField(
+        label="学部",
+        choices=[("", "学部を選択してください"), *((name, name) for name in UserProfile.FACULTY_DEPARTMENTS)],
         widget=forms.Select(attrs={"class": "form-control"}),
         error_messages={
-            "required": "学部・学科を選択してください。",
-            "invalid_choice": "一覧から正しい学部・学科を選択してください。",
+            "required": "学部を選択してください。",
+            "invalid_choice": "一覧から正しい学部を選択してください。",
+        },
+    )
+    department = forms.ChoiceField(
+        label="学科",
+        choices=[
+            ("", "学科を選択してください"),
+            *(
+                (department, department)
+                for departments in UserProfile.FACULTY_DEPARTMENTS.values()
+                for department in departments
+            ),
+        ],
+        widget=forms.Select(attrs={"class": "form-control"}),
+        error_messages={
+            "required": "学科を選択してください。",
+            "invalid_choice": "一覧から正しい学科を選択してください。",
         },
     )
 
     class Meta:
         model = UserProfile
-        fields = ("display_name", "faculty", "school_year")
+        fields = ("display_name", "school_year")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        combined_value = self.instance.faculty if self.instance and self.instance.pk else ""
+        for faculty, departments in UserProfile.FACULTY_DEPARTMENTS.items():
+            for department in departments:
+                if combined_value == f"{faculty} {department}":
+                    self.fields["faculty_group"].initial = faculty
+                    self.fields["department"].initial = department
+                    return
 
     def clean_display_name(self):
         return self.cleaned_data["display_name"].strip()
+
+    def clean(self):
+        cleaned_data = super().clean()
+        faculty = cleaned_data.get("faculty_group")
+        department = cleaned_data.get("department")
+        if faculty and department and department not in UserProfile.FACULTY_DEPARTMENTS.get(faculty, []):
+            self.add_error("department", "選択した学部に所属する学科を選択してください。")
+        return cleaned_data
+
+    def save(self, commit=True):
+        self.instance.faculty = f"{self.cleaned_data['faculty_group']} {self.cleaned_data['department']}"
+        return super().save(commit=commit)
 
 
 class MessageForm(forms.Form):

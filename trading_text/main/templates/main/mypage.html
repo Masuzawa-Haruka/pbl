@@ -86,11 +86,14 @@
         {% endfor %}
       {% else %}
         {% for book in selling_books %}
-          <a class="mypage-book" href="{% url 'book_detail' book.id %}">
-            <span>{{ book.title }}</span>
-            <strong>{{ book.price }}円</strong>
-            <em>{{ book.get_status_display }}</em>
-          </a>
+          <form class="mypage-book-form" method="post" action="{% url 'withdraw_book' book.id %}" onsubmit="return confirm('「{{ book.title|escapejs }}」の出品を取り下げますか？');">
+            {% csrf_token %}
+            <button class="mypage-book mypage-book--withdraw" type="submit" aria-label="{{ book.title }}の出品を取り下げる">
+              <span>{{ book.title }}</span>
+              <strong>{{ book.price }}円</strong>
+              <em>{{ book.get_status_display }}</em>
+            </button>
+          </form>
         {% empty %}
           <p class="placeholder-page__text">現在出品中の教科書はありません。</p>
         {% endfor %}
