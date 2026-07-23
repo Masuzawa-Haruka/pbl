@@ -11,65 +11,100 @@
 
 {% block content %}
 <section class="search-page" aria-label="教科書検索">
-  <form class="search-bar" action="{% url 'search' %}" method="get">
-    <label class="search-bar__field">
-      <svg class="search-bar__icon" viewBox="0 0 24 24" aria-hidden="true">
-        <circle cx="10.5" cy="10.5" r="6.5"></circle>
-        <path d="M15.5 15.5 21 21"></path>
-      </svg>
-      <input type="search" name="keyword" value="{{ keyword }}" placeholder="書名・著者・キーワードで検索">
-    </label>
-    {% if selected_category %}
-      <input type="hidden" name="category" value="{{ selected_category }}">
-    {% endif %}
-    {% if selected_campus %}
-      <input type="hidden" name="campus" value="{{ selected_campus }}">
-    {% endif %}
-    {% if selected_sort %}
-      <input type="hidden" name="sort" value="{{ selected_sort }}">
-    {% endif %}
-    <button class="filter-button" type="submit" aria-label="検索">
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M4 5h16l-6.5 7.4V19l-3 1v-7.6L4 5Z"></path>
-      </svg>
-    </button>
+  <form class="search-filter-form" action="{% url 'search' %}" method="get">
+    <div class="search-bar">
+      <label class="search-bar__field">
+        <svg class="search-bar__icon" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="10.5" cy="10.5" r="6.5"></circle>
+          <path d="M15.5 15.5 21 21"></path>
+        </svg>
+        <input type="search" name="keyword" value="{{ keyword }}" placeholder="書名・著者・キーワードで検索">
+      </label>
+      <button
+        class="filter-button{% if active_filter_labels %} filter-button--active{% endif %}"
+        id="filter-toggle"
+        type="button"
+        aria-label="検索条件を開く"
+        aria-controls="filter-panel"
+        aria-expanded="false"
+        title="検索条件"
+      >
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 5h16l-6.5 7.4V19l-3 1v-7.6L4 5Z"></path>
+        </svg>
+        {% if active_filter_labels %}<span class="filter-button__count">{{ active_filter_labels|length }}</span>{% endif %}
+      </button>
+    </div>
+
+    <div class="filter-panel" id="filter-panel" hidden>
+      <div class="filter-panel__header">
+        <h2>検索条件</h2>
+        <button class="filter-panel__close" id="filter-close" type="button" aria-label="検索条件を閉じる" title="閉じる">×</button>
+      </div>
+
+      <div class="filter-panel__grid">
+        <label class="filter-field">
+          <span>教材区分</span>
+          <select name="category">
+            <option value="">すべて</option>
+            {% for value, label in categories %}
+              <option value="{{ value }}"{% if selected_category == value %} selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </label>
+
+        <label class="filter-field">
+          <span>受け渡し希望キャンパス</span>
+          <select name="campus">
+            <option value="">すべて</option>
+            {% for value, label in campuses %}
+              <option value="{{ value }}"{% if selected_campus == value %} selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </label>
+
+        <label class="filter-field">
+          <span>商品の状態</span>
+          <select name="condition">
+            <option value="">すべて</option>
+            {% for value, label in conditions %}
+              <option value="{{ value }}"{% if selected_condition == value %} selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </label>
+
+        <label class="filter-field">
+          <span>価格</span>
+          <select name="price_range">
+            <option value="">指定なし</option>
+            {% for value, label in price_filters %}
+              <option value="{{ value }}"{% if selected_price_range == value %} selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </label>
+
+        <label class="filter-field filter-field--wide">
+          <span>並び順</span>
+          <select name="sort">
+            {% for value, label in sort_choices %}
+              <option value="{{ value }}"{% if selected_sort == value %} selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </label>
+      </div>
+
+      <div class="filter-panel__actions">
+        <a class="filter-reset" href="{% url 'search' %}{% if keyword %}?keyword={{ keyword|urlencode }}{% endif %}">条件をクリア</a>
+        <button class="filter-apply" type="submit">フィルタを適用</button>
+      </div>
+    </div>
   </form>
 
-  <div class="chip-group" aria-label="カテゴリ">
-    <a class="chip{% if not selected_category %} chip--active{% endif %}" href="{% url 'search' %}?{% if keyword %}keyword={{ keyword|urlencode }}&{% endif %}{% if selected_campus %}campus={{ selected_campus }}&{% endif %}sort={{ selected_sort }}">すべて</a>
-    {% for category_value, category_label in categories %}
-      <a class="chip{% if selected_category == category_value %} chip--active{% endif %}" href="{% url 'search' %}?{% if keyword %}keyword={{ keyword|urlencode }}&{% endif %}category={{ category_value }}&{% if selected_campus %}campus={{ selected_campus }}&{% endif %}sort={{ selected_sort }}">{{ category_label }}</a>
-    {% endfor %}
-  </div>
-
-  <div class="chip-group chip-group--campus" aria-label="キャンパス">
-    {% for campus_value, campus_label in campuses %}
-      <a class="chip chip--campus{% if selected_campus == campus_value %} chip--active{% endif %}" href="{% url 'search' %}?{% if keyword %}keyword={{ keyword|urlencode }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}campus={{ campus_value }}&sort={{ selected_sort }}">
-        <span class="chip__pin">○</span>{{ campus_label|cut:"キャンパス" }}
-      </a>
-    {% endfor %}
-    <a class="chip chip--outline{% if not selected_campus %} chip--active-outline{% endif %}" href="{% url 'search' %}?{% if keyword %}keyword={{ keyword|urlencode }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}sort={{ selected_sort }}">すべてのキャンパス</a>
-  </div>
-
-  <form class="sort-form" action="{% url 'search' %}" method="get">
-    {% if keyword %}
-      <input type="hidden" name="keyword" value="{{ keyword }}">
-    {% endif %}
-    {% if selected_category %}
-      <input type="hidden" name="category" value="{{ selected_category }}">
-    {% endif %}
-    {% if selected_campus %}
-      <input type="hidden" name="campus" value="{{ selected_campus }}">
-    {% endif %}
-    <label class="sort-button">
-      <select name="sort" onchange="this.form.submit()">
-        <option value="newest"{% if selected_sort == "newest" %} selected{% endif %}>新着順</option>
-        <option value="price_low"{% if selected_sort == "price_low" %} selected{% endif %}>価格が安い順</option>
-        <option value="price_high"{% if selected_sort == "price_high" %} selected{% endif %}>価格が高い順</option>
-      </select>
-      <span aria-hidden="true">⌄</span>
-    </label>
-  </form>
+  {% if active_filter_labels %}
+    <div class="active-filters" aria-label="適用中の検索条件">
+      {% for label in active_filter_labels %}<span>{{ label }}</span>{% endfor %}
+    </div>
+  {% endif %}
 
   <div class="book-list">
     {% for book in books %}
@@ -95,4 +130,8 @@
     {% endfor %}
   </div>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'main/js/search_filters.js' %}" defer></script>
 {% endblock %}

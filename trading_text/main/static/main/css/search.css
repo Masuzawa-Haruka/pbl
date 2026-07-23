@@ -49,6 +49,7 @@
 }
 
 .filter-button {
+  position: relative;
   display: grid;
   place-items: center;
   width: 48px;
@@ -58,6 +59,13 @@
   border-radius: 12px;
   color: #070d2f;
   background: #ffffff;
+  cursor: pointer;
+}
+
+.filter-button--active {
+  border-color: #0034b8;
+  color: #0034b8;
+  background: #f2f6ff;
 }
 
 .filter-button svg {
@@ -70,96 +78,153 @@
   stroke-linejoin: round;
 }
 
-.chip-group {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 16px;
+.filter-button__count {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  display: grid;
+  place-items: center;
+  width: 19px;
+  height: 19px;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  color: #ffffff;
+  background: #0034b8;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
 }
 
-.chip-group--campus {
+.filter-panel {
+  margin-top: 12px;
+  padding: 16px;
+  border: 1px solid #d9dfeb;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.filter-panel[hidden] {
+  display: none;
+}
+
+.filter-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.filter-panel__header h2 {
+  margin: 0;
+  color: #070d2f;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.filter-panel__close {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  color: #070d2f;
+  background: transparent;
+  font-size: 25px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.filter-panel__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px 12px;
+}
+
+.filter-field {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.filter-field--wide {
+  grid-column: 1 / -1;
+}
+
+.filter-field > span {
+  color: #070d2f;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.filter-field select {
+  width: 100%;
+  height: 42px;
+  min-width: 0;
+  padding: 0 32px 0 11px;
+  border: 1px solid #d9dfeb;
+  border-radius: 8px;
+  outline: 0;
+  color: #070d2f;
+  background: #ffffff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.filter-field select:focus {
+  border-color: #0034b8;
+  box-shadow: 0 0 0 3px rgba(0, 52, 184, 0.1);
+}
+
+.filter-panel__actions {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  margin-top: 18px;
+}
+
+.filter-reset {
+  padding: 10px 4px;
+  color: #596173;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.filter-apply {
+  min-height: 44px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 8px;
+  color: #ffffff;
+  background: #0034b8;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.active-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
   margin-top: 12px;
 }
 
-.chip {
+.active-filters span {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  min-height: 38px;
-  padding: 0 15px;
-  border: 1px solid #d8deea;
-  border-radius: 12px;
-  color: #070d2f;
-  background: #ffffff;
-  font: inherit;
-  font-size: 14px;
-  font-weight: 700;
-  text-decoration: none;
-}
-
-.chip--active {
-  border-color: #0034b8;
-  color: #ffffff;
-  background: #0034b8;
-}
-
-.chip--campus {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 0 13px;
-}
-
-.chip__pin {
-  display: inline-grid;
-  place-items: center;
-  width: 16px;
-  height: 16px;
-  color: #070d2f;
+  min-height: 28px;
+  padding: 0 9px;
+  border: 1px solid #bfd0fa;
+  border-radius: 999px;
+  color: #0034b8;
+  background: #f2f6ff;
   font-size: 11px;
-  line-height: 1;
-  border: 1.8px solid currentColor;
-  border-radius: 50%;
-}
-
-.chip--outline {
-  color: #0034b8;
-  border-color: #0034b8;
-}
-
-.chip--active-outline {
-  color: #0034b8;
-  border-color: #0034b8;
-  background: #f5f8ff;
-}
-
-.sort-form {
-  margin: 14px 0 0;
-}
-
-.sort-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 38px;
-  padding: 0 14px;
-  border: 1px solid #d8deea;
-  border-radius: 10px;
-  color: #070d2f;
-  background: #ffffff;
-  font: inherit;
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.sort-button select {
-  border: 0;
-  outline: 0;
-  color: inherit;
-  background: transparent;
-  font: inherit;
-  font-weight: inherit;
-  appearance: none;
+  font-weight: 800;
 }
 
 .book-list {
@@ -399,5 +464,13 @@
 
   .book-item__price {
     font-size: 19px;
+  }
+
+  .filter-panel__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-field--wide {
+    grid-column: auto;
   }
 }

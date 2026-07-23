@@ -97,6 +97,15 @@ class BookEditForm(BookForm):
 
 class ProfileForm(forms.ModelForm):
     display_name = forms.CharField(label="名前", max_length=80)
+    school_year = forms.ChoiceField(
+        label="学年",
+        choices=[("", "学年を選択してください"), *((f"{year}年", f"{year}年") for year in range(1, 7))],
+        widget=forms.Select(attrs={"class": "form-control"}),
+        error_messages={
+            "required": "学年を選択してください。",
+            "invalid_choice": "一覧から正しい学年を選択してください。",
+        },
+    )
     faculty_group = forms.ChoiceField(
         label="学部",
         choices=[("", "学部を選択してください"), *((name, name) for name in UserProfile.FACULTY_DEPARTMENTS)],

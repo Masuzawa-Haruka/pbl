@@ -28,6 +28,21 @@ from .supabase_auth import SupabaseAuthError, is_configured as supabase_is_confi
 from .supabase_auth import sign_in_with_password, sign_up
 
 
+PRICE_FILTER_CHOICES = [
+    ("under_1000", "1000円以下"),
+    ("under_3000", "3000円以下"),
+    ("under_5000", "5000円以下"),
+    ("over_5000", "5000円より高い"),
+]
+
+SEARCH_SORT_CHOICES = [
+    ("newest", "新着順"),
+    ("price_low", "価格が安い順"),
+    ("price_high", "価格が高い順"),
+    ("popular", "お気に入りが多い順"),
+]
+
+
 def sync_supabase_user(email, supabase_user_id=None, display_name=None):
     user, _created = User.objects.get_or_create(
         username=email,
@@ -64,7 +79,21 @@ def get_search_context(request):
     keyword = request.GET.get("keyword", "").strip()
     category = request.GET.get("category", "").strip()
     campus = request.GET.get("campus", "").strip()
+    condition = request.GET.get("condition", "").strip()
+    price_range = request.GET.get("price_range", "").strip()
     sort = request.GET.get("sort", "newest").strip()
+
+    category_labels = dict(Book.CATEGORY_CHOICES)
+    campus_labels = dict(Book.CAMPUS_CHOICES)
+    condition_labels = dict(Book.CONDITION_CHOICES)
+    price_labels = dict(PRICE_FILTER_CHOICES)
+    sort_labels = dict(SEARCH_SORT_CHOICES)
+
+    category = category if category in category_labels else ""
+    campus = campus if campus in campus_labels else ""
+    condition = condition if condition in condition_labels else ""
+    price_range = price_range if price_range in price_labels else ""
+    sort = sort if sort in sort_labels else "newest"
 
     if keyword:
         books = books.filter(Q(title__icontains=keyword) | Q(author__icontains=keyword))
@@ -75,21 +104,54 @@ def get_search_context(request):
     if campus:
         books = books.filter(campus=campus)
 
+    if condition:
+        books = books.filter(condition=condition)
+
+    if price_range == "under_1000":
+        books = books.filter(price__lte=1000)
+    elif price_range == "under_3000":
+        books = books.filter(price__lte=3000)
+    elif price_range == "under_5000":
+        books = books.filter(price__lte=5000)
+    elif price_range == "over_5000":
+        books = books.filter(price__gt=5000)
+
     if sort == "price_low":
         books = books.order_by("price", "-created_at")
     elif sort == "price_high":
         books = books.order_by("-price", "-created_at")
+    elif sort == "popular":
+        books = books.order_by("-likes_count", "-created_at")
     else:
         books = books.order_by("-created_at")
+
+    active_filter_labels = [
+        label
+        for value, label in (
+            (category, category_labels.get(category)),
+            (campus, campus_labels.get(campus)),
+            (condition, condition_labels.get(condition)),
+            (price_range, price_labels.get(price_range)),
+        )
+        if value and label
+    ]
+    if sort != "newest":
+        active_filter_labels.append(sort_labels[sort])
 
     return {
         "books": books,
         "keyword": keyword,
         "selected_category": category,
         "selected_campus": campus,
+        "selected_condition": condition,
+        "selected_price_range": price_range,
         "selected_sort": sort,
         "categories": Book.CATEGORY_CHOICES,
         "campuses": Book.CAMPUS_CHOICES,
+        "conditions": Book.CONDITION_CHOICES,
+        "price_filters": PRICE_FILTER_CHOICES,
+        "sort_choices": SEARCH_SORT_CHOICES,
+        "active_filter_labels": active_filter_labels,
     }
 
 
@@ -870,7 +932,6 @@ def edit_profile(request):
         form = ProfileForm(request.POST, instance=profile)
         if form.is_valid():
             form.save()
-            messages.success(request, "プロフィールを更新しました。")
             return redirect("mypage")
     else:
         form = ProfileForm(instance=profile)

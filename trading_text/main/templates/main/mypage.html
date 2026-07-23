@@ -68,40 +68,44 @@
     <div class="mypage-book-list">
       {% if active_view == "favorites" %}
         {% for book in favorite_books %}
-          <a class="mypage-book" href="{% url 'book_detail' book.id %}">
-            <span>{{ book.title }}</span>
-            <strong>{{ book.price }}円</strong>
-            <em>♡いいね{{ book.likes_count }}</em>
+          <a class="mypage-book mypage-book--{{ book.status }}{% if book.status != 'available' %} mypage-book--unavailable{% endif %}" href="{% url 'book_detail' book.id %}">
+            <span class="mypage-book__title">{{ book.title }}</span>
+            <strong class="mypage-book__price">{{ book.price }}円</strong>
+            <em class="mypage-book__status mypage-book__status--{{ book.status }}">{{ book.get_status_display }}</em>
+            <small class="mypage-book__meta">♡いいね{{ book.likes_count }}</small>
+            {% if book.status != "available" %}<small class="mypage-book__availability">現在は出品されていません</small>{% endif %}
           </a>
         {% empty %}
           <p class="placeholder-page__text">お気に入りはまだありません。</p>
         {% endfor %}
       {% elif active_view == "trades" %}
         {% for item in trade_items %}
-          <a class="mypage-book" href="{{ item.url }}">
-            <span>{{ item.book.title }}</span>
-            <strong>{{ item.book.get_status_display }}</strong>
-            <em>{{ item.book.price }}円</em>
+          <a class="mypage-book mypage-book--{{ item.book.status }} mypage-book--unavailable" href="{{ item.url }}">
+            <span class="mypage-book__title">{{ item.book.title }}</span>
+            <strong class="mypage-book__price">{{ item.book.price }}円</strong>
+            <em class="mypage-book__status mypage-book__status--{{ item.book.status }}">{{ item.book.get_status_display }}</em>
+            <small class="mypage-book__availability">現在は出品されていません</small>
           </a>
         {% empty %}
           <p class="placeholder-page__text">取引中または売却済みの教科書はありません。</p>
         {% endfor %}
       {% elif active_view == "withdrawn" %}
         {% for book in withdrawn_books %}
-          <a class="mypage-book" href="{% url 'book_detail' book.id %}">
-            <span>{{ book.title }}</span>
-            <strong>{{ book.price }}円</strong>
-            <em>{{ book.get_status_display }}</em>
+          <a class="mypage-book mypage-book--{{ book.status }} mypage-book--unavailable" href="{% url 'book_detail' book.id %}">
+            <span class="mypage-book__title">{{ book.title }}</span>
+            <strong class="mypage-book__price">{{ book.price }}円</strong>
+            <em class="mypage-book__status mypage-book__status--{{ book.status }}">{{ book.get_status_display }}</em>
+            <small class="mypage-book__availability">現在は出品されていません</small>
           </a>
         {% empty %}
           <p class="placeholder-page__text">取り下げた教科書はありません。</p>
         {% endfor %}
       {% else %}
         {% for book in selling_books %}
-          <a class="mypage-book mypage-book--listing" href="{% url 'book_detail' book.id %}">
-            <span>{{ book.title }}</span>
-            <strong>{{ book.price }}円</strong>
-            <em>{{ book.get_status_display }}</em>
+          <a class="mypage-book mypage-book--listing mypage-book--{{ book.status }}" href="{% url 'book_detail' book.id %}">
+            <span class="mypage-book__title">{{ book.title }}</span>
+            <strong class="mypage-book__price">{{ book.price }}円</strong>
+            <em class="mypage-book__status mypage-book__status--{{ book.status }}">{{ book.get_status_display }}</em>
           </a>
         {% empty %}
           <p class="placeholder-page__text">現在出品中の教科書はありません。</p>

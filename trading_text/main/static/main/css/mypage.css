@@ -323,10 +323,18 @@
 .placeholder-page__current_information_text strong { display: block; color: #070d2f; font-size: 26px; font-weight: 900; }
 .mypage-stars { display: block; margin-top: 10px; color: #f5b301; font-size: 13px; font-weight: 800; }
 .mypage-book-list, .mypage-section { margin-bottom: 18px; }
-.mypage-book { display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; padding: 12px 0; border-bottom: 1px solid #e5e9f1; color: #101b62; text-align: left; text-decoration: none; }
-.mypage-book span { min-width: 0; font-size: 14px; font-weight: 800; }
-.mypage-book strong { color: #cd1717; font-size: 13px; font-weight: 800; }
-.mypage-book em { grid-column: 1 / -1; color: #596173; font-size: 12px; font-style: normal; font-weight: 700; }
+.mypage-book { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 7px 12px; padding: 13px 10px; border-bottom: 1px solid #e5e9f1; color: #101b62; text-align: left; text-decoration: none; }
+.mypage-book__title { min-width: 0; overflow-wrap: anywhere; font-size: 14px; font-weight: 800; }
+.mypage-book__price { align-self: start; color: #cd1717; font-size: 13px; font-weight: 800; }
+.mypage-book__status { grid-column: 1; width: max-content; max-width: 100%; padding: 3px 8px; border-radius: 999px; font-size: 11px; font-style: normal; font-weight: 800; line-height: 1.4; }
+.mypage-book__status--available { color: #087b24; background: #d7f5df; }
+.mypage-book__status--in_progress { color: #7a5200; background: #fff0bd; }
+.mypage-book__status--sold,
+.mypage-book__status--withdrawn { color: #596173; background: #e9edf3; }
+.mypage-book__meta { grid-column: 2; grid-row: 2; align-self: center; color: #596173; font-size: 11px; font-weight: 700; }
+.mypage-book__availability { grid-column: 1 / -1; color: #596173; font-size: 11px; font-weight: 700; }
+.mypage-book--unavailable { margin: 4px 0; border: 1px solid #e1e5ec; border-radius: 6px; background: #f8f9fb; }
+.mypage-book--unavailable:hover { background: #f0f2f5; }
 .mypage-book--listing { padding: 16px 14px; border-radius: 6px; transition: background-color 0.15s ease; }
 .mypage-book--listing:hover { background: #eef0f3; }
 .mypage-book--listing:focus-visible { outline: 3px solid rgba(0, 52, 184, 0.22); outline-offset: 2px; background: #eef0f3; }

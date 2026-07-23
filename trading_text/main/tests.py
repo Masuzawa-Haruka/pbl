@@ -144,10 +144,20 @@ class AuthFormTests(TestCase):
                 "school_year": "2年",
             }
         )
+        invalid_year_form = ProfileForm(
+            data={
+                "display_name": "大阪 太郎",
+                "faculty_group": "基礎工学部",
+                "department": "情報科学科",
+                "school_year": "21",
+            }
+        )
 
         self.assertTrue(valid_form.is_valid())
         self.assertFalse(invalid_form.is_valid())
         self.assertIn("department", invalid_form.errors)
+        self.assertFalse(invalid_year_form.is_valid())
+        self.assertIn("school_year", invalid_year_form.errors)
 
 
 class TradeFlowTests(TestCase):
@@ -180,7 +190,7 @@ class TradeFlowTests(TestCase):
             price=300,
             category="general",
             campus="toyonaka",
-            condition="good",
+            condition="no_writing",
             description="授業で使いました。",
         )
 
@@ -215,7 +225,7 @@ class TradeFlowTests(TestCase):
         self.assertContains(response, "出品者：")
         self.assertContains(response, "大阪 太郎")
         self.assertContains(response, reverse("user_profile", args=[self.seller.id]))
-        self.assertContains(response, "状態 良い")
+        self.assertContains(response, "状態 書き込みなし")
         self.assertContains(response, "豊中キャンパス")
         self.assertContains(response, "300")
         self.assertContains(response, "いいね 0")
@@ -261,10 +271,12 @@ class TradeFlowTests(TestCase):
 
         self.assertContains(response, '<select name="faculty_group"', html=False)
         self.assertContains(response, '<select name="department"', html=False)
+        self.assertContains(response, '<select name="school_year"', html=False)
         self.assertEqual(response.context["form"]["faculty_group"].value(), "工学部")
         self.assertEqual(response.context["form"]["department"].value(), "電子情報工学科")
         self.assertContains(response, "基礎工学部")
         self.assertContains(response, "情報科学科")
+        self.assertContains(response, "6年")
 
     def test_profile_edit_rejects_unknown_faculty_department(self):
         self.client.login(username=self.seller.username, password="password12345")
@@ -295,9 +307,11 @@ class TradeFlowTests(TestCase):
                 "department": "情報科学科",
                 "school_year": "2年",
             },
+            follow=True,
         )
 
         self.assertRedirects(response, reverse("mypage"))
+        self.assertNotContains(response, "プロフィールを更新しました。")
         self.seller.profile.refresh_from_db()
         self.assertEqual(self.seller.profile.faculty, "基礎工学部 情報科学科")
 
@@ -324,6 +338,115 @@ class TradeFlowTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, reverse("book_detail", args=[self.book.id]))
 
+    def test_search_page_has_button_opened_filter_controls(self):
+        response = self.client.get(reverse("search"))
+
+        self.assertContains(response, 'id="filter-toggle"')
+        self.assertContains(response, 'type="button"')
+        self.assertContains(response, 'id="filter-panel"')
+        self.assertContains(response, "フィルタを適用")
+        self.assertContains(response, "教材区分")
+        self.assertContains(response, "基盤教養")
+        self.assertContains(response, "専門")
+        self.assertContains(response, "商品の状態")
+        self.assertContains(response, "新品同様")
+        self.assertContains(response, "書き込みなし")
+        self.assertContains(response, "書き込みあり")
+        self.assertContains(response, "使用感あり")
+        self.assertContains(response, "1000円以下")
+        self.assertContains(response, "3000円以下")
+        self.assertContains(response, "5000円以下")
+        self.assertContains(response, "5000円より高い")
+
+    def test_search_combines_category_campus_condition_and_price_filters(self):
+        excluded_by_price = Book.objects.create(
+            seller=self.seller,
+            title="価格対象外",
+            author="著者",
+            price=1200,
+            category="general",
+            campus="toyonaka",
+            condition="no_writing",
+        )
+        excluded_by_condition = Book.objects.create(
+            seller=self.seller,
+            title="状態対象外",
+            author="著者",
+            price=800,
+            category="general",
+            campus="toyonaka",
+            condition="writing",
+        )
+        excluded_by_category = Book.objects.create(
+            seller=self.seller,
+            title="区分対象外",
+            author="著者",
+            price=800,
+            category="specialized",
+            campus="toyonaka",
+            condition="no_writing",
+        )
+
+        response = self.client.get(
+            reverse("search"),
+            {
+                "category": "general",
+                "campus": "toyonaka",
+                "condition": "no_writing",
+                "price_range": "under_1000",
+            },
+        )
+
+        self.assertQuerySetEqual(response.context["books"], [self.book])
+        self.assertNotContains(response, excluded_by_price.title)
+        self.assertNotContains(response, excluded_by_condition.title)
+        self.assertNotContains(response, excluded_by_category.title)
+        self.assertContains(response, "filter-button--active")
+        self.assertContains(response, 'class="active-filters"')
+        self.assertContains(response, "基盤教養")
+        self.assertContains(response, "豊中キャンパス")
+        self.assertContains(response, "書き込みなし")
+        self.assertContains(response, "1000円以下")
+
+    def test_search_price_ranges_use_the_requested_boundaries(self):
+        at_3000 = Book.objects.create(
+            seller=self.seller,
+            title="3000円の商品",
+            author="著者",
+            price=3000,
+            category="specialized",
+            campus="suita",
+            condition="writing",
+        )
+        at_5000 = Book.objects.create(
+            seller=self.seller,
+            title="5000円の商品",
+            author="著者",
+            price=5000,
+            category="specialized",
+            campus="suita",
+            condition="writing",
+        )
+        over_5000 = Book.objects.create(
+            seller=self.seller,
+            title="5001円の商品",
+            author="著者",
+            price=5001,
+            category="specialized",
+            campus="suita",
+            condition="writing",
+        )
+
+        under_3000_response = self.client.get(reverse("search"), {"price_range": "under_3000"})
+        under_5000_response = self.client.get(reverse("search"), {"price_range": "under_5000"})
+        over_5000_response = self.client.get(reverse("search"), {"price_range": "over_5000"})
+
+        self.assertIn(at_3000, under_3000_response.context["books"])
+        self.assertNotIn(at_5000, under_3000_response.context["books"])
+        self.assertIn(at_5000, under_5000_response.context["books"])
+        self.assertNotIn(over_5000, under_5000_response.context["books"])
+        self.assertQuerySetEqual(over_5000_response.context["books"], [over_5000])
+
     def test_listing_sets_logged_in_user_as_seller(self):
         self.client.login(username="buyer@ecs.osaka-u.ac.jp", password="password12345")
 
@@ -335,7 +458,7 @@ class TradeFlowTests(TestCase):
                 "price": 400,
                 "category": "general",
                 "campus": "suita",
-                "condition": "good",
+                "condition": "no_writing",
                 "description": "授業で使いました。",
                 "status": "sold",
             },
@@ -1120,6 +1243,30 @@ class TradeFlowTests(TestCase):
         self.assertNotContains(response, self.book.title)
         self.assertContains(response, 'aria-current="page"')
         self.assertContains(response, "?view=listings#mypage-list")
+        self.assertContains(response, "mypage-book__status--available")
+        self.assertContains(response, "出品中")
+        self.assertNotContains(response, "現在は出品されていません")
+
+    def test_mypage_favorites_marks_books_that_are_no_longer_available(self):
+        favorite = Book.objects.create(
+            seller=self.buyer,
+            buyer=self.seller,
+            title="売却済みのお気に入り",
+            author="著者",
+            price=700,
+            category="general",
+            campus="toyonaka",
+            status="sold",
+        )
+        Favorite.objects.create(user=self.seller, book=favorite)
+        self.client.login(username=self.seller.username, password="password12345")
+
+        response = self.client.get(reverse("mypage"), {"view": "favorites"})
+
+        self.assertContains(response, favorite.title)
+        self.assertContains(response, "mypage-book__status--sold")
+        self.assertContains(response, "売却済み")
+        self.assertContains(response, "現在は出品されていません")
 
     def test_seller_can_withdraw_available_book_from_mypage(self):
         self.client.login(username=self.seller.username, password="password12345")
@@ -1148,6 +1295,8 @@ class TradeFlowTests(TestCase):
         self.assertQuerySetEqual(response.context["withdrawn_books"], [self.book])
         self.assertContains(response, self.book.title)
         self.assertContains(response, "取り下げ済み")
+        self.assertContains(response, "mypage-book__status--withdrawn")
+        self.assertContains(response, "現在は出品されていません")
 
         response = self.client.get(reverse("search"))
         self.assertNotContains(response, self.book.title)

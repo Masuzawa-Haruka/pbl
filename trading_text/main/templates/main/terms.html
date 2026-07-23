@@ -3,14 +3,15 @@
 
 {% block title %}利用規約 | OU Textbook{% endblock %}
 {% block extra_style %}
-<link rel="stylesheet" href="{% static 'main/css/mypage.css' %}">
+<link rel="stylesheet" href="{% static 'main/css/terms.css' %}">
 {% endblock %}
 {% block header_title %}利用規約{% endblock %}
 
 {% block content %}
-<section class="placeholder-page">
-  <h1 class="placeholder-page__title">利用規約</h1>
-  <p class="placeholder-page__text" style="white-space: pre-wrap; text-align: left;">この利用規約（以下「本規約」といいます。）は、pbl5班（以下「運営者」といいます。）が提供する、大阪大学の学生間における参考書等の取引支援サービス「OUText」（以下「本サービス」といいます。）の利用条件を定めるものです。
+<section class="terms-page">
+  <h1 class="terms-page__title">利用規約</h1>
+  <div class="terms-page__scroll" role="region" aria-label="利用規約本文" tabindex="0">
+  <p class="terms-page__text">この利用規約（以下「本規約」といいます。）は、pbl5班（以下「運営者」といいます。）が提供する、大阪大学の学生間における参考書等の取引支援サービス「OUText」（以下「本サービス」といいます。）の利用条件を定めるものです。
 
 本サービスを利用する者は、本規約の内容を確認し、同意した上で本サービスを利用するものとします。
 
@@ -275,5 +276,6 @@
 運営者名：pbl5班 サービス名：OUText 連絡先：［メールアドレス］受付方法：［問い合わせフォーム等］
 
 制定日：2026年7月17日 最終改定日：2026年7月17日</p>
+  </div>
 </section>
 {% endblock %}

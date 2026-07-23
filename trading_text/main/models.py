@@ -52,10 +52,8 @@ class UserProfile(models.Model):
 
 class Book(models.Model):
     CATEGORY_CHOICES = [
-        ("general", "教養・基礎"),
+        ("general", "基盤教養"),
         ("specialized", "専門"),
-        ("science", "理系"),
-        ("humanities", "文系"),
     ]
 
     CAMPUS_CHOICES = [
@@ -65,8 +63,9 @@ class Book(models.Model):
     ]
 
     CONDITION_CHOICES = [
-        ("good", "良い"),
-        ("normal", "普通"),
+        ("like_new", "新品同様"),
+        ("no_writing", "書き込みなし"),
+        ("writing", "書き込みあり"),
         ("used", "使用感あり"),
     ]
 
@@ -97,7 +96,7 @@ class Book(models.Model):
     price = models.PositiveIntegerField()
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
     campus = models.CharField(max_length=20, choices=CAMPUS_CHOICES)
-    condition = models.CharField(max_length=20, choices=CONDITION_CHOICES, default="good")
+    condition = models.CharField(max_length=20, choices=CONDITION_CHOICES, default="like_new")
     likes_count = models.PositiveIntegerField(default=0)
     cover_theme = models.CharField(max_length=20, choices=COVER_CHOICES, default="blue")
     description = models.TextField(blank=True, null=True, verbose_name="説明文")
