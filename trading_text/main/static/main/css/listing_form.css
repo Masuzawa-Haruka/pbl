@@ -370,3 +370,57 @@
     padding-left: 16px;
   }
 }
+
+@media (min-width: 768px) {
+  .header-container {
+    max-width: 960px;
+    min-height: 64px;
+    padding: 22px 32px 12px;
+  }
+
+  .header-back {
+    left: 32px;
+    min-width: 40px;
+    min-height: 40px;
+  }
+
+  .header-title {
+    font-size: 22px;
+  }
+
+  .listing-form-container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 24px 32px 56px;
+  }
+
+  .listing-form {
+    gap: 24px;
+    padding: 28px;
+    border: 1px solid #e1e6ef;
+    border-radius: 8px;
+    background: #ffffff;
+  }
+
+  .submit-button {
+    width: min(100%, 320px);
+    justify-self: end;
+    align-self: flex-end;
+  }
+}
+
+@media (min-width: 1024px) {
+  .header-container {
+    max-width: 1180px;
+    min-height: 72px;
+    padding: 24px 40px 14px;
+  }
+
+  .header-back {
+    left: 40px;
+  }
+
+  .listing-form-container {
+    padding-top: 32px;
+  }
+}

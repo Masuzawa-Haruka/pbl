@@ -24,6 +24,7 @@
 
 .login-card {
   width: 100%;
+  max-width: 430px;
   text-align: center;
 }
 
@@ -197,4 +198,24 @@
 
 .login-signup-guide__link:hover {
   border-bottom-color: var(--ou-blue);
+}
+
+@media (min-width: 768px) {
+  .login-page {
+    padding: 64px 32px;
+    background: #f7f9fc;
+  }
+
+  .login-card {
+    max-width: 520px;
+    padding: 42px 48px;
+    border: 1px solid #e1e6ef;
+    border-radius: 8px;
+    background: #ffffff;
+    box-shadow: 0 16px 40px rgba(7, 13, 47, 0.08);
+  }
+
+  .login-logo {
+    font-size: 36px;
+  }
 }

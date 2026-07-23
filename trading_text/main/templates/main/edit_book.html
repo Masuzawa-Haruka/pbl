@@ -8,7 +8,7 @@
 {% block header_title %}出品編集{% endblock %}
 
 {% block content %}
-<section class="listing-form-container" aria-label="出品編集">
+<section class="listing-form-container md:mx-auto md:max-w-form md:px-8 md:py-8" aria-label="出品編集">
   <form class="listing-form" method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {{ form.non_field_errors }}

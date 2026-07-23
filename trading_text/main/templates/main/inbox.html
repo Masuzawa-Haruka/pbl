@@ -9,7 +9,7 @@
 {% block header_title %}受信箱{% endblock %}
 
 {% block content %}
-<section class="placeholder-page placeholder-page--inbox" aria-label="受信箱">
+<section class="placeholder-page placeholder-page--inbox md:mx-auto md:max-w-reading md:px-8 md:py-6" aria-label="受信箱">
   {% for thread in threads %}
     <a class="inbox-thread{% if thread.handoff.completed_at %} inbox-thread--completed{% elif thread.handoff.status == 'accepted' %} inbox-thread--handoff{% elif thread.handoff.status == 'pending' %} inbox-thread--action{% endif %}" href="{{ thread.chat_url }}">
       <div>

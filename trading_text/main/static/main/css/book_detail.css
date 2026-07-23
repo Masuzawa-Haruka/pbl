@@ -349,3 +349,103 @@
     font-size: 32px;
   }
 }
+
+@media (min-width: 768px) {
+  .detail-header {
+    max-width: 960px;
+    min-height: 64px;
+    padding: 20px 32px 8px;
+  }
+
+  .book-detail-page {
+    display: grid;
+    grid-template-columns: minmax(280px, 0.8fr) minmax(0, 1.2fr);
+    gap: 40px;
+    align-items: start;
+    padding: 24px 32px 40px;
+  }
+
+  .book-image-container {
+    min-height: 430px;
+    padding: 36px 24px;
+    border: 1px solid #e5e9f1;
+    border-radius: 8px;
+  }
+
+  .book-image-placeholder,
+  .book-image-photo {
+    width: 230px;
+    height: 324px;
+  }
+
+  .book-info {
+    padding: 12px 0 0;
+    background: transparent;
+  }
+
+  .book-title {
+    font-size: 28px;
+  }
+
+  .book-description {
+    max-width: 640px;
+  }
+
+  .seller-consultations {
+    margin: 0 32px 24px;
+    padding: 22px;
+    border: 1px solid #d9dfeb;
+    border-radius: 8px;
+  }
+
+  .bottom-action-bar {
+    position: static;
+    width: auto;
+    max-width: none;
+    margin: 24px 0 0;
+    padding: 18px;
+    border: 1px solid #e5e9f1;
+    border-radius: 8px;
+    background: #ffffff;
+    transform: none;
+  }
+
+  .bottom-action-bar > form,
+  .owner-actions {
+    max-width: none;
+    margin: 0;
+  }
+
+  .owner-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .detail-header {
+    max-width: 1180px;
+    min-height: 72px;
+    padding: 24px 40px 10px;
+  }
+
+  .book-detail-page {
+    grid-template-columns: minmax(340px, 0.85fr) minmax(0, 1.15fr);
+    gap: 56px;
+    padding: 32px 40px 48px;
+  }
+
+  .book-image-container {
+    min-height: 490px;
+  }
+
+  .book-image-placeholder,
+  .book-image-photo {
+    width: 258px;
+    height: 364px;
+  }
+
+  .seller-consultations {
+    margin-right: 40px;
+    margin-left: 40px;
+  }
+}

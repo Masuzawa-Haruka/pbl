@@ -8,7 +8,7 @@
 {% block header_title %}マイページ{% endblock %}
 
 {% block content %}
-<section class="placeholder-page placeholder-page--mypage" aria-label="マイページ">
+<section class="placeholder-page placeholder-page--mypage md:mx-auto md:max-w-[1040px] md:px-8 md:py-8" aria-label="マイページ">
   <div class="placeholder-page__profile">
     <div class="placeholder-page__profile_icon" aria-hidden="true"></div>
     <div class="placeholder-page__profile_text">
@@ -35,6 +35,7 @@
     </div>
   </div>
 
+  <div class="mypage-content-grid">
   {% if handoff_trades %}
     <section class="handoff-summary" aria-label="確定した受け渡し予定">
       <p class="handoff-summary__eyebrow">受け渡し予定</p>
@@ -150,6 +151,7 @@
       <span class="placeholder-page__section_text">ログアウト</span>
       <span class="placeholder-page__arrow">›</span>
     </a>
+  </div>
   </div>
 </section>
 {% endblock %}

@@ -8,8 +8,9 @@
     <link rel="stylesheet" href="{% static 'main/css/base.css' %}">
     <link rel="stylesheet" href="{% static 'main/css/components/footer.css' %}">
     {% block extra_style %}{% endblock %}
+    <link rel="stylesheet" href="{% static 'main/css/tailwind.generated.css' %}">
   </head>
-  <body>
+  <body class="md:bg-ou-surface {% block body_class %}{% endblock %}">
     {% block header %}
     <header class="header">
       <div class="header__title">
@@ -18,7 +19,7 @@
     </header>
     {% endblock %}
 
-    <main class="main">
+    <main class="main md:max-w-[960px] lg:max-w-app">
       {% if flash_messages %}
         <div class="flash-messages" aria-live="polite">
           {% for message in flash_messages %}

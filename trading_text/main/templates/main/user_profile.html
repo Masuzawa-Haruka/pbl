@@ -6,7 +6,7 @@
 {% block header_title %}プロフィール{% endblock %}
 
 {% block content %}
-<section class="public-profile" aria-label="利用者プロフィール">
+<section class="public-profile md:mx-auto md:max-w-reading md:rounded-lg md:border md:border-ou-line md:bg-white md:p-8" aria-label="利用者プロフィール">
   <header class="public-profile__header">
     <div class="public-profile__avatar" aria-hidden="true">{{ profile.display_name|first|default:"名" }}</div>
     <div class="public-profile__identity">

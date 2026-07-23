@@ -16,7 +16,7 @@
 {% endblock %}
 
 {% block content %}
-<section class="listing-form-container" aria-label="出品フォーム">
+<section class="listing-form-container md:mx-auto md:max-w-form md:px-8 md:py-8" aria-label="出品フォーム">
   <form class="listing-form" action="{% url 'listing_form' %}" method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {% if form.non_field_errors %}

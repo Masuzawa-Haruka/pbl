@@ -8,7 +8,7 @@
 {% block header_title %}プロフィール編集{% endblock %}
 
 {% block content %}
-<section class="listing-form-container" aria-label="プロフィール編集">
+<section class="listing-form-container md:mx-auto md:max-w-form md:px-8 md:py-8" aria-label="プロフィール編集">
   <form class="listing-form" method="post">
     {% csrf_token %}
     <label class="form-group">

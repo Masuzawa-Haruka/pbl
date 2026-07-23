@@ -9,6 +9,7 @@ html {
 body {
   min-height: 100vh;
   margin: 0;
+  overflow-x: hidden;
   background: #ffffff;
   color: #070d2f;
   font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Hiragino Sans", "Yu Gothic", sans-serif;
@@ -56,4 +57,62 @@ a {
   color: #070d2f;
   font-size: 13px;
   font-weight: 700;
+}
+
+@media (min-width: 768px) {
+  .header__title {
+    max-width: 960px;
+    min-height: 64px;
+    padding: 22px 32px 12px;
+    font-size: 22px;
+  }
+
+  .main {
+    max-width: 960px;
+    padding-bottom: 104px;
+  }
+
+  .flash-messages {
+    padding-right: 32px;
+    padding-left: 32px;
+  }
+}
+
+@media (min-width: 1024px) {
+  body {
+    padding-left: 220px;
+    background: #f7f9fc;
+  }
+
+  .header {
+    border-bottom: 1px solid #e5e9f1;
+    background: rgba(255, 255, 255, 0.96);
+  }
+
+  .header__title {
+    max-width: 1180px;
+    min-height: 72px;
+    padding: 24px 40px 14px;
+  }
+
+  .main {
+    max-width: 1180px;
+    min-height: calc(100vh - 72px);
+    padding-bottom: 48px;
+  }
+
+  .flash-messages {
+    padding-right: 40px;
+    padding-left: 40px;
+  }
+
+  body.auth-layout {
+    padding-left: 0;
+    background: #ffffff;
+  }
+
+  body.auth-layout .main {
+    max-width: 100%;
+    min-height: 100vh;
+  }
 }

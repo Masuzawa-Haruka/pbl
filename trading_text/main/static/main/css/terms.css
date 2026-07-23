@@ -73,3 +73,23 @@ body {
     font-size: 13px;
   }
 }
+
+@media (min-width: 768px) {
+  .terms-page {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 24px 32px 32px;
+  }
+
+  .terms-page__scroll {
+    padding: 28px 32px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .terms-page {
+    height: calc(100dvh - 72px);
+    max-width: 920px;
+    padding-top: 32px;
+  }
+}

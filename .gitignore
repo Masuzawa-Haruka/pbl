@@ -7,3 +7,6 @@ db.sqlite3
 .vscode/
 staticfiles/
 media/
+node_modules/
+tmp/responsive-check.mjs
+tmp/responsive/

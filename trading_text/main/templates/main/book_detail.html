@@ -8,7 +8,7 @@
 {% endblock %}
 
 {% block header %}
-<header class="detail-header">
+<header class="detail-header md:max-w-app md:px-8 lg:px-10">
     <a href="{% url 'search' %}" class="back-btn" aria-label="戻る">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M15 18L9 12L15 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -19,8 +19,8 @@
 {% endblock %}
 
 {% block content %}
-<section class="book-detail-page" aria-label="教科書詳細">
-  <div class="book-image-container">
+<section class="book-detail-page md:grid md:grid-cols-[minmax(280px,0.9fr)_minmax(0,1.1fr)] md:gap-8 md:px-8 md:py-8 lg:gap-12 lg:px-10" aria-label="教科書詳細">
+  <div class="book-image-container md:min-h-0 md:rounded-lg md:border md:border-ou-line md:p-8">
     {% if book.image %}
       <img class="book-image-photo" src="{{ book.image.url }}" alt="{{ book.title }}">
     {% else %}
@@ -30,7 +30,7 @@
     {% endif %}
   </div>
 
-  <div class="book-info">
+  <div class="book-info md:rounded-lg md:border md:border-ou-line md:p-8">
     <div class="book-status-row">
       <span class="status-label status-label--{{ book.status }}">{{ book.get_status_display }}</span>
       {% if user == book.seller %}
@@ -93,11 +93,34 @@
         </a>
       {% endif %}
     </div>
+
+    <div class="bottom-action-bar md:static md:mt-6 md:w-auto md:max-w-none md:translate-x-0 md:border md:border-ou-line md:rounded-lg">
+      {% if user == book.seller %}
+        <div class="owner-actions">
+          <a class="contact-btn contact-btn--secondary" href="{% url 'edit_book' book.id %}">出品情報を編集する</a>
+          {% if book.status == "available" %}
+            <form action="{% url 'withdraw_book' book.id %}" method="post" onsubmit="return confirm('「{{ book.title|escapejs }}」の出品を取り下げますか？');">
+              {% csrf_token %}
+              <button class="contact-btn contact-btn--danger" type="submit">出品を取り下げる</button>
+            </form>
+          {% endif %}
+        </div>
+      {% elif book.status == "available" or book.status == "in_progress" %}
+        {% if user.is_authenticated %}
+          <form action="{% url 'start_consultation' book.id %}" method="post">
+            {% csrf_token %}
+            <button class="contact-btn" type="submit">購入相談する</button>
+          </form>
+        {% else %}
+          <a class="contact-btn" href="{% url 'login' %}?next={% url 'book_detail' book.id %}">ログインして購入相談する</a>
+        {% endif %}
+      {% endif %}
+    </div>
   </div>
 </section>
 
 {% if user == book.seller and consultation_threads %}
-  <section class="seller-consultations" aria-label="この出品への購入相談">
+  <section class="seller-consultations md:mx-8 md:mb-8 md:rounded-lg md:border md:border-ou-line lg:mx-10" aria-label="この出品への購入相談">
     <h2>購入相談のチャット</h2>
     {% for thread in consultation_threads %}
       <a class="seller-consultation" href="{{ thread.chat_url }}">
@@ -111,26 +134,4 @@
   </section>
 {% endif %}
 
-<div class="bottom-action-bar">
-  {% if user == book.seller %}
-    <div class="owner-actions">
-      <a class="contact-btn contact-btn--secondary" href="{% url 'edit_book' book.id %}">出品情報を編集する</a>
-      {% if book.status == "available" %}
-        <form action="{% url 'withdraw_book' book.id %}" method="post" onsubmit="return confirm('「{{ book.title|escapejs }}」の出品を取り下げますか？');">
-          {% csrf_token %}
-          <button class="contact-btn contact-btn--danger" type="submit">出品を取り下げる</button>
-        </form>
-      {% endif %}
-    </div>
-  {% elif book.status == "available" or book.status == "in_progress" %}
-    {% if user.is_authenticated %}
-      <form action="{% url 'start_consultation' book.id %}" method="post">
-        {% csrf_token %}
-        <button class="contact-btn" type="submit">購入相談する</button>
-      </form>
-    {% else %}
-      <a class="contact-btn" href="{% url 'login' %}?next={% url 'book_detail' book.id %}">ログインして購入相談する</a>
-    {% endif %}
-  {% endif %}
-</div>
 {% endblock %}

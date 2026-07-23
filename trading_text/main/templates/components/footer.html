@@ -1,5 +1,9 @@
-<footer class="app-footer" aria-label="Footer navigation">
-  <nav class="footer-nav">
+<footer class="app-footer">
+  <a class="app-footer__brand" href="{% url 'search' %}" aria-label="OU Textbookのホームへ">
+    <span class="app-footer__brand-mark" aria-hidden="true">OU</span>
+    <span>OU Textbook</span>
+  </a>
+  <nav class="footer-nav" aria-label="メインナビゲーション">
     <a class="footer-nav__item{% if request.resolver_match.url_name == 'search' %} footer-nav__item--active{% endif %}" href="{% url 'search' %}"{% if request.resolver_match.url_name == 'search' %} aria-current="page"{% endif %}>
       <svg class="footer-nav__icon" viewBox="0 0 24 24" aria-hidden="true">
         <circle cx="10.5" cy="10.5" r="6.5"></circle>

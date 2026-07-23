@@ -10,8 +10,8 @@
 {% block header_title %}探す{% endblock %}
 
 {% block content %}
-<section class="search-page" aria-label="教科書検索">
-  <form class="search-filter-form" action="{% url 'search' %}" method="get">
+<section class="search-page md:px-8 md:py-6 lg:px-10" aria-label="教科書検索">
+  <form class="search-filter-form md:mx-auto md:max-w-[980px]" action="{% url 'search' %}" method="get">
     <div class="search-bar">
       <label class="search-bar__field">
         <svg class="search-bar__icon" viewBox="0 0 24 24" aria-hidden="true">
@@ -42,7 +42,7 @@
         <button class="filter-panel__close" id="filter-close" type="button" aria-label="検索条件を閉じる" title="閉じる">×</button>
       </div>
 
-      <div class="filter-panel__grid">
+      <div class="filter-panel__grid md:grid-cols-3 lg:grid-cols-5">
         <label class="filter-field">
           <span>教材区分</span>
           <select name="category">
@@ -83,7 +83,7 @@
           </select>
         </label>
 
-        <label class="filter-field filter-field--wide">
+        <label class="filter-field filter-field--wide md:col-span-2 lg:col-span-1">
           <span>並び順</span>
           <select name="sort">
             {% for value, label in sort_choices %}
@@ -106,9 +106,9 @@
     </div>
   {% endif %}
 
-  <div class="book-list">
+  <div class="book-list md:grid md:grid-cols-2 md:gap-5 lg:gap-6">
     {% for book in books %}
-      <a class="book-item" href="{% url 'book_detail' book.id %}">
+      <a class="book-item md:rounded-lg md:border md:border-ou-line md:bg-white md:px-4 md:transition md:hover:border-[#b8c5dc] md:hover:shadow-sm md:focus-visible:outline md:focus-visible:outline-2 md:focus-visible:outline-ou-blue" href="{% url 'book_detail' book.id %}">
         {% if book.image %}
           <img class="book-cover book-cover--image" src="{{ book.image.url }}" alt="{{ book.title }}">
         {% else %}
