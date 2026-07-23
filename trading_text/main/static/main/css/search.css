@@ -259,12 +259,16 @@
 }
 
 .book-cover span {
+  display: -webkit-box;
+  overflow: hidden;
   color: #111827;
   font-size: 11px;
   font-weight: 800;
   line-height: 1.25;
   text-align: center;
-  word-break: keep-all;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
 }
 
 .book-cover--image {
@@ -294,11 +298,16 @@
 }
 
 .book-item__title {
+  display: -webkit-box;
+  overflow: hidden;
   margin: 0;
   color: #111111;
   font-size: 18px;
   font-weight: 800;
   line-height: 1.35;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .book-item__author,
@@ -308,6 +317,14 @@
   font-size: 13px;
   font-weight: 600;
   line-height: 1.35;
+}
+
+.book-item__author {
+  display: -webkit-box;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .book-item__price {

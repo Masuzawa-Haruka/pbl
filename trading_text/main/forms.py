@@ -83,6 +83,8 @@ class BookForm(forms.ModelForm):
             "image",
         )
         widgets = {
+            "title": forms.TextInput(attrs={"maxlength": 60}),
+            "author": forms.TextInput(attrs={"maxlength": 40}),
             "description": forms.Textarea(attrs={"rows": 4}),
         }
 

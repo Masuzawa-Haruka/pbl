@@ -25,13 +25,15 @@
 
     <label class="form-group">
       <span class="form-label">書名</span>
-      <input class="form-control" type="text" name="title" value="{{ form.title.value|default:'' }}" required>
+      <input class="form-control" type="text" name="title" value="{{ form.title.value|default:'' }}" maxlength="60" required>
+      <span class="form-hint">60文字以内</span>
       {{ form.title.errors }}
     </label>
 
     <label class="form-group">
       <span class="form-label">著者</span>
-      <input class="form-control" type="text" name="author" value="{{ form.author.value|default:'' }}" required>
+      <input class="form-control" type="text" name="author" value="{{ form.author.value|default:'' }}" maxlength="40" required>
+      <span class="form-hint">40文字以内</span>
       {{ form.author.errors }}
     </label>
 

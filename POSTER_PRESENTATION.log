@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999998 (TeX Live 2026) (preloaded format=xelatex 2026.5.27)  24 JUL 2026 01:59
+This is XeTeX, Version 3.141592653-2.6-0.999998 (TeX Live 2026) (preloaded format=xelatex 2026.5.27)  24 JUL 2026 02:18
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -482,10 +482,10 @@ Package rerunfilecheck Info: File `POSTER_PRESENTATION.out' has not changed.
 Here is how much of TeX's memory you used:
  12362 strings out of 469709
  242511 string characters out of 5466023
- 718496 words of memory out of 5000000
+ 717496 words of memory out of 5000000
  40836 multiletter control sequences out of 15000+600000
  633325 words of font info for 89 fonts, out of 8000000 for 9000
  319 hyphenation exceptions out of 8191
- 73i,12n,93p,296b,428s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 73i,12n,93p,296b,430s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
 Output written on POSTER_PRESENTATION.pdf (4 pages).

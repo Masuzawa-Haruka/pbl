@@ -93,8 +93,8 @@ class Book(models.Model):
         blank=True,
         null=True,
     )
-    title = models.CharField(max_length=100)
-    author = models.CharField(max_length=100)
+    title = models.CharField(max_length=60)
+    author = models.CharField(max_length=40)
     price = models.PositiveIntegerField()
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
     campus = models.CharField(max_length=20, choices=CAMPUS_CHOICES)

@@ -113,12 +113,12 @@
           <img class="book-cover book-cover--image" src="{{ book.image.url }}" alt="{{ book.title }}">
         {% else %}
           <div class="book-cover book-cover--{{ book.cover_theme }}">
-            <span>{{ book.title|linebreaksbr }}</span>
+            <span>{{ book.title|truncatechars:31 }}</span>
           </div>
         {% endif %}
         <div class="book-item__body">
-          <h2 class="book-item__title">{{ book.title }}</h2>
-          <p class="book-item__author">著者：{{ book.author }}</p>
+          <h2 class="book-item__title" title="{{ book.title }}">{{ book.title|truncatechars:61 }}</h2>
+          <p class="book-item__author" title="著者：{{ book.author }}">著者：{{ book.author|truncatechars:41 }}</p>
           <p class="book-item__price">{{ book.price }}円</p>
           <p class="book-item__campus">{{ book.get_campus_display }}</p>
           <p class="book-item__status book-item__status--{{ book.status }}">{{ book.get_status_display }}</p>

@@ -65,6 +65,15 @@
   line-height: 1.2;
 }
 
+.form-hint {
+  display: block;
+  margin-top: 6px;
+  color: #646b7e;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: right;
+}
+
 .form-control {
   width: 100%;
   height: 48px;

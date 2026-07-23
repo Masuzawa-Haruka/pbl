@@ -11,7 +11,7 @@ from django.test import SimpleTestCase, TestCase, override_settings
 from django.urls import reverse
 from django.utils import timezone
 
-from .forms import EcsUserCreationForm, ProfileForm
+from .forms import BookForm, EcsUserCreationForm, ProfileForm
 from .models import Book, Favorite, HandoffProposal, Message, TradeOffer, UserProfile
 from .services import apply_cancellation, submit_evaluation
 from .storage import SupabaseStorage
@@ -493,6 +493,33 @@ class TradeFlowTests(TestCase):
         self.assertRedirects(response, reverse("book_detail", args=[created_book.id]))
         self.assertEqual(created_book.seller, self.buyer)
         self.assertEqual(created_book.status, "available")
+
+    def test_listing_rejects_overlong_title_and_author(self):
+        form = BookForm(
+            data={
+                "title": "書" * 61,
+                "author": "著" * 41,
+                "price": 400,
+                "category": "general",
+                "campus": "suita",
+                "condition": "no_writing",
+                "description": "",
+            }
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertIn("title", form.errors)
+        self.assertIn("author", form.errors)
+
+    def test_listing_inputs_expose_character_limits(self):
+        self.client.login(username="buyer@ecs.osaka-u.ac.jp", password="password12345")
+
+        response = self.client.get(reverse("listing_form"))
+
+        self.assertContains(response, 'name="title"')
+        self.assertContains(response, 'maxlength="60"')
+        self.assertContains(response, 'name="author"')
+        self.assertContains(response, 'maxlength="40"')
 
     def test_edit_succeeds_when_existing_image_file_is_missing(self):
         self.book.image = "book_images/missing-cover.png"
