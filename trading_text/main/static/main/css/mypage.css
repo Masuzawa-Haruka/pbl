@@ -327,10 +327,9 @@
 .mypage-book span { min-width: 0; font-size: 14px; font-weight: 800; }
 .mypage-book strong { color: #cd1717; font-size: 13px; font-weight: 800; }
 .mypage-book em { grid-column: 1 / -1; color: #596173; font-size: 12px; font-style: normal; font-weight: 700; }
-.mypage-book-form { margin: 0; }
-.mypage-book--withdraw { width: 100%; border: 0; border-bottom: 1px solid #e5e9f1; border-radius: 6px; background: transparent; font: inherit; cursor: pointer; transition: background-color 0.15s ease; }
-.mypage-book--withdraw:hover { background: #eef0f3; }
-.mypage-book--withdraw:focus-visible { outline: 3px solid rgba(0, 52, 184, 0.22); outline-offset: 2px; background: #eef0f3; }
+.mypage-book--listing { padding: 16px 14px; border-radius: 6px; transition: background-color 0.15s ease; }
+.mypage-book--listing:hover { background: #eef0f3; }
+.mypage-book--listing:focus-visible { outline: 3px solid rgba(0, 52, 184, 0.22); outline-offset: 2px; background: #eef0f3; }
 .placeholder-page__section { color: inherit; text-decoration: none; }
 .placeholder-page__section--active { background: #f2f6ff; box-shadow: inset 4px 0 0 #003dc4; }
 .mypage-section--primary { scroll-margin-top: 82px; }

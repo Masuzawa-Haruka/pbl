@@ -1125,8 +1125,13 @@ class TradeFlowTests(TestCase):
         self.client.login(username=self.seller.username, password="password12345")
         response = self.client.get(reverse("mypage"))
 
+        self.assertContains(response, reverse("book_detail", args=[self.book.id]))
+        self.assertContains(response, "mypage-book--listing")
+        self.assertNotContains(response, reverse("withdraw_book", args=[self.book.id]))
+
+        response = self.client.get(reverse("book_detail", args=[self.book.id]))
         self.assertContains(response, reverse("withdraw_book", args=[self.book.id]))
-        self.assertContains(response, "mypage-book--withdraw")
+        self.assertContains(response, "出品を取り下げる")
 
         response = self.client.post(reverse("withdraw_book", args=[self.book.id]))
 

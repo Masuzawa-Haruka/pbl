@@ -293,6 +293,11 @@
   margin: 0;
 }
 
+.owner-actions {
+  display: grid;
+  gap: 8px;
+}
+
 .contact-btn {
   display: block;
   width: 100%;
@@ -312,6 +317,17 @@
   color: #0034b8;
   border: 1px solid #0034b8;
   background: #ffffff;
+}
+
+.contact-btn--danger {
+  color: #b42318;
+  border: 1px solid #b42318;
+  background: #ffffff;
+}
+
+.contact-btn--danger:hover,
+.contact-btn--danger:focus-visible {
+  background: #fff1f0;
 }
 
 @media (max-width: 360px) {

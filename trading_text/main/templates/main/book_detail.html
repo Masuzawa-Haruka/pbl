@@ -113,7 +113,15 @@
 
 <div class="bottom-action-bar">
   {% if user == book.seller %}
-    <a class="contact-btn contact-btn--secondary" href="{% url 'edit_book' book.id %}">出品情報を編集する</a>
+    <div class="owner-actions">
+      <a class="contact-btn contact-btn--secondary" href="{% url 'edit_book' book.id %}">出品情報を編集する</a>
+      {% if book.status == "available" %}
+        <form action="{% url 'withdraw_book' book.id %}" method="post" onsubmit="return confirm('「{{ book.title|escapejs }}」の出品を取り下げますか？');">
+          {% csrf_token %}
+          <button class="contact-btn contact-btn--danger" type="submit">出品を取り下げる</button>
+        </form>
+      {% endif %}
+    </div>
   {% elif book.status == "available" or book.status == "in_progress" %}
     {% if user.is_authenticated %}
       <form action="{% url 'start_consultation' book.id %}" method="post">
