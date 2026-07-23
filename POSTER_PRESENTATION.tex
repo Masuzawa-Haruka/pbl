@@ -1,19 +1,40 @@
+% !TeX program = xelatex
 \documentclass[11pt,a4paper]{article}
 
 \usepackage[margin=22mm]{geometry}
 \usepackage{amsmath}
 \usepackage{array}
 \usepackage{booktabs}
-\usepackage{fontspec}
 \usepackage{graphicx}
 \usepackage{hyperref}
+\usepackage{iftex}
 \usepackage{tabularx}
 \usepackage{xcolor}
 
-\setmainfont{Hiragino Mincho ProN}
-\setsansfont{Hiragino Kaku Gothic ProN}
-\XeTeXlinebreaklocale "ja"
-\XeTeXlinebreakskip=0pt plus 1pt
+\ifPDFTeX
+  \usepackage[utf8]{inputenc}
+  \usepackage{CJKutf8}
+  \newcommand{\startjapanese}{\begin{CJK*}{UTF8}{min}}
+  \newcommand{\stopjapanese}{\end{CJK*}}
+\else
+  \usepackage{fontspec}
+  \IfFontExistsTF{Noto Serif CJK JP}{
+    \setmainfont{Noto Serif CJK JP}
+  }{
+    \setmainfont{Hiragino Mincho ProN}
+  }
+  \IfFontExistsTF{Noto Sans CJK JP}{
+    \setsansfont{Noto Sans CJK JP}
+  }{
+    \setsansfont{Hiragino Kaku Gothic ProN}
+  }
+  \ifXeTeX
+    \XeTeXlinebreaklocale "ja"
+    \XeTeXlinebreakskip=0pt plus 1pt
+  \fi
+  \newcommand{\startjapanese}{}
+  \newcommand{\stopjapanese}{}
+\fi
 
 \definecolor{oublue}{HTML}{0034B8}
 \definecolor{darknavy}{HTML}{070D2F}
@@ -21,13 +42,23 @@
 \definecolor{warningred}{HTML}{C81E1E}
 \definecolor{mutedgray}{HTML}{596173}
 
-\hypersetup{
-  colorlinks=true,
-  linkcolor=oublue,
-  urlcolor=oublue,
-  pdfauthor={大阪大学 基礎工学部 情報科学科 5班},
-  pdftitle={大阪大学生限定 参考書リユース取引アプリ OU Textbook の開発}
-}
+\ifPDFTeX
+  \hypersetup{
+    colorlinks=true,
+    linkcolor=oublue,
+    urlcolor=oublue,
+    pdfauthor={Osaka University, Group 5},
+    pdftitle={Development of OU Textbook}
+  }
+\else
+  \hypersetup{
+    colorlinks=true,
+    linkcolor=oublue,
+    urlcolor=oublue,
+    pdfauthor={大阪大学 基礎工学部 情報科学科 5班},
+    pdftitle={大阪大学生限定 参考書リユース取引アプリ OU Textbook の開発}
+  }
+\fi
 
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{0.65em}
@@ -63,6 +94,7 @@
 \date{\today}
 
 \begin{document}
+\startjapanese
 
 \maketitle
 \thispagestyle{empty}
@@ -196,4 +228,5 @@ Supabaseのメール認証を活用し、大阪大学のメールアドレスを
 
 今後は、授業名やシラバスとの連携、履修科目に応じた参考書の推薦、取引実績を活用した信頼性向上などを検討している。
 
+\stopjapanese
 \end{document}
