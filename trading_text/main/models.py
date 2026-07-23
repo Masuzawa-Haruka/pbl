@@ -81,6 +81,7 @@ class Book(models.Model):
         ("available", "出品中"),
         ("in_progress", "取引中"),
         ("sold", "売却済み"),
+        ("withdrawn", "取り下げ済み"),
     ]
 
     seller = models.ForeignKey(User, on_delete=models.CASCADE, related_name="selling_books")

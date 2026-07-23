@@ -1095,6 +1095,8 @@ class TradeFlowTests(TestCase):
         self.assertNotContains(response, sold.title)
         self.assertNotContains(response, "他人の出品")
         self.assertContains(response, "?view=listings#mypage-list")
+        self.assertContains(response, "?view=withdrawn#mypage-list")
+        self.assertContains(response, "取り下げ一覧")
         self.assertNotContains(response, 'id="favorites"')
         self.assertNotContains(response, 'id="trades"')
 
@@ -1130,10 +1132,26 @@ class TradeFlowTests(TestCase):
 
         self.assertRedirects(
             response,
-            f"{reverse('mypage')}?view=listings#mypage-list",
+            f"{reverse('mypage')}?view=withdrawn#mypage-list",
             fetch_redirect_response=False,
         )
-        self.assertFalse(Book.objects.filter(id=self.book.id).exists())
+        self.book.refresh_from_db()
+        self.assertEqual(self.book.status, "withdrawn")
+
+        response = self.client.get(reverse("mypage"), {"view": "withdrawn"})
+        self.assertEqual(response.context["active_view"], "withdrawn")
+        self.assertQuerySetEqual(response.context["withdrawn_books"], [self.book])
+        self.assertContains(response, self.book.title)
+        self.assertContains(response, "取り下げ済み")
+
+        response = self.client.get(reverse("search"))
+        self.assertNotContains(response, self.book.title)
+
+        self.client.login(username=self.buyer.username, password="password12345")
+        response = self.client.get(reverse("book_detail", args=[self.book.id]))
+        self.assertNotContains(response, "購入相談する")
+        response = self.client.post(reverse("start_consultation", args=[self.book.id]))
+        self.assertRedirects(response, reverse("book_detail", args=[self.book.id]))
 
     def test_withdraw_requires_owner_available_status_and_post(self):
         withdraw_url = reverse("withdraw_book", args=[self.book.id])

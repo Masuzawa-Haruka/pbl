@@ -112,15 +112,17 @@
 {% endif %}
 
 <div class="bottom-action-bar">
-  {% if user.is_authenticated and user != book.seller %}
-    <form action="{% url 'start_consultation' book.id %}" method="post">
-      {% csrf_token %}
-      <button class="contact-btn" type="submit">購入相談する</button>
-    </form>
-  {% elif not user.is_authenticated %}
-    <a class="contact-btn" href="{% url 'login' %}?next={% url 'book_detail' book.id %}">ログインして購入相談する</a>
-  {% else %}
+  {% if user == book.seller %}
     <a class="contact-btn contact-btn--secondary" href="{% url 'edit_book' book.id %}">出品情報を編集する</a>
+  {% elif book.status == "available" or book.status == "in_progress" %}
+    {% if user.is_authenticated %}
+      <form action="{% url 'start_consultation' book.id %}" method="post">
+        {% csrf_token %}
+        <button class="contact-btn" type="submit">購入相談する</button>
+      </form>
+    {% else %}
+      <a class="contact-btn" href="{% url 'login' %}?next={% url 'book_detail' book.id %}">ログインして購入相談する</a>
+    {% endif %}
   {% endif %}
 </div>
 {% endblock %}

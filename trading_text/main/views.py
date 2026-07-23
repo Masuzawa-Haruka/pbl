@@ -290,8 +290,8 @@ def start_consultation(request, book_id):
     if book.seller == request.user:
         messages.error(request, "自分の出品には購入相談できません。")
         return redirect("book_detail", book_id=book.id)
-    if book.status == "sold":
-        messages.error(request, "売却済みの出品には購入相談できません。")
+    if book.status in {"sold", "withdrawn"}:
+        messages.error(request, "現在公開されていない出品には購入相談できません。")
         return redirect("book_detail", book_id=book.id)
     if request.method == "POST":
         return redirect("chat", book_id=book.id)
@@ -798,10 +798,11 @@ def cancel_trade(request, book_id):
 def mypage(request):
     profile, _ = UserProfile.objects.get_or_create(user=request.user)
     active_view = request.GET.get("view", "listings")
-    if active_view not in {"listings", "favorites", "trades"}:
+    if active_view not in {"listings", "favorites", "trades", "withdrawn"}:
         active_view = "listings"
 
     selling_books = Book.objects.filter(seller=request.user, status="available")
+    withdrawn_books = Book.objects.filter(seller=request.user, status="withdrawn")
     favorite_books = Book.objects.filter(favorites__user=request.user).order_by(
         "-favorites__created_at"
     )
@@ -851,6 +852,7 @@ def mypage(request):
         {
             "profile": profile,
             "selling_books": selling_books,
+            "withdrawn_books": withdrawn_books,
             "favorite_books": favorite_books,
             "trading_books": trading_books,
             "trade_items": trade_items,
@@ -900,17 +902,20 @@ def edit_book(request, book_id):
 @login_required
 @require_POST
 def withdraw_book(request, book_id):
-    book = get_object_or_404(Book, id=book_id, seller=request.user, status="available")
-    title = book.title
-    if book.image:
-        try:
-            book.image.delete(save=False)
-        except OSError as error:
-            messages.error(request, str(error))
-            return redirect(f"{reverse('mypage')}?view=listings#mypage-list")
-    book.delete()
+    with transaction.atomic():
+        book = get_object_or_404(
+            Book.objects.select_for_update(),
+            id=book_id,
+            seller=request.user,
+            status="available",
+        )
+        title = book.title
+        book.status = "withdrawn"
+        book.buyer = None
+        book.save(update_fields=["status", "buyer"])
+        TradeOffer.objects.filter(book=book, status="pending").update(status="withdrawn")
     messages.success(request, f"「{title}」の出品を取り下げました。")
-    return redirect(f"{reverse('mypage')}?view=listings#mypage-list")
+    return redirect(f"{reverse('mypage')}?view=withdrawn#mypage-list")
 
 
 def terms(request):
