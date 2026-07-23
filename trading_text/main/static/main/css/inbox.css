@@ -197,6 +197,23 @@
   flex: 1;
 }
 
+.inbox-thread__time {
+  flex: 0 0 auto;
+  align-self: flex-start;
+  margin-left: auto;
+  color: #7b8497;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.inbox-thread__arrow {
+  flex: 0 0 auto;
+  color: #8c94a8;
+  font-size: 22px;
+  line-height: 1;
+}
+
 .inbox-thread--action,
 .inbox-thread--handoff {
   margin: 8px 0;
@@ -660,47 +677,73 @@
 
 @media (min-width: 768px) {
   .placeholder-page--inbox {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
-    padding: 16px 32px 40px;
+    display: block;
+    width: min(calc(100% - 64px), 960px);
+    margin: 24px auto 48px;
+    padding: 0;
+    overflow: hidden;
+    border: 1px solid #d9dfeb;
+    border-radius: 8px;
+    background: #ffffff;
+    text-align: left;
   }
 
   .placeholder-page--inbox .inbox-thread {
-    min-height: 132px;
+    min-height: 96px;
     margin: 0;
-    padding: 18px;
-    border: 1px solid #e1e6ef;
-    border-radius: 8px;
+    padding: 16px 20px;
+    border: 0;
+    border-bottom: 1px solid #e1e6ef;
+    border-radius: 0;
     background: #ffffff;
+  }
+
+  .placeholder-page--inbox .inbox-thread:last-of-type {
+    border-bottom: 0;
   }
 
   .placeholder-page--inbox .inbox-thread:hover,
   .placeholder-page--inbox .inbox-thread:focus-visible {
-    border-color: #b8c7e3;
     outline: none;
-    box-shadow: 0 8px 22px rgba(7, 13, 47, 0.07);
+    background: #f5f7fb;
   }
 
   .placeholder-page--inbox .inbox-thread--action {
-    border-color: #efc34d;
+    box-shadow: inset 4px 0 0 #d89a00;
     background: #fff9e8;
   }
 
   .placeholder-page--inbox .inbox-thread--handoff {
-    border-color: #4eae69;
+    box-shadow: inset 4px 0 0 #2e8b47;
     background: #edf9f0;
   }
 
   .placeholder-page--inbox .inbox-thread--completed {
-    border-width: 2px;
-    border-color: #0034b8;
+    box-shadow: inset 4px 0 0 #0034b8;
     background: #eef3ff;
   }
 
   .placeholder-page--inbox > .placeholder-page__title,
   .placeholder-page--inbox > .placeholder-page__text {
-    grid-column: 1 / -1;
+    margin: 0;
+    padding: 28px;
+    text-align: center;
+  }
+
+  .inbox-thread__title {
+    font-size: 17px;
+  }
+
+  .inbox-thread__meta,
+  .inbox-thread__message {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .inbox-thread__time {
+    margin-top: 2px;
+    font-size: 12px;
   }
 
   .chat-page {
@@ -739,8 +782,8 @@
 
 @media (min-width: 1024px) {
   .placeholder-page--inbox {
-    gap: 20px;
-    padding: 24px 40px 48px;
+    width: min(calc(100% - 80px), 1040px);
+    margin-top: 32px;
   }
 
   .chat-page {

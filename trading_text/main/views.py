@@ -381,9 +381,11 @@ def inbox(request):
                 "other_user": other_user,
                 "message": None,
                 "chat_url": chat_url,
+                "latest_at": None,
             }
         if message.receiver == request.user and threads[key]["message"] is None:
             threads[key]["message"] = message
+            threads[key]["latest_at"] = message.created_at
     for thread in threads.values():
         thread_buyer = thread["other_user"] if request.user == thread["book"].seller else request.user
         accepted_offer = (
@@ -397,11 +399,15 @@ def inbox(request):
         )
         thread["accepted_offer"] = accepted_offer
         if accepted_offer:
+            if thread["latest_at"] is None or accepted_offer.updated_at > thread["latest_at"]:
+                thread["latest_at"] = accepted_offer.updated_at
             thread["handoff"] = accepted_offer.handoff_proposals.filter(
                 status__in=["accepted", "pending"]
             ).first()
             handoff = thread["handoff"]
             if handoff:
+                if handoff.updated_at > thread["latest_at"]:
+                    thread["latest_at"] = handoff.updated_at
                 thread["handoff_due"] = handoff.handoff_at <= timezone.now()
                 thread["user_confirmed"] = (
                     handoff.seller_confirmed_at is not None
@@ -410,7 +416,11 @@ def inbox(request):
                 )
                 if handoff.completed_at:
                     thread["chat_url"] = reverse("evaluate_trade", kwargs={"book_id": thread["book"].id})
-    visible_threads = [thread for thread in threads.values() if thread["message"] or thread["accepted_offer"]]
+    visible_threads = sorted(
+        (thread for thread in threads.values() if thread["message"] or thread["accepted_offer"]),
+        key=lambda thread: thread["latest_at"],
+        reverse=True,
+    )
     return render(request, "main/inbox.html", {"threads": visible_threads})
 
 

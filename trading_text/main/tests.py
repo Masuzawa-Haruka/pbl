@@ -632,6 +632,39 @@ class TradeFlowTests(TestCase):
         self.assertContains(response, "相手から届いたメッセージ")
         self.assertNotContains(response, "その後に自分が送った返信")
 
+    def test_inbox_threads_are_ordered_by_latest_received_activity(self):
+        older_book = Book.objects.create(
+            seller=self.seller,
+            title="古い通知の教科書",
+            author="著者",
+            price=300,
+            category="general",
+            campus="toyonaka",
+            condition="no_writing",
+        )
+        older_message = Message.objects.create(
+            book=older_book,
+            sender=self.seller,
+            receiver=self.buyer,
+            content="古い通知",
+        )
+        newer_message = Message.objects.create(
+            book=self.book,
+            sender=self.seller,
+            receiver=self.buyer,
+            content="新しい通知",
+        )
+        Message.objects.filter(pk=older_message.pk).update(
+            created_at=timezone.now() - timedelta(days=1)
+        )
+        Message.objects.filter(pk=newer_message.pk).update(created_at=timezone.now())
+        self.client.login(username=self.buyer.username, password="password12345")
+
+        response = self.client.get(reverse("inbox"))
+        content = response.content.decode()
+
+        self.assertLess(content.index("新しい通知"), content.index("古い通知"))
+
     def test_seller_can_offer_a_changed_price(self):
         Message.objects.create(
             book=self.book,
