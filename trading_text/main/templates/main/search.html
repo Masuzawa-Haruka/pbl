@@ -94,7 +94,7 @@
       </div>
 
       <div class="filter-panel__actions">
-        <a class="filter-reset" href="{% url 'search' %}{% if keyword %}?keyword={{ keyword|urlencode }}{% endif %}">条件をクリア</a>
+        <button class="filter-reset" id="filter-reset" type="button">条件をクリア</button>
         <button class="filter-apply" type="submit">フィルタを適用</button>
       </div>
     </div>

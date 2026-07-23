@@ -188,10 +188,14 @@
 
 .filter-reset {
   padding: 10px 4px;
+  border: 0;
   color: #596173;
+  background: transparent;
+  font: inherit;
   font-size: 12px;
   font-weight: 700;
   text-align: center;
+  cursor: pointer;
 }
 
 .filter-apply {

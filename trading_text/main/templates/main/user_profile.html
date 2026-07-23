@@ -17,7 +17,13 @@
   </header>
 
   <dl class="public-profile__stats">
-    <div><dt>信用点数</dt><dd>{{ profile.credit_score }}点</dd></div>
+    <div>
+      <dt>信用点数</dt>
+      <dd>
+        {{ profile.credit_score }}点
+        <small class="public-profile__rank{% if profile.credit_score <= 40 %} public-profile__rank--warning{% endif %}">{{ profile.credit_rank }}</small>
+      </dd>
+    </div>
     <div><dt>出品数</dt><dd>{{ listing_count }}件</dd></div>
     <div><dt>取引完了数</dt><dd>{{ completed_trade_count }}件</dd></div>
   </dl>

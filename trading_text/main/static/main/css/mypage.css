@@ -322,6 +322,7 @@
 .placeholder-page__current_information_text p { margin: 0 0 16px; color: #070d2f; font-size: 14px; font-weight: 800; }
 .placeholder-page__current_information_text strong { display: block; color: #070d2f; font-size: 26px; font-weight: 900; }
 .mypage-stars { display: block; margin-top: 10px; color: #f5b301; font-size: 13px; font-weight: 800; }
+.mypage-stars--warning { color: #c81e1e; }
 .mypage-book-list, .mypage-section { margin-bottom: 18px; }
 .mypage-book { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 7px 12px; padding: 13px 10px; border-bottom: 1px solid #e5e9f1; color: #101b62; text-align: left; text-decoration: none; }
 .mypage-book__title { min-width: 0; overflow-wrap: anywhere; font-size: 14px; font-weight: 800; }
@@ -475,6 +476,18 @@
   color: #070d2f;
   font-size: 20px;
   font-weight: 900;
+}
+
+.public-profile__rank {
+  display: block;
+  margin-top: 5px;
+  color: #f5b301;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.public-profile__rank--warning {
+  color: #c81e1e;
 }
 
 .public-profile__listings {

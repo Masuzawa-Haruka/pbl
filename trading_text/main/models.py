@@ -47,6 +47,8 @@ class UserProfile(models.Model):
             return "エキスパート"
         if self.credit_score >= 120:
             return "トラスト"
+        if self.credit_score <= 40:
+            return "要注意"
         return "レギュラー"
 
 

@@ -31,7 +31,7 @@
     <div class="placeholder-page__current_information_text">
       <p>評価</p>
       <strong>{{ profile.credit_score }}点</strong>
-      <span class="mypage-stars">{{ profile.credit_rank }}</span>
+      <span class="mypage-stars{% if profile.credit_score <= 40 %} mypage-stars--warning{% endif %}">{{ profile.credit_rank }}</span>
     </div>
   </div>
 

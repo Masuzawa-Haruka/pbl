@@ -127,6 +127,18 @@ class AuthFormTests(TestCase):
         self.assertEqual(user.profile.supabase_user_id, "supabase-id-123")
         self.assertEqual(user.profile.display_name, "同期 太郎")
 
+    def test_credit_rank_includes_warning_rank_at_40_points_or_less(self):
+        user = User.objects.create_user(username="rank@example.com")
+        profile = UserProfile.objects.create(user=user, credit_score=40)
+
+        self.assertEqual(profile.credit_rank, "要注意")
+        profile.credit_score = 41
+        self.assertEqual(profile.credit_rank, "レギュラー")
+        profile.credit_score = 120
+        self.assertEqual(profile.credit_rank, "トラスト")
+        profile.credit_score = 150
+        self.assertEqual(profile.credit_rank, "エキスパート")
+
     def test_profile_accepts_only_official_faculty_department_choices(self):
         valid_form = ProfileForm(
             data={
@@ -254,6 +266,16 @@ class TradeFlowTests(TestCase):
         self.assertContains(response, "1件")
         self.assertNotContains(response, self.seller.email)
 
+    def test_public_profile_marks_40_point_user_as_warning_rank(self):
+        self.seller.profile.credit_score = 40
+        self.seller.profile.save(update_fields=["credit_score"])
+
+        response = self.client.get(reverse("user_profile", args=[self.seller.id]))
+
+        self.assertContains(response, "40点")
+        self.assertContains(response, "要注意")
+        self.assertContains(response, "public-profile__rank--warning")
+
     def test_chat_partner_name_links_to_public_profile(self):
         self.client.login(username=self.buyer.username, password="password12345")
 
@@ -344,6 +366,9 @@ class TradeFlowTests(TestCase):
         self.assertContains(response, 'id="filter-toggle"')
         self.assertContains(response, 'type="button"')
         self.assertContains(response, 'id="filter-panel"')
+        self.assertContains(response, 'id="filter-reset"')
+        self.assertContains(response, "条件をクリア")
+        self.assertNotContains(response, '<a class="filter-reset"')
         self.assertContains(response, "フィルタを適用")
         self.assertContains(response, "教材区分")
         self.assertContains(response, "基盤教養")

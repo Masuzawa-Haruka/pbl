@@ -2,8 +2,9 @@
   const toggle = document.getElementById("filter-toggle");
   const panel = document.getElementById("filter-panel");
   const close = document.getElementById("filter-close");
+  const reset = document.getElementById("filter-reset");
 
-  if (!toggle || !panel || !close) {
+  if (!toggle || !panel || !close || !reset) {
     return;
   }
 
@@ -23,6 +24,13 @@
   close.addEventListener("click", () => {
     setOpen(false);
     toggle.focus();
+  });
+
+  reset.addEventListener("click", () => {
+    panel.querySelectorAll("select").forEach((select) => {
+      select.value = select.name === "sort" ? "newest" : "";
+    });
+    panel.querySelector("select")?.focus();
   });
 
   document.addEventListener("keydown", (event) => {
