@@ -43,6 +43,7 @@ class AuthFormTests(TestCase):
                 "email": "student@osaka-u.ac.jp",
                 "password1": "StrongPass12345",
                 "password2": "StrongPass12345",
+                "agree_to_policies": True,
             }
         )
 
@@ -56,6 +57,7 @@ class AuthFormTests(TestCase):
                 "email": "student@ecs.osaka-u.ac.jp",
                 "password1": "StrongPass12345",
                 "password2": "StrongPass12345",
+                "agree_to_policies": True,
             }
         )
 
@@ -72,6 +74,7 @@ class AuthFormTests(TestCase):
                 "email": "student@ecs.osaka-u.ac.jp",
                 "password1": "StrongPass12345",
                 "password2": "StrongPass12345",
+                "agree_to_policies": "on",
             },
         )
 
@@ -90,11 +93,50 @@ class AuthFormTests(TestCase):
                 "email": "student@ecs.osaka-u.ac.jp",
                 "password1": "StrongPass12345",
                 "password2": "StrongPass12345",
+                "agree_to_policies": True,
             }
         )
 
         self.assertFalse(form.is_valid())
         self.assertIn("display_name", form.errors)
+
+    def test_signup_requires_policy_consent(self):
+        form = EcsUserCreationForm(
+            data={
+                "display_name": "大阪 太郎",
+                "email": "student@ecs.osaka-u.ac.jp",
+                "password1": "StrongPass12345",
+                "password2": "StrongPass12345",
+            }
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertIn("agree_to_policies", form.errors)
+
+    def test_privacy_policy_is_public_and_linked_from_signup(self):
+        privacy_url = reverse("privacy_policy")
+
+        privacy_response = self.client.get(privacy_url)
+        signup_response = self.client.get(reverse("signup"))
+
+        self.assertEqual(privacy_response.status_code, 200)
+        self.assertContains(privacy_response, "プライバシーポリシー")
+        self.assertContains(privacy_response, "Supabase")
+        self.assertContains(signup_response, privacy_url)
+
+    def test_mypage_links_to_privacy_policy(self):
+        user = User.objects.create_user(
+            username="privacy@ecs.osaka-u.ac.jp",
+            email="privacy@ecs.osaka-u.ac.jp",
+            password="password12345",
+        )
+        self.client.force_login(user)
+
+        response = self.client.get(reverse("mypage"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, reverse("privacy_policy"))
+        self.assertContains(response, "プライバシーポリシー")
 
     @override_settings(SUPABASE_URL="https://example.supabase.co", SUPABASE_ANON_KEY="anon-key")
     @patch("main.views.sign_in_with_password")

@@ -13,6 +13,11 @@ class EcsUserCreationForm(forms.Form):
     email = forms.EmailField(label="大阪大学 ECS メール")
     password1 = forms.CharField(label="パスワード", widget=forms.PasswordInput, min_length=8)
     password2 = forms.CharField(label="パスワード確認", widget=forms.PasswordInput, min_length=8)
+    agree_to_policies = forms.BooleanField(
+        label="利用規約とプライバシーポリシーに同意する",
+        required=True,
+        error_messages={"required": "利用規約とプライバシーポリシーへの同意が必要です。"},
+    )
 
     def clean_email(self):
         email = self.cleaned_data["email"].strip().lower()

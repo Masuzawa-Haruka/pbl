@@ -128,6 +128,39 @@
   background: #ffffff;
 }
 
+.signup-policy-consent {
+  margin: 2px 0 4px;
+  color: var(--ou-navy);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.6;
+  text-align: left;
+}
+
+.signup-policy-consent__label {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  cursor: pointer;
+}
+
+.signup-policy-consent__label input {
+  width: 18px;
+  height: 18px;
+  margin: 1px 0 0;
+  flex: 0 0 auto;
+  accent-color: var(--ou-blue);
+}
+
+.signup-policy-consent a {
+  color: var(--ou-blue);
+  text-underline-offset: 3px;
+}
+
+.signup-policy-consent a:hover {
+  text-decoration-thickness: 2px;
+}
+
 .errorlist {
   margin: 6px 0 0;
   padding-left: 18px;

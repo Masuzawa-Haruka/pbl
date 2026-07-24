@@ -993,6 +993,10 @@ def terms(request):
     return render(request, "main/terms.html")
 
 
+def privacy_policy(request):
+    return render(request, "main/privacy_policy.html")
+
+
 def help_contact(request):
     return render(request, "main/help_contact.html")
 

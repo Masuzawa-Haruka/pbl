@@ -34,6 +34,16 @@
         <input type="password" name="password2" required>
         {{ form.password2.errors }}
       </label>
+      <div class="signup-policy-consent">
+        <label class="signup-policy-consent__label">
+          <input type="checkbox" name="agree_to_policies" required{% if form.agree_to_policies.value %} checked{% endif %}>
+          <span>
+            <a href="{% url 'terms' %}" target="_blank" rel="noopener">利用規約</a>と
+            <a href="{% url 'privacy_policy' %}" target="_blank" rel="noopener">プライバシーポリシー</a>に同意します
+          </span>
+        </label>
+        {{ form.agree_to_policies.errors }}
+      </div>
       <button class="login-button login-button--submit" type="submit">
         <span class="login-button__text">認証メールを送信</span>
       </button>

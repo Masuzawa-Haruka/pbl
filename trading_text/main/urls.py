@@ -31,4 +31,5 @@ urlpatterns = [
     path("mypage/edit/", views.edit_profile, name="edit_profile"),
     path("help/", views.help_contact, name="help_contact"),
     path("terms/", views.terms, name="terms"),
+    path("privacy/", views.privacy_policy, name="privacy_policy"),
 ]
