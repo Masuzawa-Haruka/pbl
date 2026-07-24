@@ -584,7 +584,8 @@
   font-weight: 800;
 }
 
-.handoff-card .submit-button {
+.handoff-card > form:not(.handoff-form),
+.handoff-card > .submit-button--link {
   margin-top: 14px;
 }
 

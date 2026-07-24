@@ -774,6 +774,10 @@ class TradeFlowTests(TestCase):
 
         response = self.client.get(reverse("chat", args=[self.book.id]))
         self.assertNotContains(response, "flash-message--success")
+        self.assertContains(
+            response,
+            'placeholder="次は受け渡し日時と場所を決めましょう"',
+        )
 
     def test_buyer_can_reject_price_without_establishing_trade(self):
         offer = TradeOffer.objects.create(
@@ -934,6 +938,8 @@ class TradeFlowTests(TestCase):
         self.assertEqual(proposal.status, "accepted")
         self.assertContains(response, "受け渡し日時と場所が確定しました。")
         self.assertContains(response, "取引は終わり、あとは渡すだけです")
+        self.assertContains(response, 'placeholder="メッセージを入力"')
+        self.assertNotContains(response, "次は受け渡し日時と場所を決めましょう")
 
     def test_other_buyer_cannot_accept_handoff_and_accepted_handoff_cannot_change(self):
         offer = TradeOffer.objects.create(

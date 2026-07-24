@@ -483,6 +483,12 @@ def chat(request, book_id):
         user_handoff_confirmed = (
             handoff.seller_confirmed_at is not None if is_seller else handoff.buyer_confirmed_at is not None
         )
+    needs_handoff_arrangement = (
+        latest_offer is not None
+        and latest_offer.status == "accepted"
+        and book.status == "in_progress"
+        and (handoff is None or handoff.status in {"pending", "rejected"})
+    )
 
     return render(
         request,
@@ -498,6 +504,11 @@ def chat(request, book_id):
             "handoff": handoff,
             "handoff_due": handoff is not None and handoff.handoff_at <= timezone.now(),
             "user_handoff_confirmed": user_handoff_confirmed,
+            "message_placeholder": (
+                "次は受け渡し日時と場所を決めましょう"
+                if needs_handoff_arrangement
+                else "メッセージを入力"
+            ),
             "is_seller": is_seller,
             "can_create_offer": is_seller and book.status == "available" and has_thread,
             "can_accept_offer": (
