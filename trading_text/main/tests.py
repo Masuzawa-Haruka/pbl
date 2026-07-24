@@ -283,6 +283,8 @@ class TradeFlowTests(TestCase):
         self.assertContains(response, "豊中キャンパス")
         self.assertContains(response, "300")
         self.assertContains(response, "いいね 0")
+        self.assertContains(response, "学内での直接受け渡しを推奨")
+        self.assertContains(response, "配送業者への持ち込みが不要")
         self.assertContains(response, "ログインして購入相談する")
 
     def test_public_profile_shows_score_listing_and_completed_trade_counts(self):
@@ -562,6 +564,7 @@ class TradeFlowTests(TestCase):
         self.assertContains(response, 'maxlength="60"')
         self.assertContains(response, 'name="author"')
         self.assertContains(response, 'maxlength="40"')
+        self.assertContains(response, "送料・梱包・発送が不要")
 
     def test_edit_succeeds_when_existing_image_file_is_missing(self):
         self.book.image = "book_images/missing-cover.png"

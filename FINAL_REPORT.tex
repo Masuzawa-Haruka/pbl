@@ -1,0 +1,623 @@
+% !TeX program = xelatex
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=24mm]{geometry}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{caption}
+\usepackage{fancyhdr}
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{iftex}
+\usepackage{longtable}
+\usepackage{tabularx}
+\usepackage{xcolor}
+
+\ifPDFTeX
+  \usepackage[utf8]{inputenc}
+  \usepackage{CJKutf8}
+  \newcommand{\startjapanese}{\begin{CJK*}{UTF8}{min}}
+  \newcommand{\stopjapanese}{\end{CJK*}}
+\else
+  \usepackage{fontspec}
+  \IfFontExistsTF{Noto Serif CJK JP}{
+    \setmainfont{Noto Serif CJK JP}
+  }{
+    \setmainfont{Hiragino Mincho ProN}
+  }
+  \IfFontExistsTF{Noto Sans CJK JP}{
+    \setsansfont{Noto Sans CJK JP}
+  }{
+    \setsansfont{Hiragino Kaku Gothic ProN}
+  }
+  \ifXeTeX
+    \XeTeXlinebreaklocale "ja"
+    \XeTeXlinebreakskip=0pt plus 1pt
+  \fi
+  \newcommand{\startjapanese}{}
+  \newcommand{\stopjapanese}{}
+\fi
+
+\definecolor{oublue}{HTML}{0034B8}
+\definecolor{darknavy}{HTML}{070D2F}
+\definecolor{softblue}{HTML}{F2F6FF}
+\definecolor{warningred}{HTML}{C81E1E}
+\definecolor{mutedgray}{HTML}{596173}
+\definecolor{linegray}{HTML}{D9DFEB}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=oublue,
+  urlcolor=oublue,
+  citecolor=oublue,
+  pdfauthor={大阪大学 基礎工学部 情報科学科 5班},
+  pdftitle={最終レポート：大阪大学生限定 参考書リユース取引アプリ OU Textbook の開発}
+}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.7em}
+\renewcommand{\arraystretch}{1.25}
+\renewcommand{\tablename}{表}
+\renewcommand{\figurename}{図}
+
+\pagestyle{fancy}
+\setlength{\headheight}{14pt}
+\fancyhf{}
+\fancyhead[L]{基礎工学PBL（情報工学A）5班}
+\fancyhead[R]{OU Textbook 最終レポート}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\newcommand{\oustrong}[1]{\textbf{\color{darknavy}#1}}
+\newcommand{\reporttodo}[1]{%
+  \par\noindent
+  \fcolorbox{warningred}{white}{%
+    \parbox{0.94\linewidth}{\textcolor{warningred}{\textbf{提出前の要記入：}#1}}%
+  }\par
+}
+\newcommand{\screenimage}[2]{%
+  \IfFileExists{#1}{%
+    \includegraphics[width=\linewidth,height=0.34\textheight,keepaspectratio]{#1}%
+  }{%
+    \fbox{\parbox[c][45mm][c]{0.92\linewidth}{\centering #2\\画像ファイル：\texttt{#1}}}%
+  }%
+}
+
+\begin{document}
+\startjapanese
+
+\begin{titlepage}
+  \centering
+  \vspace*{18mm}
+  {\Large 2026年度 基礎工学PBL（情報工学A）\par}
+  \vspace{14mm}
+  {\color{oublue}\Huge\bfseries 最終レポート\par}
+  \vspace{10mm}
+  {\LARGE\bfseries 大阪大学生限定\par}
+  \vspace{3mm}
+  {\LARGE\bfseries 参考書リユース取引アプリ\par}
+  \vspace{3mm}
+  {\LARGE\bfseries 「OU Textbook」の開発\par}
+  \vspace{18mm}
+
+  {\large 大阪大学 基礎工学部 情報科学科\quad 5班\par}
+  \vspace{12mm}
+
+  \begin{tabular}{lll}
+    \toprule
+    学籍番号 & 氏名 & 電子メールアドレス\\
+    \midrule
+    09B25048 & 杉山 優弥 & \texttt{u966882c@ecs.osaka-u.ac.jp}\\
+    09B25064 & 沼田 智也 & \texttt{u493047f@ecs.osaka-u.ac.jp}\\
+    09B25073 & 福田 侑飛 & \texttt{u649863a@ecs.osaka-u.ac.jp}\\
+    09B25080 & 正木 光一郎 & \texttt{u756057d@ecs.osaka-u.ac.jp}\\
+    09B25081 & 益澤 悠 & \texttt{u315289b@ecs.osaka-u.ac.jp}\\
+    09B25099 & 山下 初一音 & \texttt{u267690f@ecs.osaka-u.ac.jp}\\
+    \bottomrule
+  \end{tabular}
+
+  \vfill
+  {\large 提出日：2026年8月7日\par}
+\end{titlepage}
+
+\begin{abstract}
+本活動では、大阪大学の学生が授業で使用し終えた教科書や参考書を、学内で直接売買・譲渡できるWebアプリケーション「OU Textbook」を設計・実装した。一般的なフリマサービスでは送料、手数料、梱包、発送が必要になる一方、同じ大学の学生同士であれば、普段利用するキャンパス内で直接受け渡せる。本システムでは、大阪大学メールによる本人確認、画像付き出品、検索・絞り込み、購入相談、価格と受け渡し条件の双方合意、受け渡し完了確認、相互評価までを一つのサービスに統合した。特に、一つの商品に複数の購入希望者がいる場合でも取引相手を一人に限定し、商品状態に矛盾が起きないように管理した。本稿では、課題設定、既存手法との比較、設計意図、実装、作業分担、環境構築、動作結果、苦労した点および今後の課題を報告する。
+\end{abstract}
+
+\tableofcontents
+\clearpage
+
+\section{課題1・課題2の概要}
+
+\subsection{背景となる問題意識}
+
+大学では、授業が終わるたびに使用しなくなった教科書や参考書が増え、整理や処分に困る学生がいる。教科書は高価なものも多く、処分するのではなく、できれば売りたい人や必要な学生へ譲りたい人もいる。また、専門とは異なる授業のために購入した高価な教科書が、授業ではほとんど使われず、新品に近い状態のまま残ってしまう場合もある。
+
+一般的なフリマサービスを利用する場合、商品代金とは別に送料や手数料が発生することがあり、出品者には梱包と発送の作業も必要となる。そこで、大阪大学の学生同士であれば、普段利用するキャンパス内で直接受け渡しを行い、送料をかけずに教科書を必要とする学生へ引き継げると考えた。
+
+\reporttodo{班員が実際に「高価な教科書をほとんど使わなかった」「処分に困った」経験を、誰のどの授業での経験か分かる範囲で1〜2段落追記する。配布資料が重視する「自分たちの問題を自分たちの言葉で語る」部分である。}
+
+\subsection{課題の切実性・普遍性・解決可能性}
+
+\begin{table}[H]
+  \centering
+  \caption{課題設定の三つの観点}
+  \begin{tabularx}{\textwidth}{>{\bfseries}p{0.18\textwidth}X}
+    \toprule
+    観点 & 本活動における位置付け\\
+    \midrule
+    切実性・当事者性 &
+    班員を含む大学生が、不要になった教科書の保管・処分や、高額な教科書の購入負担を経験している。\\
+    普遍性・社会性 &
+    同様の問題は特定の一人に限らず、授業ごとに教科書を購入する学生と、使用済み教科書を持つ学生の双方に生じる。再利用は学生の経済的負担と廃棄の削減にもつながる。\\
+    情報技術による解決可能性 &
+    出品情報、検索、本人確認、メッセージ、条件合意、取引状態をWebアプリ上で一元管理することで、必要な学生同士を結び付けられる。\\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\subsection{既存の解決方法の調査}
+
+既存の方法として、一般的なフリマサービス、古書店への売却、大学内のSNSや掲示板による個人間連絡が考えられる。本活動では、それぞれの特徴を次の観点で比較した。
+
+\begin{table}[H]
+  \centering
+  \caption{既存手法とOU Textbookの比較}
+  \small
+  \begin{tabularx}{\textwidth}{>{\bfseries}p{0.18\textwidth}XXXX}
+    \toprule
+    比較項目 & 一般フリマ & 古書店 & SNS・掲示板 & OU Textbook\\
+    \midrule
+    利用者の範囲 & 全国の利用者 & 一般利用者 & 投稿先による & 大阪大学生\\
+    受け渡し & 主に配送 & 店舗へ持参 & 個別調整 & 学内で直接調整\\
+    送料・梱包 & 必要な場合が多い & 原則不要 & 個別判断 & 原則不要\\
+    学生確認 & 大学単位では行わない & 行わない & 限定的 & 大学メールで確認\\
+    取引状態管理 & サービス内で管理 & 店舗が管理 & 当事者間で管理 & 合意から完了まで管理\\
+    教科書への特化 & 限定的 & 書籍全般 & 限定的 & 教材区分・状態で検索\\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\reporttodo{課題2で実際に調査したサービス名、手数料、送料、本人確認方法などを公式情報に基づいて追記し、出典を参考文献へ追加する。数値を確認せずに記載しない。}
+
+\subsection{何をどこまで解決するか}
+
+本活動では、\oustrong{大阪大学生が参考書を見つけ、条件を相談し、学内で受け渡し、双方が完了を確認するまで}を支援対象とした。具体的には、次を実現範囲とした。
+
+\begin{itemize}
+  \item 大阪大学メールによる利用者確認
+  \item 参考書の画像付き出品、検索、絞り込み、お気に入り
+  \item 出品者と購入希望者の取引メッセージ
+  \item 価格、受け渡し日時、場所の提示・同意・拒否
+  \item 複数の購入希望者がいる場合の取引相手の一意な確定
+  \item 双方による受け渡し完了確認と相互評価
+  \item 出品、取引中、売却済み、取り下げ済みの状態管理
+\end{itemize}
+
+一方、商品代金の決済、返金、商品の真贋判定、大学による公式な保証は対象外とした。代金の支払方法は利用者間で相談し、本サービスは取引条件と進行状況の管理に集中する。
+
+\section{設計したシステムの説明}
+
+\subsection{設計意図}
+
+設計では、次の四点を重視した。
+
+\begin{enumerate}
+  \item 大阪大学生だけが利用できること
+  \item スマートフォンから短い操作で出品・相談できること
+  \item 価格だけでなく、受け渡し日時と場所を双方の合意で決定できること
+  \item 複数の購入希望者がいても、同じ商品について複数の取引が同時成立しないこと
+\end{enumerate}
+
+一般的な出品サイトを小さく再現するのではなく、\oustrong{同じ大学に通う学生がキャンパス内で直接受け渡す状況}に合わせて、受け渡し条件の調整と取引状態の一貫性を中心に設計した。
+
+\subsection{システム構成}
+
+\begin{figure}[H]
+  \centering
+  \fbox{\parbox{0.72\textwidth}{\centering
+    \textbf{利用者のブラウザ}\\
+    スマートフォン・タブレット・PC
+  }}\\[3mm]
+  {\Large$\downarrow$ HTTPS}\\[3mm]
+  \fbox{\parbox{0.72\textwidth}{\centering
+    \textbf{Django Webアプリケーション（Render）}\\
+    画面表示・入力検証・検索・取引制御・通知
+  }}\\[3mm]
+  {\Large$\downarrow$}\\[2mm]
+  \begin{tabular}{ccc}
+    \fbox{\parbox{0.25\textwidth}{\centering
+      \textbf{PostgreSQL}\\
+      利用者・出品・取引・評価
+    }} &
+    \fbox{\parbox{0.25\textwidth}{\centering
+      \textbf{Supabase Auth}\\
+      メール認証・ログイン
+    }} &
+    \fbox{\parbox{0.25\textwidth}{\centering
+      \textbf{Supabase Storage}\\
+      商品画像
+    }}
+  \end{tabular}
+  \caption{OU Textbookのシステム構成}
+\end{figure}
+
+\begin{table}[H]
+  \centering
+  \caption{主な使用技術}
+  \begin{tabularx}{\textwidth}{>{\bfseries}p{0.25\textwidth}X}
+    \toprule
+    技術 & 用途\\
+    \midrule
+    Python・Django 6.0.6 & サーバー処理、画面遷移、フォーム検証、データベース操作\\
+    HTML・CSS・JavaScript & 画面表示、フォーム操作、検索条件、レスポンシブ対応\\
+    Tailwind CSS & 共通のレスポンシブ指定とレイアウト補助\\
+    PostgreSQL & 公開環境における永続データの保存\\
+    Supabase Auth & 大阪大学メールへの認証メール送信とログイン\\
+    Supabase Storage & 商品画像の永続保存と公開URLの生成\\
+    Render・Gunicorn & Djangoアプリケーションの公開と実行\\
+    Git・GitHub & ソースコードの版管理と共同開発\\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\subsection{データと取引状態の設計}
+
+主要なデータは、利用者プロフィール、出品商品、お気に入り、メッセージ、価格提案、受け渡し提案、評価、キャンセル記録で構成した。商品そのものの状態と、価格提案・受け渡し提案の状態を分けることで、相談中、条件提示中、取引相手確定後の処理を管理した。
+
+\begin{table}[H]
+  \centering
+  \caption{商品と取引の主な状態}
+  \begin{tabularx}{\textwidth}{>{\bfseries}p{0.22\textwidth}p{0.2\textwidth}X}
+    \toprule
+    状態 & 内部状態の例 & 意味\\
+    \midrule
+    出品中 & \texttt{available} & 検索結果に表示され、購入相談を受け付ける。\\
+    価格提案中 & \texttt{pending} & 出品者が特定の購入希望者へ価格を提示している。\\
+    取引中 & \texttt{in\_progress} & 購入希望者が価格へ同意し、取引相手が一人に確定している。\\
+    受け渡し待ち & \texttt{accepted} & 日時と場所が合意され、受け渡しを待っている。\\
+    売却済み & \texttt{sold} & 双方の完了確認と評価が完了している。\\
+    取り下げ済み & \texttt{withdrawn} & 出品者が取引開始前に出品を停止した。\\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\begin{figure}[H]
+  \centering
+  \fbox{\parbox{0.9\textwidth}{\centering
+    出品中
+    $\rightarrow$ 価格提示
+    $\rightarrow$ 購入者の価格同意
+    $\rightarrow$ 取引相手確定
+    $\rightarrow$ 日時・場所提示
+    $\rightarrow$ 購入者の条件同意\\[2mm]
+    $\rightarrow$ 受け渡し待ち
+    $\rightarrow$ 双方の完了確認
+    $\rightarrow$ 相互評価
+    $\rightarrow$ 売却済み\\[2mm]
+    \textcolor{mutedgray}{取引開始前の取り下げは「取り下げ済み」へ、取引中のキャンセルは「出品中」へ戻る。}
+  }}
+  \caption{取引フローと状態遷移}
+\end{figure}
+
+\subsection{主要機能}
+
+\subsubsection{利用登録・本人確認・規約同意}
+
+登録可能なメールアドレスを\texttt{@ecs.osaka-u.ac.jp}に限定した。登録時には入力されたアドレスへ認証メールを送り、メール内のリンクを開いた利用者だけが本人確認を完了できる。また、新規登録画面から利用規約とプライバシーポリシーを確認できるようにし、両方への同意を必須とした。未同意の場合は、ブラウザ上だけでなくDjangoフォームの検証でも登録処理を拒否する。
+
+\subsubsection{出品・検索・プロフィール}
+
+出品者は、書名、著者、価格、教材区分、商品の状態、受け渡し希望キャンパス、説明、商品画像を登録できる。検索画面では、キーワード、教材区分、キャンパス、商品状態、価格帯、並び順を組み合わせて絞り込める。プロフィールでは、学部、学科、学年、信用点数、出品数、取引完了数を表示する。
+
+\subsubsection{画像のクラウド保存}
+
+Renderの実行環境では、ローカルファイルを永続的な商品画像保存先として利用できない。そのため、商品画像をSupabase Storageへアップロードし、データベースには保存先を記録する構成とした。これにより、アプリの再起動や再デプロイ後も同じ画像を表示できる。
+
+\subsubsection{購入相談と条件合意}
+
+購入希望者は商品詳細から出品者とのチャットを開始できる。一つの商品について複数の購入希望者が相談できるが、メッセージは相手ごとに分けて表示する。出品者が取引価格を提示し、購入希望者が同意した時点で取引相手を一人に確定する。その後、出品者が日時と場所を提示し、購入者が同意することで受け渡し条件を確定する。購入者は価格と受け渡し条件の双方について拒否でき、再提案を依頼できる。
+
+\subsubsection{二重成立の防止}
+
+価格への同意処理では、対象商品をデータベーストランザクション内でロックし、同意時点の状態を再確認する。先に一人との取引が成立していた場合は、他の購入希望者による同意を受け付けない。画面上のボタン制御だけに依存せず、サーバーとデータベースの処理によって二重成立を防ぐ設計とした。
+
+\subsubsection{受け渡し完了と相互評価}
+
+受け渡し予定時刻以降、出品者と購入者の双方が受け渡し完了を記録できる。片方だけの確認では完了とせず、双方が確認した後に評価へ進む。相互評価も片方だけでは信用点数へ反映せず、双方の評価がそろった時点で反映し、商品を売却済みにする。
+
+\begin{table}[H]
+  \centering
+  \caption{信用点数の変化}
+  \begin{tabularx}{0.86\textwidth}{Xr}
+    \toprule
+    行動 & 点数の変化\\
+    \midrule
+    取引相手から良い評価を受ける & $+10$点\\
+    取引相手から悪い評価を受ける & $-10$点\\
+    受け渡し予定確定後の自己都合キャンセル & $-10$点\\
+    連絡なく受け渡しに来なかったと報告される & $-30$点\\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\begin{table}[H]
+  \centering
+  \caption{信用点数と信用ランク}
+  \begin{tabular}{cl}
+    \toprule
+    信用点数 & 信用ランク\\
+    \midrule
+    150点以上 & エキスパート\\
+    120〜149点 & トラスト\\
+    41〜119点 & レギュラー\\
+    40点以下 & \textcolor{warningred}{\textbf{要注意}}\\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsubsection{レスポンシブ対応}
+
+スマートフォンを基準に画面を設計し、幅768px以上では一覧やフォームの配置をタブレット向けに変更し、幅1024px以上では下部ナビゲーションを左サイドナビゲーションへ切り替えた。コンテンツには最大幅を設定し、PCで入力欄や文章が不自然に横へ広がらないようにした。
+
+\section{作業分担}
+
+\subsection{分担方針}
+
+課題の調査、画面設計、バックエンド、認証・ストレージ、テスト、デプロイ、文書作成に作業を分けた。共通部分へ変更を加える場合はGitで履歴を残し、動作確認後に共有ブランチへ反映する方針とした。
+
+\begin{longtable}{p{0.14\textwidth}p{0.19\textwidth}p{0.27\textwidth}p{0.29\textwidth}}
+  \caption{メンバー間の作業分担}\label{tab:roles}\\
+  \toprule
+  氏名 & 当初の担当 & 実際に担当した内容 & 成果・作成物\\
+  \midrule
+  \endfirsthead
+  \toprule
+  氏名 & 当初の担当 & 実際に担当した内容 & 成果・作成物\\
+  \midrule
+  \endhead
+  杉山 優弥 & 要記入 & 要記入 & 要記入\\
+  沼田 智也 & 要記入 & 要記入 & 要記入\\
+  福田 侑飛 & 要記入 & 要記入 & 要記入\\
+  正木 光一郎 & 要記入 & 要記入 & 要記入\\
+  益澤 悠 & 要記入 & 要記入 & 要記入\\
+  山下 初一音 & 要記入 & 要記入 & 要記入\\
+  \bottomrule
+\end{longtable}
+
+\reporttodo{議事録とTODOリストを参照し、各班員について「当初の担当」と「実際の担当」を記入する。Gitのコミット数だけで貢献を判断せず、調査、議論、テスト、記録、発表準備も含める。}
+
+\section{動作環境・環境構築手順}
+
+\subsection{動作環境}
+
+\begin{table}[H]
+  \centering
+  \caption{動作に必要な主な環境}
+  \begin{tabularx}{\textwidth}{>{\bfseries}p{0.25\textwidth}X}
+    \toprule
+    項目 & 内容\\
+    \midrule
+    実行環境 & Python 3系、Django 6.0.6\\
+    データベース & ローカル確認時はSQLite、公開環境ではPostgreSQL\\
+    外部サービス & Supabase Auth、Supabase Storage、Render\\
+    対応ブラウザ & 現行のChrome、Safari等\\
+    対応画面 & スマートフォン、タブレット、PC\\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+\subsection{ローカル環境の構築}
+
+\begin{enumerate}
+  \item リポジトリを取得し、プロジェクトのルートへ移動する。
+  \item Pythonの仮想環境を作成して有効化する。
+  \item \texttt{requirements.txt}から依存パッケージを導入する。
+  \item 秘密情報を\texttt{.env}へ設定する。
+  \item データベースのマイグレーションを実行する。
+  \item 開発サーバーを起動する。
+\end{enumerate}
+
+\begin{verbatim}
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r trading_text/requirements.txt
+cd trading_text
+python manage.py migrate
+python manage.py runserver
+\end{verbatim}
+
+\subsection{環境変数}
+
+ローカル環境では\texttt{python-dotenv}を用いて\texttt{.env}を自動読み込みする。Renderでは同名の環境変数を管理画面から設定する。必要な主な変数名を以下に示す。秘密鍵の実際の値はリポジトリやレポートへ記載しない。
+
+\begin{verbatim}
+DEBUG=True
+SECRET_KEY=...
+DATABASE_URL=...
+SUPABASE_URL=...
+SUPABASE_ANON_KEY=...
+SUPABASE_STORAGE_BUCKET=item-images
+SUPABASE_SECRET_KEY=...
+\end{verbatim}
+
+\subsection{SupabaseとRenderの設定}
+
+Supabaseではメール認証を有効にし、認証後のリダイレクトURLとしてローカル環境とRenderのログインURLを登録する。Storageには商品画像用のバケットを作成し、画像形式とファイルサイズを制限する。Renderではルートディレクトリを\texttt{trading\_text}に設定し、ビルド時に静的ファイル収集とマイグレーションを実行し、GunicornでDjangoを起動する。
+
+\section{動作結果}
+
+\subsection{主要画面}
+
+\begin{figure}[H]
+  \centering
+  \begin{minipage}[t]{0.48\textwidth}
+    \centering
+    \screenimage{ui/login-screen.png}{登録・ログイン画面}
+    \caption*{(a) 大阪大学メールによる登録・ログイン}
+  \end{minipage}
+  \hfill
+  \begin{minipage}[t]{0.48\textwidth}
+    \centering
+    \screenimage{ui/listing-form-screen.png}{出品画面}
+    \caption*{(b) 商品画像と条件を入力する出品画面}
+  \end{minipage}
+  \caption{利用登録と出品}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \begin{minipage}[t]{0.48\textwidth}
+    \centering
+    \screenimage{ui/search-screen.png}{検索画面}
+    \caption*{(a) 検索・絞り込み画面}
+  \end{minipage}
+  \hfill
+  \begin{minipage}[t]{0.48\textwidth}
+    \centering
+    \screenimage{ui/chat-screen.png}{取引メッセージ画面}
+    \caption*{(b) 取引メッセージと条件提示}
+  \end{minipage}
+  \caption{検索と取引相談}
+\end{figure}
+
+\begin{figure}[H]
+  \centering
+  \begin{minipage}[t]{0.48\textwidth}
+    \centering
+    \screenimage{ui/mypage-screen.png}{マイページ}
+    \caption*{(a) 出品・お気に入り・取引状態の確認}
+  \end{minipage}
+  \hfill
+  \begin{minipage}[t]{0.48\textwidth}
+    \centering
+    \screenimage{ui/rating-form-screen.png}{評価画面}
+    \caption*{(b) 受け渡し完了後の相互評価}
+  \end{minipage}
+  \caption{取引管理と評価}
+\end{figure}
+
+\subsection{機能確認結果}
+
+\begin{longtable}{p{0.31\textwidth}p{0.15\textwidth}p{0.43\textwidth}}
+  \caption{主要機能の確認結果}\label{tab:results}\\
+  \toprule
+  確認項目 & 結果 & 確認内容\\
+  \midrule
+  \endfirsthead
+  \toprule
+  確認項目 & 結果 & 確認内容\\
+  \midrule
+  \endhead
+  大学メール以外での登録拒否 & 成功 & 指定ドメイン以外をフォーム検証で拒否した。\\
+  規約・ポリシー未同意の拒否 & 成功 & 未同意では登録処理と認証メール送信へ進まなかった。\\
+  商品画像の保存 & 成功 & Supabase Storageへ保存し、公開環境で表示した。\\
+  検索・絞り込み & 成功 & 複数条件と並び順を組み合わせて結果を更新した。\\
+  取引相手の一意な確定 & 成功 & 一人の同意後、他の購入希望者は同じ商品へ同意できなかった。\\
+  日時・場所の同意と拒否 & 成功 & 購入者が条件を承認または拒否できた。\\
+  双方による完了確認 & 成功 & 一方だけの確認では完了扱いにならなかった。\\
+  相互評価 & 成功 & 双方の評価後に点数へ反映し、商品を売却済みにした。\\
+  キャンセル後の再出品 & 成功 & 取引相手を解除し、商品を出品中へ戻した。\\
+  \bottomrule
+\end{longtable}
+
+\subsection{自動テスト}
+
+Djangoのテスト機能を用いて、認証フォーム、出品、検索、メッセージ、価格合意、受け渡し条件、完了確認、評価、キャンセル、画像ストレージ等を確認した。本稿作成時点では、\oustrong{75件の自動テストがすべて成功}し、Djangoのシステムチェックでも問題は検出されなかった。
+
+\reporttodo{最終提出直前に\texttt{python manage.py test}を再実行し、最新のテスト件数と成功結果へ更新する。}
+
+\subsection{レスポンシブ表示}
+
+画面幅768pxと1024pxを主な切り替え点として、モバイルファーストでレイアウトを構成した。スマートフォンでは下部ナビゲーションと一列の一覧を維持し、タブレットでは一覧やフォームを複数列にし、PCでは左サイドナビゲーションと中央寄せの最大幅を採用した。
+
+\reporttodo{375px、768px、1024px、1440pxで主要画面を最終確認し、確認日、ブラウザ名、横スクロールや表示崩れがなかったことを表で記録する。}
+
+\subsection{利用者による評価}
+
+ポスター発表会では、参加者に登録、出品、検索、購入相談、条件合意までの一連の操作を試してもらい、理解しやすさ、操作しやすさ、利用したいと思うかを確認する。
+
+\reporttodo{2026年7月31日のポスター発表会後、試用人数、主な意見、発見した問題、改善案を記載する。アンケートや口頭コメントを引用する場合は個人が特定されない形にする。}
+
+\section{苦労した点}
+
+\subsection{最も苦労した点：取引フローと商品状態の整合性}
+
+最も苦労したのは、複数の購入希望者が相談できる状態を保ちながら、最終的な取引相手を一人だけに確定し、各画面に正しい商品状態を表示することであった。実装中には、取り下げた商品が取り下げ一覧ではなく出品一覧に残る、取引中の商品が取引中・売却済み一覧に表示されないなど、内部状態と画面表示が一致しない問題が発生した。
+
+この問題に対し、状態更新を行う処理と、各一覧で商品を抽出する条件を対にして見直した。また、同意処理ではデータベースから最新状態を取得し、トランザクションとロックを用いて同時操作による二重成立を防いだ。状態ごとの自動テストを追加し、変更後も取引フローが維持されるようにした。
+
+\subsection{次に苦労した点：商品画像の永続保存}
+
+開発環境では画像をローカルへ保存できたが、Renderのファイルシステムを永続的な画像保存先として利用すると、再デプロイ後に画像が表示されなくなる可能性があった。そのため、Djangoのストレージインターフェースに合わせたSupabase Storage用の保存処理を実装し、環境変数が設定されている場合はクラウドストレージを使用するようにした。
+
+設定値が不足している場合にローカル保存へ切り替わるため、どのストレージが選択されているかを確認しづらい問題もあった。\texttt{default\_storage}の実体を確認し、必要な環境変数とバケット設定を整理することで解決した。
+
+\subsection{認証・通知・画面表示の連動}
+
+メール認証後にDjango側の利用者を同期する処理、メッセージ送信時の通知、自分が送ったメッセージを自分への通知に含めない処理、受信箱の時系列表示など、複数の画面とデータを連動させる必要があった。通知やメッセージが重複しないよう、作成条件と表示条件を見直した。
+
+\section{未解決部分と今後の課題}
+
+\begin{itemize}
+  \item 実際の大阪大学生による継続的な利用実験と、検索条件・取引フローの改善
+  \item 規約やプライバシーポリシーへ同意した日時・文書バージョンの保存
+  \item アカウント削除、データ開示・訂正依頼に対応する運用画面
+  \item 通報内容を管理し、運営者が適切に対応するための管理機能
+  \item WebSocket等を用いたリアルタイムなメッセージ・通知更新
+  \item 授業名やシラバスとの連携、履修科目に応じた参考書推薦
+  \item 長期運用を想定したバックアップ、監視、セキュリティ確認
+  \item 大阪大学の公式サービスではないことを明確にした上での運営体制の検討
+\end{itemize}
+
+本システムは取引条件の合意と進行状況を支援するものであり、代金決済、商品の品質保証、利用者間の紛争解決を運営者が代行するものではない。継続運用する場合は、利用規約とプライバシーポリシーだけでなく、問い合わせ、通報、データ削除に対応できる体制が必要である。
+
+\section{結論}
+
+本活動では、大阪大学生が使用し終えた参考書を、学内で必要とする学生へ引き継ぐためのWebアプリケーション「OU Textbook」を設計・実装した。大阪大学メールによる本人確認、出品と検索、取引メッセージ、価格・日時・場所の双方合意、完了確認、相互評価までを一つのアプリ内で扱えるようにした。
+
+特に、キャンパス内での直接受け渡しに合わせて条件合意を段階化し、複数の購入希望者が存在しても取引相手を一人に限定する状態管理を実現した点が、本システムの中心的な特徴である。また、商品画像のクラウド保存、レスポンシブ対応、自動テストにより、公開環境で継続して利用できる基盤を整えた。
+
+今後は、ポスター発表会で得られる利用者評価をもとに操作性を改善し、実際の学生間取引で必要となる運営・通報・データ管理機能を検討する。これにより、学生の教科書購入費の負担と不要な教科書の廃棄を減らし、学内で参考書が循環する仕組みへ発展させることを目指す。
+
+\begin{thebibliography}{9}
+  \bibitem{outline}
+  大阪大学 基礎工学PBL（情報工学A）, 「2026年度 基礎工学PBL（情報工学A）概要」, 2026.
+
+  \bibitem{django}
+  Django Software Foundation, ``Django documentation,''
+  \url{https://docs.djangoproject.com/}.
+
+  \bibitem{supabase}
+  Supabase, ``Supabase Documentation,''
+  \url{https://supabase.com/docs}.
+
+  \bibitem{render}
+  Render, ``Render Documentation,''
+  \url{https://render.com/docs}.
+
+  \bibitem{postgresql}
+  PostgreSQL Global Development Group, ``PostgreSQL Documentation,''
+  \url{https://www.postgresql.org/docs/}.
+\end{thebibliography}
+
+\reporttodo{既存サービス比較で参照した公式ページ、教科書価格や廃棄に関する調査資料を参考文献へ追加する。Web資料にはページ名、運営者、URL、参照日を記載する。}
+
+\appendix
+\section{最終確認チェックリスト}
+
+\begin{itemize}
+  \item 表紙に「最終レポート」、班名、全員の学籍番号・氏名・メールアドレスがある
+  \item 課題1・課題2の概要と既存手法の調査結果がある
+  \item 設計意図、システム概要、作業分担、環境構築手順がある
+  \item 画面画像と動作結果があり、未確認の結果を断定していない
+  \item 最も苦労した点、次に苦労した点、未解決部分がある
+  \item 引用した図表と文章に出典がある
+  \item 秘密鍵、パスワード、実データを掲載していない
+  \item 赤い「提出前の要記入」をすべて解消した
+  \item XeLaTeXでPDFを生成し、文字化け、表のはみ出し、空白ページがない
+\end{itemize}
+
+\stopjapanese
+\end{document}

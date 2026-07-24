@@ -10,3 +10,4 @@ media/
 node_modules/
 tmp/responsive-check.mjs
 tmp/responsive/
+tmp/pdfs/

@@ -172,6 +172,24 @@
   margin-bottom: 26px;
 }
 
+.handoff-guidance {
+  display: grid;
+  gap: 4px;
+  margin: 0 0 26px;
+  padding: 12px 14px;
+  border-left: 3px solid #0034b8;
+  background: #f2f6ff;
+  color: #34405a;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.55;
+}
+
+.handoff-guidance strong {
+  color: #070d2f;
+  font-size: 14px;
+}
+
 .price-number {
   font-size: 36px;
   font-weight: 900;

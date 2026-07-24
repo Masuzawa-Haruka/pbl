@@ -63,6 +63,11 @@
       <span class="price-number">{{ book.price }}</span><span class="price-unit">円</span>
     </div>
 
+    <aside class="handoff-guidance" aria-label="受け渡しの案内">
+      <strong>学内での直接受け渡しを推奨</strong>
+      <span>送料・梱包・配送業者への持ち込みが不要です。日時と場所を相談し、安全で人目のある場所で受け渡してください。</span>
+    </aside>
+
     {% if book.description %}
       <div class="book-description">{{ book.description|linebreaksbr }}</div>
     {% endif %}
