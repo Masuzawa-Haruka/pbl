@@ -1,41 +1,52 @@
 \documentclass[11pt,a4paper]{jsarticle}
 \usepackage[utf8]{inputenc}
 \usepackage[dvipdfmx]{graphicx}
-\usepackage{url}
+\usepackage[dvipdfmx]{hyperref}
+\usepackage[dvipdfm,a4paper,truedimen,margin=25mm]{geometry}
 \usepackage{amsmath}
 \usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
 \usepackage{listings}
-\usepackage{color}
+\usepackage[dvipdfmx]{xcolor}
 
-% ソースコード表示用のスタイル設定
-\definecolor{codegreen}{rgb}{0,0.6,0}
-\definecolor{codegray}{rgb}{0.5,0.5,0.5}
-\definecolor{codepurple}{rgb}{0.58,0,0.82}
-\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+\definecolor{codegreen}{rgb}{0,0.45,0}
+\definecolor{codegray}{rgb}{0.40,0.40,0.40}
+\definecolor{codepurple}{rgb}{0.50,0,0.65}
+\definecolor{backcolour}{rgb}{0.96,0.96,0.94}
 
 \lstdefinestyle{mystyle}{
-    backgroundcolor=\color{backcolour},   
+    backgroundcolor=\color{backcolour},
     commentstyle=\color{codegreen},
     keywordstyle=\color{magenta},
     numberstyle=\tiny\color{codegray},
     stringstyle=\color{codepurple},
-    basicstyle=\ttfamily\footnotesize,
-    breakatwhitespace=false,         
-    breaklines=true,                 
-    captionpos=b,                    
-    keepspaces=true,                 
-    numbers=left,                    
-    numbersep=5pt,                  
-    showspaces=false,                
+    basicstyle=\ttfamily\small,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=none,
+    showspaces=false,
     showstringspaces=false,
-    showtabs=false,                  
-    tabsize=2
+    showtabs=false,
+    tabsize=2,
+    frame=single,
+    framerule=0.3pt,
+    columns=fullflexible
 }
-\lstset{style={mystyle}}
+\lstset{style=mystyle}
 
-\title{最終レポート: 大阪大学学生向け教科書取引プラットフォーム \\ 「OU Textbook」の開発}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\renewcommand{\arraystretch}{1.25}
+\setlength{\parskip}{0.25em}
+\hypersetup{hidelinks}
+
+\title{最終レポート\\[0.4em]
+大阪大学学生向け教科書取引プラットフォーム\\
+「OU Textbook」の開発}
 \author{
-  班名: A班 \\
+  班名: A班 \\[0.8em]
   \begin{tabular}{lll}
     \toprule
     学籍番号 & 氏名 & 電子メールアドレス \\
@@ -49,151 +60,256 @@
 \date{\today}
 
 \begin{document}
+\pagenumbering{roman}
 \maketitle
+\thispagestyle{empty}
+\clearpage
+\pagenumbering{arabic}
 
-\newpage
-
-\section{課題1、2の概要}
+\section{課題1・2の概要}
 
 \subsection{背景と当事者性・切実性}
-大学の講義において教科書は必須であるが、学期が始まると非常に高額な教科書を多数購入しなければならない。一方で、学期が終了すると不要になり、本棚に眠ったままになるケースが多い。既存のフリマアプリ（メルカリ等）や古本屋（ブックオフ等）を利用する場合、以下の課題が存在する。
+教科書は、授業中には必要で、学期が終わると余りやすい。問題は、この時間差の両側で学生が別々に負担を抱えることである。購入する学生は新品価格や配送費を負担し、手放す学生は梱包・発送の手間を避けるうちに、使わない教科書を本棚へ残してしまう。
+
+私たちにも、学期の初めに複数冊をまとめて購入し、授業が終わったあと、まだ使える教科書を譲る相手が見つからないまま保管した経験がある。翌年度の履修者へ渡せればよいとは思っても、誰が同じ授業を取るのか、その人がどのキャンパスにいるのかは分からない。買う側だったときの負担と、売る側になったときの行き詰まりは、同じ教科書の前後に生じていた。
+
+既存のフリマアプリや古本屋でも売買はできる。ただし、大学の授業で使われる特定の版・科目の教科書を探す場面では、次の二点が残る。
 \begin{enumerate}
-    \item 発送手続きや梱包に手間がかかり、手数料や送料によって出品者・購入者双方の金銭的負担が大きい。
-    \item 同じ大学で開講されている特定の授業に対応した教科書をピンポイントで探すことが難しい。
+    \item 配送、梱包、販売手数料などが、少額の中古教科書取引に対して相対的に重い。
+    \item 書名だけでは授業との対応が分かりにくく、同じ大学・キャンパスの出品へ絞り込めない。
 \end{enumerate}
-本課題は、これらの問題を「同じ大学の学生同士が、キャンパス内で直接手渡しで売買する」ことで解決する。これにより、送料・手数料を完全にゼロにし、安価かつ迅速に必要な教科書を入手できるようにすることを目指した。これは毎期教科書代に苦慮している我々学生にとって、非常に切実かつ当事者性の高い課題である。
+
+同じキャンパスに通う学生同士なら、配送そのものを省ける。そこで「OU Textbook」では、大阪大学の学生が教科書を検索し、価格と受け渡し日時・場所に合意したうえで、キャンパス内で直接受け渡す流れを一つのWebアプリケーションにまとめた。もっとも、対面取引にすれば問題が消えるわけではない。待ち合わせの不履行と、当事者でない利用者の介入をどう抑えるかが、設計上の焦点となった。
 
 \subsection{普遍性と社会性}
-この課題は、特定の個人に留まらず、大阪大学の全学生（豊中・吹田・箕面キャンパス）に共通するものである。特に、新入生は多額の初期費用がかかるため、先輩から不要になった教科書を安価に譲り受ける仕組みは極めて社会的意義が大きい。また、紙の資源を再利用し、学内でのリサイクル循環を促進する点でも、持続可能な地域社会（大学コミュニティ）の形成に寄与する。
+教科書の購入と処分は、特定の学部や学年だけに生じる問題ではない。豊中・吹田・箕面の各キャンパスで、履修科目が変わるたびに繰り返される。とりわけ新入生にとっては、教科書代が入学時の諸費用と同時に発生するため、中古教科書を授業単位で探せる意義は大きい。
 
-\subsection{情報技術による解決可能性}
-Webアプリケーション技術を活用することで、以下の機能を実現して課題を解決する。
+再利用には資源面の効果もあるが、本提案の直接的な価値は、まだ使える教科書と、それを必要とする次の履修者を学内で結び付ける点にある。対象を大阪大学の学生へ限定することで利用者数は狭まる一方、キャンパス、授業分野、受け渡し可能性という文脈は濃くなる。この限定が、汎用サービスとの差になる。
+
+\subsection{情報技術で解く範囲}
+送料をなくすだけなら、SNSで相手を募って手渡せばよい。そうしたかった、とは思う。しかし、投稿が流れる場所では検索条件、合意内容、取引履歴が分散し、待ち合わせの直前に誰が何へ同意したのかを追いにくい。そこで、次の三つをシステム要件とした。
 \begin{itemize}
-    \item \textbf{検索・マッチングの最適化}: キャンパス別（豊中・吹田・箕面）および講義カテゴリ別（教養・専門・理系・文系）のフィルタリング機能を提供し、目的の教科書を容易に発見可能にする。
-    \item \textbf{学内ユーザー限定の認証}: 悪意ある外部ユーザーの侵入を防ぎ、取引の安全性を確保するため、大阪大学のECSメール（\texttt{@ecs.osaka-u.ac.jp}）のみで登録可能な認証制限を課す。
-    \item \textbf{信用スコア（Credit Score）制度とドタキャン抑止}: 対面手渡し取引で最も問題となる「待ち合わせ場所への不参加（ドタキャン）」を防止するため、取引完了時の相互評価やドタキャン報告に基づいて各ユーザーの信用スコアが動的に変動するシステムを設計・導入する。
+    \item \textbf{見つける}: 書名・著者名の部分一致検索に、キャンパス、カテゴリ、価格順の条件を組み合わせる。
+    \item \textbf{当事者を限定する}: \texttt{@ecs.osaka-u.ac.jp} のメールアドレスを登録条件とし、取引操作は出品者、購入希望者、購入者の権限に応じて制御する。
+    \item \textbf{合意を残す}: チャット、価格提示、受け渡し提案、双方の完了確認、相互評価を段階別のデータとして保存する。
 \end{itemize}
 
-\subsection{既存手法の調査と提案システムの位置づけ}
-既存のフリマプラットフォームとの比較を表\ref{tab:comparison}に示す。提案システム「OU Textbook」は、学内限定の対面取引に特化することで、他サービスにはない「手数料無料」「即日手渡し可能」「安全なコミュニティ」の3点を同時に満たす特徴を持つ。
+信用スコアは最後の要件を補助する。良い評価は$+10$点、悪い評価と予定確定後のキャンセルは$-10$点、無断不参加の報告は$-30$点とし、同じ評価や報告が重複適用されないよう制約を設けた。スコアだけでトラブルを防げるわけではないが、過去の取引結果を次の相手が判断する材料にはできる。
 
-\begin{table}[hbtp]
+費用をかけずに再現できることも条件とした。Webフレームワークには3条項BSDライセンスで公開されているDjangoを採用した\cite{django-license}。データベースと画像保存は、ローカルではSQLiteとファイルシステムだけで動作する。Supabaseもオープンソースの構成要素から成り、Dockerを用いたセルフホストが可能である\cite{supabase-selfhost}。したがって、外部の有償サービスを契約しなくても、PC上で認証を含む構成を再現できる。ただし、公開サーバーの維持費まで常にゼロになるわけではない。
+
+\subsection{既存手法との比較}
+メルカリでは商品が売れた際に販売価格の10\%が販売手数料となり、送料は出品時の設定に応じて出品者か購入者が負担する\cite{mercari-price,mercari-shipping}。BOOKOFFは店頭買取に加え、宅配・出張による買取を提供しており、価格は店舗側の査定で決まる\cite{bookoff-sell}。表\ref{tab:comparison}は、これらの公式情報と、学内SNSでの個別調整を同じ四つの軸で比較したものである。
+
+\begin{table}[htbp]
   \centering
-  \caption{既存取引手法と提案システムの比較}
+  \caption{既存取引手法とOU Textbookの比較}
   \label{tab:comparison}
-  \begin{tabular}{lllll}
+  \scriptsize
+  \begin{tabularx}{\textwidth}{@{}p{0.13\textwidth}YYYY@{}}
     \toprule
-    特徴・項目 & 既存フリマ (メルカリ等) & 一般古本屋 & 学内掲示板/SNS & 提案システム (OU Textbook) \\
+    比較軸 & 汎用フリマ & 一般古本屋 & 学内SNS・掲示板 & OU Textbook \\
     \midrule
-    手数料・送料 & 出品額の約10\% + 送料 & 買取価格が極めて安価 & 無料 & \textbf{完全無料} \\
-    取引の即時性 & 配送に数日を要する & 店舗への持ち込みが必要 & 個別調整による & \textbf{対面手渡し (最短当日)} \\
-    取引の安全性 & 仲介があるため比較的安全 & 安全 & トラブル発生リスク高 & \textbf{学内限定認証 + 信用スコア} \\
-    学内特化 & 不可能 & 不可能 & 投稿が埋もれやすい & \textbf{キャンパス・講義別に検索可能} \\
+    費用 &
+    販売手数料10\%・送料負担あり &
+    買取価格は店舗査定による &
+    原則として当事者間で調整 &
+    配送・システム利用料なし \\
+    発見性 &
+    書名中心。授業との対応は不明 &
+    店舗在庫の範囲に限られる &
+    投稿が時系列に流れやすい &
+    キャンパス・カテゴリで絞り込み \\
+    受け渡し &
+    主に配送 &
+    店舗への持込・来店 &
+    個別に調整 &
+    日時・場所の提案と双方同意 \\
+    信頼の手掛かり &
+    運営の評価・補償制度 &
+    店舗が取引主体 &
+    アカウント情報に依存 &
+    学内メール認証・履歴・信用スコア \\
     \bottomrule
-  \end{tabular}
+  \end{tabularx}
 \end{table}
 
-\newpage
+OU Textbookの強みは、汎用サービスより安全だと言い切れることではない。配送と運営仲介を省く代わりに、授業に即した発見性と受け渡し合意の記録を得る設計である。決済の仲介や本人確認書類による確認は実装していないため、金銭トラブルへの補償は今後も別に考える必要がある。
 
 \section{設計・作成したシステム・ソフトウェアの説明}
 
-\subsection{設計の意図とシステムの概要}
-本システムは、Djangoフレームワークを用いたWebアプリケーションとして構築した。ユーザー認証のセキュリティ向上と管理コストの削減のため、SaaS型認証サービスである \textbf{Supabase Auth} をバックエンドに採用し、メールアドレス確認とパスワード管理を安全に委ねている。
-システム全体の構造図を図\ref{fig:architecture}に示す。
+\subsection{設計の意図とシステム構成}
+画面をDjangoテンプレートで描画し、認証だけをSupabaseへ委ねた。ブラウザから認証情報を直接管理する構成ではなく、DjangoがSupabase AuthのAPIを呼び出し、返された利用者IDをDjango標準の\texttt{User}および\texttt{UserProfile}へ同期する。アクセストークンとリフレッシュトークンはDjangoのセッションに保持する。
 
-\begin{figure}[hbp]
+\begin{figure}[htbp]
   \centering
-  \begin{tabular}{|c|}
-    \hline
-    \begin{minipage}{0.8\textwidth}
+  \fbox{
+    \begin{minipage}{0.88\textwidth}
       \centering
-      \vspace{0.5cm}
-      [Web Browser] (HTML5 / CSS3 / JavaScript) \\
-      $\downarrow \uparrow$ (HTTP Request / Response) \\{}
-      [Django Application Server] (Python 3) \\
-      $\swarrow \quad \searrow$ \\{}
-      [SQLite Database] \qquad [Supabase Auth] (API) \\
-      \vspace{0.5cm}
-    \end{minipage} \\
-    \hline
-  \end{tabular}
-  \caption{システム構成図 (OU Textbook)}
+      \vspace{0.45em}
+      Webブラウザ（HTML / CSS / JavaScript）\\
+      \(\updownarrow\) HTTP Request / Response\\
+      Django Application（Python）\\
+      \(\swarrow\quad\downarrow\quad\searrow\)\\
+      データベース
+      \qquad Supabase Auth
+      \qquad 画像ストレージ\\
+      \vspace{0.45em}
+    \end{minipage}
+  }
+  \caption{OU Textbookのシステム構成}
   \label{fig:architecture}
 \end{figure}
 
-本システムは以下の5つの主要エンティティでデータベースを設計した。
+ローカルではSQLiteを使い、\texttt{DATABASE\_URL}が設定された環境では外部データベースへ接続する。画像は、所定の環境変数がある場合はSupabase Storageへ、ない場合はローカルファイルシステムへ保存する。
+
+認証サービスを分離しても、取引データの整合性はDjango側に残る。価格提示の承諾、受け渡しの確定、完了確認、評価の適用は、状態と操作者の両方を検査してから更新する。第三者がURLを推測しても取引を確定できないことが必要だった。
+
+\subsection{データモデルと取引状態}
+実装した中心的なモデルは、次の八つである。
+\begin{description}
+    \item[\texttt{UserProfile}]
+    表示名、学部・学科、学年、Supabase利用者ID、信用スコアを保持する。スコアに応じて「要注意」「レギュラー」「トラスト」「エキスパート」の表示を切り替える。
+
+    \item[\texttt{Book}]
+    書名、著者、価格、カテゴリ、キャンパス、状態、画像、出品者と購入者を保持する。状態は\texttt{available}、\texttt{in\_progress}、\texttt{sold}、\texttt{withdrawn}の四つである。
+
+    \item[\texttt{Favorite} / \texttt{Message}]
+    お気に入りは利用者と書籍の組を一意に保存する。メッセージは書籍、送信者、受信者、本文、送信時刻を保存し、書籍ごとの相談履歴を構成する。
+
+    \item[\texttt{TradeOffer}]
+    出品者から特定の購入希望者への価格提示を保存する。一冊に対して成立済みの提示が複数残らないよう、条件付き一意制約を置いた。
+
+    \item[\texttt{HandoffProposal}]
+    成立した価格提示に対する受け渡し日時・場所と、売り手・買い手双方の完了確認時刻を保存する。
+
+    \item[\texttt{Evaluation} / \texttt{CancellationLog}]
+    相互評価とキャンセル・無断不参加の報告を保存する。一意制約と適用済みフラグにより、信用スコアの二重加算・減算を防ぐ。
+\end{description}
+
+取引は、相談を始めただけでは成立しない。出品者が価格を提示し、対象の購入希望者が承諾した時点で、書籍は\texttt{available}から\texttt{in\_progress}へ移る。受け渡し予定時刻を過ぎた後、双方が完了を確認し、双方の評価がそろうと\texttt{sold}になる。途中でキャンセルされた場合は購入者との紐付けを外し、再び\texttt{available}へ戻す。
+
+\subsection{メンバー間の作業分担方針と実際の作業分担結果}
+画面、取引ロジック、外部サービス統合は相互に影響するため、担当を分けつつ、境界部分を共同で確認する方針を採った。
 \begin{itemize}
-    \item \textbf{UserProfile}: ユーザーの表示名、所属（大学・学部・学年）、信用スコア（初期値100点）、評価レーティングなどを保持する。
-    \item \textbf{Book}: 出品された書籍データ（書名、著者、価格、カテゴリ、キャンパス、状態、画像、取引ステータス）を保持する。
-    \item \textbf{Favorite}: 書籍に対するお気に入り（いいね）状態を管理する。
-    \item \textbf{Message}: 取引開始後のチャット機能における各メッセージを保持する。
-    \item \textbf{Evaluation / CancellationLog}: 取引完了後の相互評価結果、およびドタキャンなどのペナルティ報告を記録し、信用スコアに反映させる。
+    \item \textbf{大阪 太郎（学籍番号: 25XXXXXX）}: バックエンド開発統括。Djangoのモデル設計、書籍登録、取引状態制御、信用スコア処理を担当した。
+    \item \textbf{阪大 花子（学籍番号: 25XXXXXX）}: フロントエンドUI/UX開発。書籍一覧、詳細、チャット、マイページの画面設計とレスポンシブ対応を担当した。
+    \item \textbf{石橋 健二（学籍番号: 25XXXXXX）}: インフラ・認証統合。Supabase Authと画像ストレージの統合、環境設定、権限制御と動作テストを担当した。
 \end{itemize}
 
-\subsection{メンバー間での作業分担方針および実際の作業分担結果}
-プロジェクトの推進にあたり、フロントエンド、バックエンド、およびインフラ・セキュリティ検証の3つの役割に分担した。
-\begin{itemize}
-    \item \textbf{大阪 太郎 (学籍番号: 25XXXXXX)}: バックエンド開発統括。Djangoのモデル設計、書籍登録・チャット取引制御ロジック、および信用スコア変動システムの設計と実装を担当。
-    \item \textbf{阪大 花子 (学籍番号: 25XXXXXX)}: フロントエンドUI/UX開発。CSSを用いたモダンでレスポンシブなユーザーインターフェース（書籍一覧、詳細、チャット、マイページ）の設計・スタイリングを担当。
-    \item \textbf{石橋 健二 (学籍番号: 25XXXXXX)}: インフラ構築および認証統合。Supabase Authを用いたECSメール制限認証システムの統合、セキュリティ検証（XSS・SQLi耐性調査）、動作テストを担当。
-\end{itemize}
+実際の作業でも三つの担当領域は維持した。ただし、画面から取引状態を変更する機能については、フロントエンドだけ、あるいはバックエンドだけでは完結しない。価格提示、受け渡し確認、評価の各画面は、画面担当と取引ロジック担当が共同で動作を確認し、認証や保存先に関わる不具合はインフラ担当を交えて修正した。
 
-\subsection{動作環境・環境構築手順}
-本システムの動作環境およびローカルでの構築手順を以下に示す。
+\subsection{動作環境とローカル構築手順}
+依存バージョンは\texttt{requirements.txt}で固定または範囲指定している。主な構成はDjango 6.0.6、SQLite（ローカル）、Supabase Authである。本番用設定の\texttt{render.yaml}ではPython 3.14.3を指定し、\texttt{DATABASE\_URL}による外部データベース接続、WhiteNoiseによる静的ファイル配信、Supabase Storageによる画像保存に対応した。
 
-\subsubsection{前提動作環境}
-\begin{itemize}
-    \item Python 3.10 以上
-    \item Django 6.0.6
-    \item 外部環境: Supabase プロジェクト（Authentication機能が有効化されていること）
-\end{itemize}
-
-\subsubsection{ローカル環境の構築手順 (Windows環境を想定)}
-\begin{verbatim}
-# 1. リポジトリのクローンと移動
+Windows PowerShellでソースコードを取得済みの場合、次の手順で起動できる。
+\begin{lstlisting}
 cd C:\path\to\pbl
 
-# 2. 仮想環境の作成と有効化
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
+python -m pip install -r trading_text\requirements.txt
 
-# 3. 依存ライブラリのインストール
-pip install django dj-database-url gunicorn psycopg2-binary sqlparse whitenoise
-
-# 4. Supabase接続情報の環境変数設定 (PowerShellの場合)
 $env:SUPABASE_URL="https://xxxx.supabase.co"
 $env:SUPABASE_ANON_KEY="your-supabase-anon-key"
 
-# 5. データベースの初期化(マイグレーション)と起動
 cd trading_text
 python manage.py migrate
+python manage.py check
 python manage.py runserver
-\end{verbatim}
+\end{lstlisting}
 
-\subsection{動作結果の報告}
-作成したシステムをローカルで稼働させ、以下の主要シナリオについて動作検証を行い、期待通りの動作を確認した。
+画像をSupabase Storageへ保存する場合は、これらに加えて\texttt{SUPABASE\_STORAGE\_BUCKET}と\texttt{SUPABASE\_SECRET\_KEY}を設定する。秘密鍵はソースコードへ書かず、環境変数として渡す。
 
-\begin{enumerate}
-    \item \textbf{アカウント登録と制限}: \texttt{ECSメールアドレス (@ecs.osaka-u.ac.jp)} 以外を入力した場合にバリデーションエラーが発生することを確認した。また、Supabase Authから送信される確認メールのリンクをクリックすることでユーザー同期が行われ、ログインが可能になることを確認した。
-    \item \textbf{書籍検索とフィルタリング}: 検索窓において書籍名および著者名で部分一致検索が行えることを確認した。キャンパス別（豊中・吹田・箕面）およびカテゴリ別（教養・専門など）の絞り込み、および価格順ソートが意図通り実行されることを確認した。
-    \item \textbf{購入相談・チャット}: 出品されている書籍詳細画面から「購入相談」を開始すると、取引ステータスが「出品中 (\texttt{available})」から「取引中 (\texttt{in\_progress})」へ自動的に遷移することを確認した。また、出品者と購入者の間だけで安全にチャットメッセージの送受信が行えることを確認した。
-    \item \textbf{評価と信用スコアの変動}: 取引完了時に双方が評価を送信すると、評価結果が確定し、プロフィールに登録された信用スコア（`credit\_score`）が増減することを確認した。ドタキャンが発生した場合のペナルティ報告によって信用スコアが大きく引かれ、ユーザー詳細画面に「レギュラー」や「トラスト」といった信頼ランクが正しく反映されることを実証した。
-\end{enumerate}
+\subsection{動作結果}
+開発時には、画面操作による主要シナリオの確認に加え、\texttt{main/tests.py}へ72件のテストメソッドを作成した。確認対象と判定条件を表\ref{tab:tests}に示す。
+
+\begin{table}[htbp]
+  \centering
+  \caption{主要な確認対象と判定条件}
+  \label{tab:tests}
+  \small
+  \begin{tabularx}{\textwidth}{@{}p{0.23\textwidth}Y Y@{}}
+    \toprule
+    対象 & 操作・条件 & 確認内容 \\
+    \midrule
+    登録・ログイン &
+    ECS以外／ECSのメールを入力 &
+    前者を拒否し、後者はSupabase利用者IDとローカル利用者を同期する \\
+    検索・出品 &
+    書名・著者、キャンパス、カテゴリ、価格順を指定 &
+    条件に合う\texttt{available}の書籍だけを表示する \\
+    価格合意 &
+    出品者が提示し、対象の購入希望者が承諾 &
+    提示価格を保存し、書籍を\texttt{in\_progress}へ移す \\
+    受け渡し &
+    日時・場所へ合意し、予定時刻後に双方が完了確認 &
+    一方だけでは完了にせず、第三者の操作も受け付けない \\
+    評価・キャンセル &
+    双方評価、重複評価、キャンセル、無断不参加 &
+    所定の点数を一度だけ反映し、キャンセル時は出品を再開する \\
+    画像 &
+    5MB超または未対応シグネチャのファイルを送信 &
+    バリデーションエラーとし、保存しない \\
+    \bottomrule
+  \end{tabularx}
+\end{table}
+
+とくに取引状態は、画面上の表示だけでなく、当事者以外による価格承諾、受け渡し確定、完了確認を拒否できるかまで確認した。正常系だけなら一冊の売買は進む。状態が分岐する拒否、再提案、キャンセル、重複送信で整合性を失わないことのほうが、実装上は重要だった。
 
 \subsection{最も苦労した点と次に苦労した点}
 \subsubsection{最も苦労した点: Supabase AuthとDjango標準認証の統合}
-Supabase AuthはJavaScript SDKによるフロントエンド主体の認証が標準的であるのに対し、本システムはDjangoテンプレートを用いたサーバーサイド描画方式を採用している。このため、Supabase AuthのAPIトークン（JWT）をDjango側で受信し、Django内のセッション管理および標準の \texttt{User} モデルと透過的に同期（\texttt{sync\_supabase\_user}）させる仕組みの構築に最も苦労した。セッションの有効期限設定やリフレッシュトークンの扱いについて多くの議論と検証を要した。
+Supabase Authの利用者とDjangoの利用者は、同じ人物を表していても別の識別子と状態を持つ。認証成功後にメールアドレスだけで結び付ければ簡単に見えるが、表示名の初期化、既存利用者との同期、Supabase利用者IDの保存、Djangoセッションの開始までを一貫させなければならない。
 
-\subsubsection{次に苦労した点: アップロード画像のセキュリティと堅牢なバリデーション}
-出品時の画像アップロード機能において、悪意のあるファイルを誤ってサーバーにアップロードされるのを防ぐ必要があった。単にファイルの拡張子（\texttt{.png}や\texttt{.jpg}など）のみを検査するだけでは、拡張子を偽装したスクリプトファイルなどのアップロードを防げない。そのため、ファイルサイズ（5MB以下）の制限に加え、ファイル先頭の数バイト（マジックナンバー）を読み取って画像データのシグネチャと一致するかを自前で照合するバリデータ（\texttt{validate\_uploaded\_image}）を実装した。このバイナリチェックの実装と例外処理の調整に苦労した。
+そこで、Supabaseの認証APIを呼ぶ処理を\texttt{supabase\_auth.py}へ分離し、ビュー側の\texttt{sync\_supabase\_user}でローカル利用者とプロフィールを同期した。認証サービスのエラーをフォームへ返しつつ、成功時だけDjangoのログイン状態を作る境界の調整に最も時間を要した。
 
-\subsection{未解決で残った部分および今後の課題}
-時間の制約により、設計段階から実装を見送った、あるいは不十分な形で残った機能は以下の通りである。
+\subsubsection{次に苦労した点: アップロード画像の検査と保存先の切替}
+拡張子だけを検査しても、ファイルの実体は判別できない。実装では5MBの上限を設け、先頭16バイトをJPEG、PNG、GIF、WebPの候補シグネチャと照合してから保存するようにした。また、ローカルと本番で保存先が変わっても\texttt{Book.image}の扱いを変えずに済むよう、DjangoのStorageインターフェースを用いた。
 
+ただし、先頭部分の照合は完全な画像デコードではない。特にRIFF形式はWebP以外にも使われるため、現在の検査だけで悪意あるファイルを排除できるとは言い切れない。この限界は未解決である。
+
+\subsection{未解決の部分と今後の課題}
+実装を終えても、対面取引の不確実さは残った。限られた期間で、検索、価格合意、受け渡し、完了確認、評価という取引の中心経路と、第三者の操作を拒否する権限制御を優先したためである。外部サービスとの継続的な通信が必要な機能と、運用者の判断基準が必要な機能は、短いローカル試験だけでは安全性を確かめられず、実装範囲から外した。
+
+優先度の高い順に、次の改善が必要である。
 \begin{enumerate}
-    \item \textbf{取引手渡し場所の地図上での指定機能}: 現在のシステムでは、チャット上でテキストにより待ち合わせ場所を調整している。今後は、Google Maps API等を用いて学内の安全な取引エリア（食堂前、図書館前など）を地図上で直接ピン留めし指定できる機能が必要である。
-    \item \textbf{チャットのリアルタイム通知 (WebSocket化)}: 現在のチャット機能はページのリロードまたはページ遷移によって最新のメッセージを取得している。UX向上のためには、Django Channelsなどを導入し、双方向リアルタイム通信によるチャット機能へアップグレードする必要がある。
-    \item \textbf{通知メールの自動送信}: 取引開始や新しいメッセージが届いた際に、ユーザーにメールで通知するシステムを完全に実用化することが課題として残っている（一部Gmail送信機能のインフラ構築が残存）。
+    \item \textbf{認証セッションの更新と失効処理}: 現在はSupabaseから得たアクセストークンとリフレッシュトークンをセッションへ保存するが、期限切れ時の自動更新と、Supabase側で失効した利用者をローカルセッションへ反映する処理が不足している。原因は、登録・ログインの成立を先に検証し、時間経過や外部での失効を含む長時間試験まで実施できなかったことである。
+    \item \textbf{画像の完全な検証}: Pillow等で画像を実際にデコードし、形式、画素数、破損の有無を検査したうえで再エンコードする必要がある。現在の検査は追加ライブラリを用いず先頭バイトだけで判定する方針を採ったため、RIFFコンテナの内部形式まで識別できなかった。
+    \item \textbf{チャット通知の即時化}: 現在は画面の再読込で新着メッセージを取得する。Django Channels等によるリアルタイム更新、またはメール通知が必要である。通常のHTTPによる取引機能を先に完成させた結果、WebSocket接続の維持と切断時の再接続を検証する期間を確保できなかった。
+    \item \textbf{受け渡し場所の選択支援}: 現在は場所を自由記述する。学内の明るく人通りのある候補地点を選択式で示し、必要に応じて地図上で確認できる形が望ましい。候補地点の選定には各キャンパスの現地確認が必要であり、APIを接続するだけでは安全な場所を保証できないため、自由記述にとどめた。
+    \item \textbf{紛争対応と運用設計}: 学内メール認証と信用スコアは本人確認や補償の代替ではない。虚偽の無断不参加報告、金銭トラブル、不適切な出品に対する異議申立てと管理者対応を定める必要がある。これはプログラムだけでは決められず、証拠の扱い、管理者の権限、個人情報の保存期間について合意できる運用主体が必要になる。
 \end{enumerate}
+
+\section{結論}
+余っている教科書と、次の学期にそれを必要とする学生は、同じキャンパスにいる。それでも取引が成立しにくかったのは、相手を見つける情報と、価格・日時・場所への合意が別々の手段に散らばっていたからである。
+
+OU Textbookは、学内メール認証、教科書検索、チャット、価格提示、受け渡し合意、完了確認、評価を一つの状態遷移として実装した。これにより、配送を使わない教科書取引を、単なる呼びかけから記録可能な手続きへ変えられた。一方で、認証失効、画像の完全検査、紛争対応は残っている。学期が変わるたびに安心して使える仕組みになるかどうかは、この三点を運用まで含めて詰められるかにかかっている。
+
+\begin{thebibliography}{9}
+    \bibitem{mercari-price}
+    メルカリ「価格の決め方」，
+    \url{https://help.jp.mercari.com/guide/articles/64/}
+    （2026年7月24日閲覧）．
+
+    \bibitem{mercari-shipping}
+    メルカリ「送料はどちらが負担するのでしょうか？」，
+    \url{https://help.jp.mercari.com/guide/articles/107/}
+    （2026年7月24日閲覧）．
+
+    \bibitem{bookoff-sell}
+    BOOKOFF「売りたい」，
+    \url{https://www.bookoff.co.jp/sell/}
+    （2026年7月24日閲覧）．
+
+    \bibitem{django-license}
+    Django Software Foundation, ``FAQ: General --- How is Django licensed?'',
+    \url{https://docs.djangoproject.com/en/6.0/faq/general/}
+    （2026年7月24日閲覧）．
+
+    \bibitem{supabase-selfhost}
+    Supabase, ``Self-Hosting with Docker'',
+    \url{https://supabase.com/docs/guides/self-hosting/docker}
+    （2026年7月24日閲覧）．
+\end{thebibliography}
 
 \end{document}
