@@ -22,7 +22,7 @@
   <div class="placeholder-page__current_information">
     <div class="placeholder-page__current_information_text">
       <p>出品数</p>
-      <strong>{{ selling_books|length }}点</strong>
+      <strong>{{ selling_count }}点</strong>
     </div>
     <div class="placeholder-page__current_information_text">
       <p>取引完了数</p>
@@ -119,22 +119,22 @@
     <a class="placeholder-page__section{% if active_view == 'listings' %} placeholder-page__section--active{% endif %}" href="{% url 'mypage' %}?view=listings#mypage-list"{% if active_view == 'listings' %} aria-current="page"{% endif %}>
       <span aria-hidden="true">≡</span>
       <span class="placeholder-page__section_text">出品一覧</span>
-      <span class="placeholder-page__section_right">{{ selling_books|length }}件</span>
+      <span class="placeholder-page__section_right">{{ selling_count }}件</span>
     </a>
     <a class="placeholder-page__section{% if active_view == 'favorites' %} placeholder-page__section--active{% endif %}" href="{% url 'mypage' %}?view=favorites#mypage-list"{% if active_view == 'favorites' %} aria-current="page"{% endif %}>
       <span class="placeholder-page__favorite-heart" aria-hidden="true"></span>
       <span class="placeholder-page__section_text">お気に入り</span>
-      <span class="placeholder-page__section_right">{{ favorite_books|length }}件</span>
+      <span class="placeholder-page__section_right">{{ favorite_count }}件</span>
     </a>
     <a class="placeholder-page__section{% if active_view == 'trades' %} placeholder-page__section--active{% endif %}" href="{% url 'mypage' %}?view=trades#mypage-list"{% if active_view == 'trades' %} aria-current="page"{% endif %}>
       <span>↔</span>
       <span class="placeholder-page__section_text">取引中/売却済み</span>
-      <span class="placeholder-page__section_right">{{ trading_books|length }}件</span>
+      <span class="placeholder-page__section_right">{{ trading_count }}件</span>
     </a>
     <a class="placeholder-page__section{% if active_view == 'withdrawn' %} placeholder-page__section--active{% endif %}" href="{% url 'mypage' %}?view=withdrawn#mypage-list"{% if active_view == 'withdrawn' %} aria-current="page"{% endif %}>
       <span aria-hidden="true">−</span>
       <span class="placeholder-page__section_text">取り下げ一覧</span>
-      <span class="placeholder-page__section_right">{{ withdrawn_books|length }}件</span>
+      <span class="placeholder-page__section_right">{{ withdrawn_count }}件</span>
     </a>
     <a class="placeholder-page__section" href="{% url 'help_contact' %}">
       <span>?</span>

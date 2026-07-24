@@ -5,7 +5,7 @@ from django.contrib.auth import logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.db import IntegrityError, transaction
-from django.db.models import F, Q
+from django.db.models import Count, F, Prefetch, Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -365,7 +365,14 @@ def start_consultation(request, book_id):
 def inbox(request):
     messages_qs = (
         Message.objects.filter(Q(sender=request.user) | Q(receiver=request.user))
-        .select_related("book", "sender", "receiver")
+        .select_related(
+            "book",
+            "book__seller",
+            "sender",
+            "sender__profile",
+            "receiver",
+            "receiver__profile",
+        )
         .order_by("-created_at")
     )
     threads = {}
@@ -386,24 +393,42 @@ def inbox(request):
         if message.receiver == request.user and threads[key]["message"] is None:
             threads[key]["message"] = message
             threads[key]["latest_at"] = message.created_at
-    for thread in threads.values():
-        thread_buyer = thread["other_user"] if request.user == thread["book"].seller else request.user
-        accepted_offer = (
+    accepted_offer_by_thread = {}
+    if threads:
+        accepted_offers = (
             TradeOffer.objects.filter(
-                book=thread["book"],
-                buyer=thread_buyer,
+                book_id__in={thread["book"].id for thread in threads.values()},
                 status="accepted",
             )
             .select_related("buyer", "seller")
-            .first()
+            .prefetch_related(
+                Prefetch(
+                    "handoff_proposals",
+                    queryset=HandoffProposal.objects.filter(
+                        status__in=["accepted", "pending"]
+                    ).order_by("-created_at"),
+                    to_attr="active_handoffs",
+                )
+            )
+        )
+        accepted_offer_by_thread = {
+            (offer.book_id, offer.buyer_id): offer for offer in accepted_offers
+        }
+
+    for thread in threads.values():
+        thread_buyer = thread["other_user"] if request.user == thread["book"].seller else request.user
+        accepted_offer = accepted_offer_by_thread.get(
+            (thread["book"].id, thread_buyer.id)
         )
         thread["accepted_offer"] = accepted_offer
         if accepted_offer:
             if thread["latest_at"] is None or accepted_offer.updated_at > thread["latest_at"]:
                 thread["latest_at"] = accepted_offer.updated_at
-            thread["handoff"] = accepted_offer.handoff_proposals.filter(
-                status__in=["accepted", "pending"]
-            ).first()
+            thread["handoff"] = (
+                accepted_offer.active_handoffs[0]
+                if accepted_offer.active_handoffs
+                else None
+            )
             handoff = thread["handoff"]
             if handoff:
                 if handoff.updated_at > thread["latest_at"]:
@@ -884,33 +909,72 @@ def mypage(request):
     if active_view not in {"listings", "favorites", "trades", "withdrawn"}:
         active_view = "listings"
 
-    selling_books = Book.objects.filter(seller=request.user, status="available")
-    withdrawn_books = Book.objects.filter(seller=request.user, status="withdrawn")
-    favorite_books = Book.objects.filter(favorites__user=request.user).order_by(
-        "-favorites__created_at"
+    user_trade_filter = Q(seller=request.user) | Q(buyer=request.user)
+    book_counts = Book.objects.aggregate(
+        selling_count=Count(
+            "id",
+            filter=Q(seller=request.user, status="available"),
+        ),
+        withdrawn_count=Count(
+            "id",
+            filter=Q(seller=request.user, status="withdrawn"),
+        ),
+        trading_count=Count(
+            "id",
+            filter=user_trade_filter & Q(status__in=["in_progress", "sold"]),
+            distinct=True,
+        ),
+        completed_trade_count=Count(
+            "id",
+            filter=user_trade_filter & Q(status="sold"),
+            distinct=True,
+        ),
     )
-    trading_books = Book.objects.filter(
-        Q(seller=request.user) | Q(buyer=request.user),
-        status__in=["in_progress", "sold"],
-    ).select_related("seller", "buyer").distinct()
-    completed_trade_count = Book.objects.filter(
-        Q(seller=request.user) | Q(buyer=request.user),
-        status="sold",
-    ).distinct().count()
+    favorite_count = Favorite.objects.filter(user=request.user).count()
+
+    selling_books = Book.objects.none()
+    withdrawn_books = Book.objects.none()
+    favorite_books = Book.objects.none()
+    trading_books = Book.objects.none()
+    if active_view == "listings":
+        selling_books = Book.objects.filter(seller=request.user, status="available")
+    elif active_view == "withdrawn":
+        withdrawn_books = Book.objects.filter(seller=request.user, status="withdrawn")
+    elif active_view == "favorites":
+        favorite_books = Book.objects.filter(favorites__user=request.user).order_by(
+            "-favorites__created_at"
+        )
+    else:
+        trading_books = (
+            Book.objects.filter(
+                user_trade_filter,
+                status__in=["in_progress", "sold"],
+            )
+            .select_related("seller", "buyer")
+            .distinct()
+        )
+
     trade_items = []
-    for book in trading_books:
-        chat_url = reverse("book_detail", kwargs={"book_id": book.id})
-        if book.buyer_id:
-            chat_url = reverse("chat", kwargs={"book_id": book.id})
-            if request.user == book.seller:
-                chat_url = f"{chat_url}?partner={book.buyer_id}"
-        trade_items.append({"book": book, "url": chat_url})
+    if active_view == "trades":
+        for book in trading_books:
+            chat_url = reverse("book_detail", kwargs={"book_id": book.id})
+            if book.buyer_id:
+                chat_url = reverse("chat", kwargs={"book_id": book.id})
+                if request.user == book.seller:
+                    chat_url = f"{chat_url}?partner={book.buyer_id}"
+            trade_items.append({"book": book, "url": chat_url})
     accepted_handoffs = HandoffProposal.objects.filter(
         Q(trade_offer__seller=request.user) | Q(trade_offer__buyer=request.user),
         status="accepted",
         trade_offer__status="accepted",
         trade_offer__book__status="in_progress",
-    ).select_related("trade_offer__book", "trade_offer__seller", "trade_offer__buyer")
+    ).select_related(
+        "trade_offer__book",
+        "trade_offer__seller",
+        "trade_offer__seller__profile",
+        "trade_offer__buyer",
+        "trade_offer__buyer__profile",
+    )
     handoff_trades = []
     for handoff in accepted_handoffs:
         offer = handoff.trade_offer
@@ -939,7 +1003,11 @@ def mypage(request):
             "favorite_books": favorite_books,
             "trading_books": trading_books,
             "trade_items": trade_items,
-            "completed_trade_count": completed_trade_count,
+            "selling_count": book_counts["selling_count"],
+            "withdrawn_count": book_counts["withdrawn_count"],
+            "favorite_count": favorite_count,
+            "trading_count": book_counts["trading_count"],
+            "completed_trade_count": book_counts["completed_trade_count"],
             "active_view": active_view,
             "handoff_trades": handoff_trades,
         },

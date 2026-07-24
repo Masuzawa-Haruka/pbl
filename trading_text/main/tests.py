@@ -7,7 +7,9 @@ from urllib.error import HTTPError
 from django.contrib.auth.models import User
 from django.core.files.base import ContentFile
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.db import connection
 from django.test import SimpleTestCase, TestCase, override_settings
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 from django.utils import timezone
 
@@ -709,6 +711,40 @@ class TradeFlowTests(TestCase):
         content = response.content.decode()
 
         self.assertLess(content.index("新しい通知"), content.index("古い通知"))
+
+    def test_inbox_query_count_does_not_grow_with_thread_count(self):
+        for index in range(8):
+            sender = User.objects.create_user(
+                username=f"thread-{index}@ecs.osaka-u.ac.jp",
+                email=f"thread-{index}@ecs.osaka-u.ac.jp",
+            )
+            UserProfile.objects.create(user=sender, display_name=f"送信者 {index}")
+            book = Book.objects.create(
+                seller=sender,
+                title=f"問い合わせ {index}",
+                author="著者",
+                price=300,
+                category="general",
+                campus="toyonaka",
+                condition="no_writing",
+            )
+            Message.objects.create(
+                book=book,
+                sender=sender,
+                receiver=self.buyer,
+                content=f"メッセージ {index}",
+            )
+        self.client.force_login(self.buyer)
+
+        with CaptureQueriesContext(connection) as queries:
+            response = self.client.get(reverse("inbox"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertLessEqual(
+            len(queries),
+            8,
+            "受信箱の取得で会話ごとの追加クエリが発生しています。",
+        )
 
     def test_seller_can_offer_a_changed_price(self):
         Message.objects.create(
